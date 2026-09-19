@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "ad.krbtgt",
+  "assessmentId": "8e9699f3-6a2b-4860-9190-a6f8afe9be3c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "AD",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-05T14:11:25.0000000Z",
+  "source": {
+    "system": "ActiveDirectory",
+    "operations": [
+      "Get-ADUser krbtgt -Properties pwdLastSet"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "domain": "corp.fabrikam.example",
+      "pwdLastSet": "2026-06-05T09:20:00Z"
+    }
+  ]
+}

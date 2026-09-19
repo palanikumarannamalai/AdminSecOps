@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "intune.settings",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Intune",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:41:39.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/deviceManagement?$select=settings"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": {
+    "secureByDefault": false,
+    "deviceComplianceCheckinThresholdDays": 30,
+    "isScheduledActionEnabled": true
+  }
+}

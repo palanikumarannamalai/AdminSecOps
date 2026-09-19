@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "entra.groupSettings",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Entra",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:10:39.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/groupSettings"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "id": "95aec3b9-4406-4822-a2dc-948687a78ffc",
+      "displayName": "Password Rule Settings",
+      "templateId": "5cf42378-d67d-4f36-ba46-e8b86229381d",
+      "values": [
+        {
+          "name": "BannedPasswordCheckOnPremisesMode",
+          "value": "Audit"
+        },
+        {
+          "name": "EnableBannedPasswordCheckOnPremises",
+          "value": "True"
+        },
+        {
+          "name": "EnableBannedPasswordCheck",
+          "value": "True"
+        },
+        {
+          "name": "LockoutDurationInSeconds",
+          "value": "60"
+        },
+        {
+          "name": "LockoutThreshold",
+          "value": "10"
+        }
+      ]
+    },
+    {
+      "id": "1180628d-fb81-4ec1-a46b-760c15514dfb",
+      "displayName": "Group.Unified",
+      "templateId": "62375ab9-6b52-47ed-826b-58e47e0e304b",
+      "values": [
+        {
+          "name": "EnableGroupCreation",
+          "value": "true"
+        },
+        {
+          "name": "AllowGuestsToBeGroupOwner",
+          "value": "false"
+        },
+        {
+          "name": "AllowGuestsToAccessGroups",
+          "value": "true"
+        },
+        {
+          "name": "AllowToAddGuests",
+          "value": "true"
+        },
+        {
+          "name": "EnableMIPLabels",
+          "value": "false"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "ad.domainControllers",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "AD",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:30:46.0000000Z",
+  "source": {
+    "system": "ActiveDirectory",
+    "operations": [
+      "Get-ADDomainController -Filter *"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "domain": "corp.contoso.example",
+      "hostName": "DC01.corp.contoso.example",
+      "site": "HQ-Site",
+      "operatingSystem": "Windows Server 2019 Datacenter",
+      "operatingSystemVersion": "10.0 (17763)",
+      "isGlobalCatalog": true,
+      "isReadOnly": false
+    },
+    {
+      "domain": "corp.contoso.example",
+      "hostName": "DC02.corp.contoso.example",
+      "site": "HQ-Site",
+      "operatingSystem": "Windows Server 2022 Datacenter",
+      "operatingSystemVersion": "10.0 (20348)",
+      "isGlobalCatalog": true,
+      "isReadOnly": false
+    }
+  ]
+}

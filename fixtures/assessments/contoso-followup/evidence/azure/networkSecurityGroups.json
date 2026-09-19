@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "azure.networkSecurityGroups",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Azure",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:22:46.0000000Z",
+  "source": {
+    "system": "AzureResourceManager",
+    "operations": [
+      "GET https://management.azure.com/subscriptions/{id}/providers/Microsoft.Network/networkSecurityGroups?api-version=2023-09-01"
+    ],
+    "apiVersion": "2023-09-01"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "subscriptionId": "9af60039-512d-4915-9ba3-ec30bf241297",
+      "id": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/resourceGroups/rg-web-prod/providers/Microsoft.Network/networkSecurityGroups/nsg-web-prod",
+      "name": "nsg-web-prod",
+      "resourceGroup": "rg-web-prod",
+      "securityRules": [
+        {
+          "name": "Allow-HTTPS-Inbound",
+          "direction": "Inbound",
+          "access": "Allow",
+          "priority": 100,
+          "protocol": "Tcp",
+          "sourceAddressPrefix": "Internet",
+          "sourceAddressPrefixes": [],
+          "destinationPortRange": "443",
+          "destinationPortRanges": []
+        }
+      ]
+    },
+    {
+      "subscriptionId": "9af60039-512d-4915-9ba3-ec30bf241297",
+      "id": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/resourceGroups/rg-mgmt-prod/providers/Microsoft.Network/networkSecurityGroups/nsg-mgmt-prod",
+      "name": "nsg-mgmt-prod",
+      "resourceGroup": "rg-mgmt-prod",
+      "securityRules": [
+        {
+          "name": "Allow-SSH-Admin-Office",
+          "direction": "Inbound",
+          "access": "Allow",
+          "priority": 310,
+          "protocol": "Tcp",
+          "sourceAddressPrefix": null,
+          "sourceAddressPrefixes": [
+            "203.0.113.0/27",
+            "198.51.100.14/32"
+          ],
+          "destinationPortRange": "22",
+          "destinationPortRanges": []
+        }
+      ]
+    },
+    {
+      "subscriptionId": "12021807-473f-4603-b8e0-151a7c7c1f66",
+      "id": "/subscriptions/12021807-473f-4603-b8e0-151a7c7c1f66/resourceGroups/rg-apps-dev/providers/Microsoft.Network/networkSecurityGroups/nsg-apps-dev",
+      "name": "nsg-apps-dev",
+      "resourceGroup": "rg-apps-dev",
+      "securityRules": [
+        {
+          "name": "Allow-AppGateway",
+          "direction": "Inbound",
+          "access": "Allow",
+          "priority": 200,
+          "protocol": "Tcp",
+          "sourceAddressPrefix": "GatewayManager",
+          "sourceAddressPrefixes": [],
+          "destinationPortRange": null,
+          "destinationPortRanges": [
+            "65200-65535"
+          ]
+        },
+        {
+          "name": "Deny-All-Inbound",
+          "direction": "Inbound",
+          "access": "Deny",
+          "priority": 4000,
+          "protocol": "*",
+          "sourceAddressPrefix": "*",
+          "sourceAddressPrefixes": [],
+          "destinationPortRange": "*",
+          "destinationPortRanges": []
+        }
+      ]
+    }
+  ]
+}

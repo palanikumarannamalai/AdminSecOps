@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "azure.activityLogDiagnostics",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Azure",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:22:53.0000000Z",
+  "source": {
+    "system": "AzureResourceManager",
+    "operations": [
+      "GET https://management.azure.com/subscriptions/{id}/providers/Microsoft.Insights/diagnosticSettings?api-version=2021-05-01-preview"
+    ],
+    "apiVersion": "2021-05-01-preview"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "subscriptionId": "9af60039-512d-4915-9ba3-ec30bf241297",
+      "settings": [
+        {
+          "name": "export-activity-to-law",
+          "workspaceConfigured": true,
+          "storageAccountConfigured": false,
+          "eventHubConfigured": false,
+          "enabledCategories": [
+            "Administrative",
+            "Security",
+            "ServiceHealth",
+            "Alert",
+            "Recommendation",
+            "Policy",
+            "Autoscale",
+            "ResourceHealth"
+          ]
+        }
+      ]
+    },
+    {
+      "subscriptionId": "12021807-473f-4603-b8e0-151a7c7c1f66",
+      "settings": []
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "ad.domainControllers",
+  "assessmentId": "8e9699f3-6a2b-4860-9190-a6f8afe9be3c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "AD",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-05T14:11:46.0000000Z",
+  "source": {
+    "system": "ActiveDirectory",
+    "operations": [
+      "Get-ADDomainController -Filter *"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "domain": "corp.fabrikam.example",
+      "hostName": "FAB-DC01.corp.fabrikam.example",
+      "site": "Default-First-Site-Name",
+      "operatingSystem": "Windows Server 2022 Datacenter",
+      "operatingSystemVersion": "10.0 (20348)",
+      "isGlobalCatalog": true,
+      "isReadOnly": false
+    }
+  ]
+}

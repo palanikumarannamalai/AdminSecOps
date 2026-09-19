@@ -1,0 +1,139 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "gpo.groupPolicyObjects",
+  "assessmentId": "8e9699f3-6a2b-4860-9190-a6f8afe9be3c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "GPO",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-05T14:14:46.0000000Z",
+  "source": {
+    "system": "GroupPolicy",
+    "operations": [
+      "Get-GPO -All",
+      "Get-GPOReport -ReportType Xml"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "id": "31b2f340-016d-11d2-945f-00c04fb984f9",
+      "displayName": "Default Domain Policy",
+      "domain": "corp.fabrikam.example",
+      "gpoStatus": "AllSettingsEnabled",
+      "createdTime": "2021-06-01T08:00:00Z",
+      "modifiedTime": "2025-01-13T10:30:00Z",
+      "wmiFilter": null,
+      "links": [
+        {
+          "somPath": "DC=corp,DC=fabrikam,DC=example",
+          "enabled": true,
+          "enforced": false
+        }
+      ],
+      "settings": [
+        {
+          "scope": "Computer",
+          "category": "AccountPolicy",
+          "name": "MinimumPasswordLength",
+          "value": 14
+        },
+        {
+          "scope": "Computer",
+          "category": "AccountPolicy",
+          "name": "PasswordComplexity",
+          "value": true
+        },
+        {
+          "scope": "Computer",
+          "category": "AccountPolicy",
+          "name": "PasswordHistorySize",
+          "value": 24
+        },
+        {
+          "scope": "Computer",
+          "category": "AccountPolicy",
+          "name": "LockoutBadCount",
+          "value": 10
+        }
+      ]
+    },
+    {
+      "id": "6ac1786c-016f-11d2-945f-00c04fb984f9",
+      "displayName": "Default Domain Controllers Policy",
+      "domain": "corp.fabrikam.example",
+      "gpoStatus": "AllSettingsEnabled",
+      "createdTime": "2021-06-01T08:00:00Z",
+      "modifiedTime": "2025-01-13T10:42:00Z",
+      "wmiFilter": null,
+      "links": [
+        {
+          "somPath": "OU=Domain Controllers,DC=corp,DC=fabrikam,DC=example",
+          "enabled": true,
+          "enforced": false
+        }
+      ],
+      "settings": [
+        {
+          "scope": "Computer",
+          "category": "SecurityOptions",
+          "name": "MACHINE\\System\\CurrentControlSet\\Services\\NTDS\\Parameters\\LDAPServerIntegrity",
+          "value": 2
+        },
+        {
+          "scope": "Computer",
+          "category": "AuditPolicy",
+          "name": "Audit Credential Validation",
+          "value": "Success and Failure"
+        },
+        {
+          "scope": "Computer",
+          "category": "AuditPolicy",
+          "name": "Audit Directory Service Changes",
+          "value": "Success"
+        }
+      ]
+    },
+    {
+      "id": "794de68b-59a6-49bd-9267-ea25b0c37eb9",
+      "displayName": "FAB - Security Baseline",
+      "domain": "corp.fabrikam.example",
+      "gpoStatus": "UserSettingsDisabled",
+      "createdTime": "2021-06-02T09:00:00Z",
+      "modifiedTime": "2026-03-18T15:12:00Z",
+      "wmiFilter": null,
+      "links": [
+        {
+          "somPath": "DC=corp,DC=fabrikam,DC=example",
+          "enabled": true,
+          "enforced": false
+        }
+      ],
+      "settings": [
+        {
+          "scope": "Computer",
+          "category": "SecurityOptions",
+          "name": "MACHINE\\System\\CurrentControlSet\\Control\\Lsa\\LmCompatibilityLevel",
+          "value": 5
+        },
+        {
+          "scope": "Computer",
+          "category": "SecurityOptions",
+          "name": "MACHINE\\System\\CurrentControlSet\\Control\\Lsa\\RunAsPPL",
+          "value": 1
+        },
+        {
+          "scope": "Computer",
+          "category": "RegistryPolicy",
+          "name": "Turn on PowerShell Script Block Logging",
+          "value": "Enabled"
+        }
+      ]
+    }
+  ]
+}

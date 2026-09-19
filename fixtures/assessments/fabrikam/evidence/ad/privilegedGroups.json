@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "ad.privilegedGroups",
+  "assessmentId": "8e9699f3-6a2b-4860-9190-a6f8afe9be3c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "AD",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-05T14:11:11.0000000Z",
+  "source": {
+    "system": "ActiveDirectory",
+    "operations": [
+      "Get-ADGroup -Identity <well-known SID>",
+      "Get-ADGroupMember -Recursive"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "domain": "corp.fabrikam.example",
+      "groupName": "Domain Admins",
+      "groupSid": "S-1-5-21-4444444444-5555555555-6666666666-512",
+      "members": [
+        {
+          "samAccountName": "adm-lee",
+          "sid": "S-1-5-21-4444444444-5555555555-6666666666-1103",
+          "objectClass": "user"
+        }
+      ]
+    },
+    {
+      "domain": "corp.fabrikam.example",
+      "groupName": "Schema Admins",
+      "groupSid": "S-1-5-21-4444444444-5555555555-6666666666-518",
+      "members": []
+    },
+    {
+      "domain": "corp.fabrikam.example",
+      "groupName": "Enterprise Admins",
+      "groupSid": "S-1-5-21-4444444444-5555555555-6666666666-519",
+      "members": []
+    },
+    {
+      "domain": "corp.fabrikam.example",
+      "groupName": "Key Admins",
+      "groupSid": "S-1-5-21-4444444444-5555555555-6666666666-526",
+      "members": []
+    },
+    {
+      "domain": "corp.fabrikam.example",
+      "groupName": "Enterprise Key Admins",
+      "groupSid": "S-1-5-21-4444444444-5555555555-6666666666-527",
+      "members": []
+    },
+    {
+      "domain": "corp.fabrikam.example",
+      "groupName": "Administrators",
+      "groupSid": "S-1-5-32-544",
+      "members": [
+        {
+          "samAccountName": "Administrator",
+          "sid": "S-1-5-21-4444444444-5555555555-6666666666-500",
+          "objectClass": "user"
+        },
+        {
+          "samAccountName": "adm-lee",
+          "sid": "S-1-5-21-4444444444-5555555555-6666666666-1103",
+          "objectClass": "user"
+        }
+      ]
+    },
+    {
+      "domain": "corp.fabrikam.example",
+      "groupName": "Account Operators",
+      "groupSid": "S-1-5-32-548",
+      "members": []
+    },
+    {
+      "domain": "corp.fabrikam.example",
+      "groupName": "Server Operators",
+      "groupSid": "S-1-5-32-549",
+      "members": []
+    },
+    {
+      "domain": "corp.fabrikam.example",
+      "groupName": "Print Operators",
+      "groupSid": "S-1-5-32-550",
+      "members": []
+    },
+    {
+      "domain": "corp.fabrikam.example",
+      "groupName": "Backup Operators",
+      "groupSid": "S-1-5-32-551",
+      "members": []
+    }
+  ]
+}

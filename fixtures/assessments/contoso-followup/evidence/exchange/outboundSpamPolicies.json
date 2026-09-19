@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "exchange.outboundSpamPolicies",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Exchange",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:15:18.0000000Z",
+  "source": {
+    "system": "ExchangeOnline",
+    "operations": [
+      "Get-HostedOutboundSpamFilterPolicy"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "name": "Default",
+      "isDefault": true,
+      "autoForwardingMode": "Automatic"
+    },
+    {
+      "name": "Executive Assistants - Allow Forwarding",
+      "isDefault": false,
+      "autoForwardingMode": "On"
+    }
+  ]
+}

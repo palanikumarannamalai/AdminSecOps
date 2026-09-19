@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "ad.domainControllerSettings",
+  "assessmentId": "8e9699f3-6a2b-4860-9190-a6f8afe9be3c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "AD",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-05T14:11:53.0000000Z",
+  "source": {
+    "system": "ActiveDirectory",
+    "operations": [
+      "Remote registry read: HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters (LDAPServerIntegrity, LdapEnforceChannelBinding)",
+      "Remote registry read: HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanServer\\Parameters (RequireSecuritySignature, SMB1)"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "hostName": "FAB-DC01.corp.fabrikam.example",
+      "readStatus": "Success",
+      "ldapServerIntegrity": 2,
+      "ldapEnforceChannelBinding": 2,
+      "smbRequireSecuritySignature": 1,
+      "smb1Enabled": 0
+    }
+  ]
+}

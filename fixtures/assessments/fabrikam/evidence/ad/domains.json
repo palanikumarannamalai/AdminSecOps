@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "ad.domains",
+  "assessmentId": "8e9699f3-6a2b-4860-9190-a6f8afe9be3c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "AD",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-05T14:10:57.0000000Z",
+  "source": {
+    "system": "ActiveDirectory",
+    "operations": [
+      "Get-ADDomain",
+      "Get-ADObject <domain DN> -Properties ms-DS-MachineAccountQuota"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "dnsRoot": "corp.fabrikam.example",
+      "netBIOSName": "FABRIKAM",
+      "domainSid": "S-1-5-21-4444444444-5555555555-6666666666",
+      "distinguishedName": "DC=corp,DC=fabrikam,DC=example",
+      "domainMode": "Windows2016Domain",
+      "machineAccountQuota": 0
+    }
+  ]
+}

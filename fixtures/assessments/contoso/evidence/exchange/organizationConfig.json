@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "exchange.organizationConfig",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Exchange",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:39:43.0000000Z",
+  "source": {
+    "system": "ExchangeOnline",
+    "operations": [
+      "Get-OrganizationConfig"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": {
+    "auditDisabled": false,
+    "oAuth2ClientProfileEnabled": true,
+    "customerLockBoxEnabled": false,
+    "mailTipsExternalRecipientsTipsEnabled": false
+  }
+}

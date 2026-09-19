@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "m365.sharePointSettings",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "M365",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:36:53.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/admin/sharepoint/settings"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": {
+    "sharingCapability": "externalUserAndGuestSharing",
+    "sharingDomainRestrictionMode": "none",
+    "isResharingByExternalUsersEnabled": true,
+    "isLegacyAuthProtocolsEnabled": false,
+    "isUnmanagedSyncAppForTenantRestricted": false
+  }
+}

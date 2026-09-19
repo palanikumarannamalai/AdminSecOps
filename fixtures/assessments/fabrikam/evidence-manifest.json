@@ -1,0 +1,257 @@
+{
+  "manifestVersion": "1.0",
+  "product": "AdminSecOps",
+  "assessmentId": "8e9699f3-6a2b-4860-9190-a6f8afe9be3c",
+  "createdAt": "2026-09-05T14:20:00.0000000Z",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "powershellVersion": "7.4.6",
+    "platform": "Win32NT"
+  },
+  "environment": {
+    "label": "Fabrikam (sample) - on-premises only",
+    "tenantId": null,
+    "tenantDisplayName": null,
+    "primaryDomain": "fabrikam.example",
+    "adForestName": "corp.fabrikam.example",
+    "adDomainName": "corp.fabrikam.example"
+  },
+  "options": {
+    "modules": [
+      "AD",
+      "ADCS",
+      "GPO",
+      "Windows"
+    ],
+    "includeDomainControllerSettings": true,
+    "windowsHostScope": "ComputerList",
+    "windowsHosts": [
+      "FAB-DC01.corp.fabrikam.example",
+      "FAB-FS01.corp.fabrikam.example"
+    ]
+  },
+  "modules": [
+    {
+      "name": "AD",
+      "version": "0.1.0",
+      "status": "Completed",
+      "startedAt": "2026-09-05T14:08:00.0000000Z",
+      "completedAt": "2026-09-05T14:12:00.0000000Z",
+      "prerequisites": [
+        {
+          "name": "ActiveDirectory module (RSAT)",
+          "satisfied": true,
+          "detail": null
+        },
+        {
+          "name": "Administrative read access to domain controllers",
+          "satisfied": true,
+          "detail": null
+        }
+      ],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "name": "ADCS",
+      "version": "0.1.0",
+      "status": "Completed",
+      "startedAt": "2026-09-05T14:12:00.0000000Z",
+      "completedAt": "2026-09-05T14:13:00.0000000Z",
+      "prerequisites": [
+        {
+          "name": "ActiveDirectory module (RSAT)",
+          "satisfied": true,
+          "detail": null
+        }
+      ],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "name": "GPO",
+      "version": "0.1.0",
+      "status": "Completed",
+      "startedAt": "2026-09-05T14:13:00.0000000Z",
+      "completedAt": "2026-09-05T14:15:00.0000000Z",
+      "prerequisites": [
+        {
+          "name": "GroupPolicy module (GPMC)",
+          "satisfied": true,
+          "detail": null
+        }
+      ],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "name": "Windows",
+      "version": "0.1.0",
+      "status": "Completed",
+      "startedAt": "2026-09-05T14:15:00.0000000Z",
+      "completedAt": "2026-09-05T14:19:00.0000000Z",
+      "prerequisites": [
+        {
+          "name": "WinRM access to listed hosts",
+          "satisfied": true,
+          "detail": "2 hosts"
+        }
+      ],
+      "errors": [],
+      "warnings": []
+    }
+  ],
+  "files": [
+    {
+      "path": "evidence/ad/forest.json",
+      "datasetId": "ad.forest",
+      "module": "AD",
+      "sha256": "69fa47b799765cdccded6d25bcd0ec91248918e4f8e36bed9e5e5c9c9d4e6cff",
+      "sizeBytes": 770,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-09-05T14:10:50.0000000Z"
+    },
+    {
+      "path": "evidence/ad/domains.json",
+      "datasetId": "ad.domains",
+      "module": "AD",
+      "sha256": "dc4249dbb0b4935bea63a194a65c0697bcfb08732c37c74e2521e722f9a76be2",
+      "sizeBytes": 850,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-09-05T14:10:57.0000000Z"
+    },
+    {
+      "path": "evidence/ad/passwordPolicies.json",
+      "datasetId": "ad.passwordPolicies",
+      "module": "AD",
+      "sha256": "07ba9af72f15187e47be7119d66b2afcf288d0ff3ac0a3e52514567c452e6f40",
+      "sizeBytes": 949,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-09-05T14:11:04.0000000Z"
+    },
+    {
+      "path": "evidence/ad/privilegedGroups.json",
+      "datasetId": "ad.privilegedGroups",
+      "module": "AD",
+      "sha256": "a10611e404d3cc8058b6893fa021171a3039da56d9289ff9be87919ee6bb0f66",
+      "sizeBytes": 2687,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-09-05T14:11:11.0000000Z"
+    },
+    {
+      "path": "evidence/ad/users.json",
+      "datasetId": "ad.users",
+      "module": "AD",
+      "sha256": "4314a92ae8366decfb8b7873253105e71d2971a2cb43cd2d7c747ef34d25520d",
+      "sizeBytes": 3215,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-09-05T14:11:18.0000000Z"
+    },
+    {
+      "path": "evidence/ad/krbtgt.json",
+      "datasetId": "ad.krbtgt",
+      "module": "AD",
+      "sha256": "2d16a9aee07ff083f7bf03632661a4344d170155b97b21f3adc8e130b7c2ded0",
+      "sizeBytes": 617,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-09-05T14:11:25.0000000Z"
+    },
+    {
+      "path": "evidence/ad/computers.json",
+      "datasetId": "ad.computers",
+      "module": "AD",
+      "sha256": "60084491c8fbe6251ad5d9b3e2d55e8731fe4b0761fdd7709ef23706d105bb5e",
+      "sizeBytes": 8942,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-09-05T14:11:32.0000000Z"
+    },
+    {
+      "path": "evidence/ad/trusts.json",
+      "datasetId": "ad.trusts",
+      "module": "AD",
+      "sha256": "efc500b7139f7a088bdd728bedbd500b94e94008bbbba704f9b5989b1dae0578",
+      "sizeBytes": 499,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-09-05T14:11:39.0000000Z"
+    },
+    {
+      "path": "evidence/ad/domainControllers.json",
+      "datasetId": "ad.domainControllers",
+      "module": "AD",
+      "sha256": "e4701716ad409fa793dd5caffec65ae368bbe8284c13110dd52e70f321bc53d6",
+      "sizeBytes": 834,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-09-05T14:11:46.0000000Z"
+    },
+    {
+      "path": "evidence/ad/domainControllerSettings.json",
+      "datasetId": "ad.domainControllerSettings",
+      "module": "AD",
+      "sha256": "9f769ce856e9413bbdab4da20dd5cc7a9b911ebf84efa1b8e6c409e0946fd56c",
+      "sizeBytes": 989,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-09-05T14:11:53.0000000Z"
+    },
+    {
+      "path": "evidence/adcs/certificateAuthorities.json",
+      "datasetId": "adcs.certificateAuthorities",
+      "module": "ADCS",
+      "sha256": "173adb625e519dccf2a99b830672fb3c76c7a9e0a16761a13ea4ab533a532254",
+      "sizeBytes": 953,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-09-05T14:12:46.0000000Z"
+    },
+    {
+      "path": "evidence/adcs/certificateTemplates.json",
+      "datasetId": "adcs.certificateTemplates",
+      "module": "ADCS",
+      "sha256": "6c263b50b289e23751bce43a6a99379ae832f8f3cde74a54c301c2bcf8df58f5",
+      "sizeBytes": 12312,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-09-05T14:12:53.0000000Z"
+    },
+    {
+      "path": "evidence/gpo/groupPolicyObjects.json",
+      "datasetId": "gpo.groupPolicyObjects",
+      "module": "GPO",
+      "sha256": "538a758acffe48a821eef2e5e9cc5ecf3f86fb84ab09084cc9dea36048e71605",
+      "sizeBytes": 3821,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-09-05T14:14:46.0000000Z"
+    },
+    {
+      "path": "evidence/gpo/sysvolPasswordArtifacts.json",
+      "datasetId": "gpo.sysvolPasswordArtifacts",
+      "module": "GPO",
+      "sha256": "19a0673064cb3302eaf58928f3dcebfd4396888e808547a21dce238f184a81c6",
+      "sizeBytes": 646,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-09-05T14:14:53.0000000Z"
+    },
+    {
+      "path": "evidence/windows/hosts.json",
+      "datasetId": "windows.hosts",
+      "module": "Windows",
+      "sha256": "1f3d306cbd703a3be9bfe702910c104d6514ad25bde658b3a92588df09815118",
+      "sizeBytes": 3463,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-09-05T14:18:53.0000000Z"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "windows.hosts",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Windows",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:38:53.0000000Z",
+  "source": {
+    "system": "WindowsHost",
+    "operations": [
+      "Get-CimInstance Win32_OperatingSystem",
+      "Get-NetFirewallProfile",
+      "Get-SmbServerConfiguration",
+      "Registry reads under HKLM (Terminal Server, Lsa, WDigest, PowerShell policies)",
+      "Get-CimInstance -Namespace root\\Microsoft\\Windows\\DeviceGuard Win32_DeviceGuard",
+      "Get-MpComputerStatus"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "hostName": "APP01.corp.contoso.example",
+      "osCaption": "Microsoft Windows Server 2022 Standard",
+      "osVersion": "10.0.20348",
+      "osBuild": "20348",
+      "isServer": true,
+      "isDomainController": false,
+      "domainJoined": true,
+      "firewallProfiles": [
+        {
+          "name": "Domain",
+          "enabled": false,
+          "defaultInboundAction": "Block"
+        },
+        {
+          "name": "Private",
+          "enabled": true,
+          "defaultInboundAction": "Block"
+        },
+        {
+          "name": "Public",
+          "enabled": true,
+          "defaultInboundAction": "Block"
+        }
+      ],
+      "smb": {
+        "smb1ServerEnabled": false,
+        "serverRequireSecuritySignature": false
+      },
+      "rdp": {
+        "enabled": true,
+        "nlaRequired": true
+      },
+      "lsa": {
+        "runAsPPL": null,
+        "lmCompatibilityLevel": 3,
+        "wdigestUseLogonCredential": null
+      },
+      "credentialGuard": {
+        "running": false,
+        "vbsStatus": 0
+      },
+      "powershell": {
+        "scriptBlockLoggingEnabled": false
+      },
+      "defender": {
+        "available": true,
+        "antivirusEnabled": true,
+        "realTimeProtectionEnabled": true,
+        "isTamperProtected": true,
+        "antivirusSignatureAgeDays": 1
+      }
+    }
+  ]
+}

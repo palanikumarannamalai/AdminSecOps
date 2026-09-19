@@ -1,0 +1,620 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "adcs.certificateTemplates",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "ADCS",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:57:53.0000000Z",
+  "source": {
+    "system": "ActiveDirectory",
+    "operations": [
+      "Get-ADObject -SearchBase \"CN=Certificate Templates,CN=Public Key Services,CN=Services,<ConfigurationNC>\" -Properties msPKI-Certificate-Name-Flag,msPKI-Enrollment-Flag,msPKI-RA-Signature,pKIExtendedKeyUsage,msPKI-Certificate-Application-Policy,msPKI-Template-Schema-Version,nTSecurityDescriptor"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "name": "User",
+      "displayName": "User",
+      "schemaVersion": 1,
+      "certificateNameFlag": -1509949440,
+      "enrollmentFlag": 41,
+      "raSignature": 0,
+      "extendedKeyUsage": [
+        "1.3.6.1.4.1.311.10.3.4",
+        "1.3.6.1.5.5.7.3.4",
+        "1.3.6.1.5.5.7.3.2"
+      ],
+      "applicationPolicies": [],
+      "permissions": [
+        {
+          "principalSid": "S-1-5-11",
+          "principalName": "NT AUTHORITY\\Authenticated Users",
+          "accessControlType": "Allow",
+          "rights": [
+            "GenericRead"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-512",
+          "principalName": "CONTOSO\\Domain Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "CreateChild",
+            "DeleteChild",
+            "Self",
+            "WriteProperty",
+            "DeleteTree",
+            "Delete",
+            "GenericRead",
+            "WriteDacl",
+            "WriteOwner"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-512",
+          "principalName": "CONTOSO\\Domain Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-519",
+          "principalName": "CONTOSO\\Enterprise Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "CreateChild",
+            "DeleteChild",
+            "Self",
+            "WriteProperty",
+            "DeleteTree",
+            "Delete",
+            "GenericRead",
+            "WriteDacl",
+            "WriteOwner"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-519",
+          "principalName": "CONTOSO\\Enterprise Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-513",
+          "principalName": "CONTOSO\\Domain Users",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        }
+      ]
+    },
+    {
+      "name": "Machine",
+      "displayName": "Computer",
+      "schemaVersion": 1,
+      "certificateNameFlag": 402653184,
+      "enrollmentFlag": 0,
+      "raSignature": 0,
+      "extendedKeyUsage": [
+        "1.3.6.1.5.5.7.3.2",
+        "1.3.6.1.5.5.7.3.1"
+      ],
+      "applicationPolicies": [],
+      "permissions": [
+        {
+          "principalSid": "S-1-5-11",
+          "principalName": "NT AUTHORITY\\Authenticated Users",
+          "accessControlType": "Allow",
+          "rights": [
+            "GenericRead"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-512",
+          "principalName": "CONTOSO\\Domain Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "CreateChild",
+            "DeleteChild",
+            "Self",
+            "WriteProperty",
+            "DeleteTree",
+            "Delete",
+            "GenericRead",
+            "WriteDacl",
+            "WriteOwner"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-512",
+          "principalName": "CONTOSO\\Domain Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-519",
+          "principalName": "CONTOSO\\Enterprise Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "CreateChild",
+            "DeleteChild",
+            "Self",
+            "WriteProperty",
+            "DeleteTree",
+            "Delete",
+            "GenericRead",
+            "WriteDacl",
+            "WriteOwner"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-519",
+          "principalName": "CONTOSO\\Enterprise Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-515",
+          "principalName": "CONTOSO\\Domain Computers",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        }
+      ]
+    },
+    {
+      "name": "DomainController",
+      "displayName": "Domain Controller",
+      "schemaVersion": 1,
+      "certificateNameFlag": 419430400,
+      "enrollmentFlag": 0,
+      "raSignature": 0,
+      "extendedKeyUsage": [
+        "1.3.6.1.5.5.7.3.2",
+        "1.3.6.1.5.5.7.3.1"
+      ],
+      "applicationPolicies": [],
+      "permissions": [
+        {
+          "principalSid": "S-1-5-11",
+          "principalName": "NT AUTHORITY\\Authenticated Users",
+          "accessControlType": "Allow",
+          "rights": [
+            "GenericRead"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-512",
+          "principalName": "CONTOSO\\Domain Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "CreateChild",
+            "DeleteChild",
+            "Self",
+            "WriteProperty",
+            "DeleteTree",
+            "Delete",
+            "GenericRead",
+            "WriteDacl",
+            "WriteOwner"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-512",
+          "principalName": "CONTOSO\\Domain Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-519",
+          "principalName": "CONTOSO\\Enterprise Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "CreateChild",
+            "DeleteChild",
+            "Self",
+            "WriteProperty",
+            "DeleteTree",
+            "Delete",
+            "GenericRead",
+            "WriteDacl",
+            "WriteOwner"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-519",
+          "principalName": "CONTOSO\\Enterprise Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-516",
+          "principalName": "CONTOSO\\Domain Controllers",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        },
+        {
+          "principalSid": "S-1-5-9",
+          "principalName": "NT AUTHORITY\\ENTERPRISE DOMAIN CONTROLLERS",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        }
+      ]
+    },
+    {
+      "name": "WebServer",
+      "displayName": "Web Server",
+      "schemaVersion": 1,
+      "certificateNameFlag": 1,
+      "enrollmentFlag": 0,
+      "raSignature": 0,
+      "extendedKeyUsage": [
+        "1.3.6.1.5.5.7.3.1"
+      ],
+      "applicationPolicies": [],
+      "permissions": [
+        {
+          "principalSid": "S-1-5-11",
+          "principalName": "NT AUTHORITY\\Authenticated Users",
+          "accessControlType": "Allow",
+          "rights": [
+            "GenericRead"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-512",
+          "principalName": "CONTOSO\\Domain Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "CreateChild",
+            "DeleteChild",
+            "Self",
+            "WriteProperty",
+            "DeleteTree",
+            "Delete",
+            "GenericRead",
+            "WriteDacl",
+            "WriteOwner"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-512",
+          "principalName": "CONTOSO\\Domain Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-519",
+          "principalName": "CONTOSO\\Enterprise Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "CreateChild",
+            "DeleteChild",
+            "Self",
+            "WriteProperty",
+            "DeleteTree",
+            "Delete",
+            "GenericRead",
+            "WriteDacl",
+            "WriteOwner"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-519",
+          "principalName": "CONTOSO\\Enterprise Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        }
+      ]
+    },
+    {
+      "name": "SubCA",
+      "displayName": "Subordinate Certification Authority",
+      "schemaVersion": 1,
+      "certificateNameFlag": 1,
+      "enrollmentFlag": 0,
+      "raSignature": 0,
+      "extendedKeyUsage": [],
+      "applicationPolicies": [],
+      "permissions": [
+        {
+          "principalSid": "S-1-5-11",
+          "principalName": "NT AUTHORITY\\Authenticated Users",
+          "accessControlType": "Allow",
+          "rights": [
+            "GenericRead"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-512",
+          "principalName": "CONTOSO\\Domain Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "CreateChild",
+            "DeleteChild",
+            "Self",
+            "WriteProperty",
+            "DeleteTree",
+            "Delete",
+            "GenericRead",
+            "WriteDacl",
+            "WriteOwner"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-512",
+          "principalName": "CONTOSO\\Domain Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-519",
+          "principalName": "CONTOSO\\Enterprise Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "CreateChild",
+            "DeleteChild",
+            "Self",
+            "WriteProperty",
+            "DeleteTree",
+            "Delete",
+            "GenericRead",
+            "WriteDacl",
+            "WriteOwner"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-519",
+          "principalName": "CONTOSO\\Enterprise Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        }
+      ]
+    },
+    {
+      "name": "ContosoWebClientLegacy",
+      "displayName": "Contoso Web Client (Legacy)",
+      "schemaVersion": 2,
+      "certificateNameFlag": 1,
+      "enrollmentFlag": 0,
+      "raSignature": 0,
+      "extendedKeyUsage": [
+        "1.3.6.1.5.5.7.3.1",
+        "1.3.6.1.5.5.7.3.2"
+      ],
+      "applicationPolicies": [
+        "1.3.6.1.5.5.7.3.1",
+        "1.3.6.1.5.5.7.3.2"
+      ],
+      "permissions": [
+        {
+          "principalSid": "S-1-5-11",
+          "principalName": "NT AUTHORITY\\Authenticated Users",
+          "accessControlType": "Allow",
+          "rights": [
+            "GenericRead"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-512",
+          "principalName": "CONTOSO\\Domain Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "CreateChild",
+            "DeleteChild",
+            "Self",
+            "WriteProperty",
+            "DeleteTree",
+            "Delete",
+            "GenericRead",
+            "WriteDacl",
+            "WriteOwner"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-512",
+          "principalName": "CONTOSO\\Domain Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-519",
+          "principalName": "CONTOSO\\Enterprise Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "CreateChild",
+            "DeleteChild",
+            "Self",
+            "WriteProperty",
+            "DeleteTree",
+            "Delete",
+            "GenericRead",
+            "WriteDacl",
+            "WriteOwner"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-519",
+          "principalName": "CONTOSO\\Enterprise Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-513",
+          "principalName": "CONTOSO\\Domain Users",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        }
+      ]
+    },
+    {
+      "name": "ContosoVPNUser",
+      "displayName": "Contoso VPN User",
+      "schemaVersion": 2,
+      "certificateNameFlag": -2113929216,
+      "enrollmentFlag": 41,
+      "raSignature": 0,
+      "extendedKeyUsage": [
+        "1.3.6.1.5.5.7.3.2"
+      ],
+      "applicationPolicies": [
+        "1.3.6.1.5.5.7.3.2"
+      ],
+      "permissions": [
+        {
+          "principalSid": "S-1-5-11",
+          "principalName": "NT AUTHORITY\\Authenticated Users",
+          "accessControlType": "Allow",
+          "rights": [
+            "GenericRead"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-512",
+          "principalName": "CONTOSO\\Domain Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "CreateChild",
+            "DeleteChild",
+            "Self",
+            "WriteProperty",
+            "DeleteTree",
+            "Delete",
+            "GenericRead",
+            "WriteDacl",
+            "WriteOwner"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-512",
+          "principalName": "CONTOSO\\Domain Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-519",
+          "principalName": "CONTOSO\\Enterprise Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "CreateChild",
+            "DeleteChild",
+            "Self",
+            "WriteProperty",
+            "DeleteTree",
+            "Delete",
+            "GenericRead",
+            "WriteDacl",
+            "WriteOwner"
+          ],
+          "objectType": "00000000-0000-0000-0000-000000000000"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-519",
+          "principalName": "CONTOSO\\Enterprise Admins",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-513",
+          "principalName": "CONTOSO\\Domain Users",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "0e10c968-78fb-11d2-90d4-00c04f79dc55"
+        },
+        {
+          "principalSid": "S-1-5-21-1111111111-2222222222-3333333333-513",
+          "principalName": "CONTOSO\\Domain Users",
+          "accessControlType": "Allow",
+          "rights": [
+            "ExtendedRight"
+          ],
+          "objectType": "a05b8cc2-17bc-4802-a710-e7c15ab866a2"
+        }
+      ]
+    }
+  ]
+}

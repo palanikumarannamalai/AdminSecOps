@@ -1,0 +1,294 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "entra.conditionalAccessPolicies",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Entra",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:34:29.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/identity/conditionalAccess/policies"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "id": "b3d34b81-f179-4690-8f5a-34a6108ed103",
+      "displayName": "CA001 - Require MFA for all users",
+      "state": "enabledForReportingButNotEnforced",
+      "createdDateTime": "2025-11-03T14:22:10Z",
+      "modifiedDateTime": "2026-06-18T09:41:55Z",
+      "conditions": {
+        "users": {
+          "includeUsers": [
+            "All"
+          ],
+          "excludeUsers": [],
+          "includeGroups": [],
+          "excludeGroups": [
+            "ac89a332-272f-4854-b90b-0a4f72ec41ca"
+          ],
+          "includeRoles": [],
+          "excludeRoles": [],
+          "includeGuestsOrExternalUsers": null,
+          "excludeGuestsOrExternalUsers": null
+        },
+        "applications": {
+          "includeApplications": [
+            "All"
+          ],
+          "excludeApplications": [],
+          "includeUserActions": [],
+          "includeAuthenticationContextClassReferences": []
+        },
+        "clientAppTypes": [
+          "all"
+        ],
+        "signInRiskLevels": [],
+        "userRiskLevels": [],
+        "platforms": null,
+        "locations": null,
+        "authenticationFlows": null
+      },
+      "grantControls": {
+        "operator": "OR",
+        "builtInControls": [
+          "mfa"
+        ],
+        "customAuthenticationFactors": [],
+        "termsOfUse": [],
+        "authenticationStrength": null
+      },
+      "sessionControls": null
+    },
+    {
+      "id": "dd92d96b-e74e-4d9d-a81f-5c6251314942",
+      "displayName": "CA002 - Require MFA for administrators",
+      "state": "enabled",
+      "createdDateTime": "2024-02-12T10:05:31Z",
+      "modifiedDateTime": "2024-02-12T10:18:02Z",
+      "conditions": {
+        "users": {
+          "includeUsers": [],
+          "excludeUsers": [],
+          "includeGroups": [],
+          "excludeGroups": [
+            "ac89a332-272f-4854-b90b-0a4f72ec41ca"
+          ],
+          "includeRoles": [
+            "62e90394-69f5-4237-9190-012177145e10",
+            "e8611ab8-c189-46e8-94e1-60213ab1f814",
+            "194ae4cb-b126-40b2-bd5b-6091b380977d",
+            "b1be1c3e-b65d-4f19-8427-f6fa0d97feb9",
+            "29232cdf-9323-42fd-ade2-1d097af3e4de",
+            "f28a1f50-f6e7-4571-818b-6a12f2af6b6c",
+            "fe930be7-5e62-47db-91af-98c3a49a38b1"
+          ],
+          "excludeRoles": [],
+          "includeGuestsOrExternalUsers": null,
+          "excludeGuestsOrExternalUsers": null
+        },
+        "applications": {
+          "includeApplications": [
+            "All"
+          ],
+          "excludeApplications": [],
+          "includeUserActions": [],
+          "includeAuthenticationContextClassReferences": []
+        },
+        "clientAppTypes": [
+          "all"
+        ],
+        "signInRiskLevels": [],
+        "userRiskLevels": [],
+        "platforms": null,
+        "locations": null,
+        "authenticationFlows": null
+      },
+      "grantControls": {
+        "operator": "OR",
+        "builtInControls": [
+          "mfa"
+        ],
+        "customAuthenticationFactors": [],
+        "termsOfUse": [],
+        "authenticationStrength": null
+      },
+      "sessionControls": {
+        "signInFrequency": {
+          "isEnabled": true,
+          "value": 12,
+          "type": "hours",
+          "frequencyInterval": "timeBased"
+        },
+        "persistentBrowser": null
+      }
+    },
+    {
+      "id": "77abd0b3-ab3b-4018-8427-7670315d544b",
+      "displayName": "CA003 - Block legacy authentication",
+      "state": "enabled",
+      "createdDateTime": "2023-09-04T08:12:44Z",
+      "modifiedDateTime": "2025-01-20T16:30:09Z",
+      "conditions": {
+        "users": {
+          "includeUsers": [
+            "All"
+          ],
+          "excludeUsers": [],
+          "includeGroups": [],
+          "excludeGroups": [
+            "ac89a332-272f-4854-b90b-0a4f72ec41ca"
+          ],
+          "includeRoles": [],
+          "excludeRoles": [],
+          "includeGuestsOrExternalUsers": null,
+          "excludeGuestsOrExternalUsers": null
+        },
+        "applications": {
+          "includeApplications": [
+            "All"
+          ],
+          "excludeApplications": [],
+          "includeUserActions": [],
+          "includeAuthenticationContextClassReferences": []
+        },
+        "clientAppTypes": [
+          "exchangeActiveSync",
+          "other"
+        ],
+        "signInRiskLevels": [],
+        "userRiskLevels": [],
+        "platforms": null,
+        "locations": null,
+        "authenticationFlows": null
+      },
+      "grantControls": {
+        "operator": "OR",
+        "builtInControls": [
+          "block"
+        ],
+        "customAuthenticationFactors": [],
+        "termsOfUse": [],
+        "authenticationStrength": null
+      },
+      "sessionControls": null
+    },
+    {
+      "id": "c8cde659-d1f2-40ec-a269-35e9b290dd58",
+      "displayName": "CA004 - Require compliant or hybrid joined device (pilot)",
+      "state": "disabled",
+      "createdDateTime": "2026-03-09T13:47:20Z",
+      "modifiedDateTime": "2026-03-09T13:47:20Z",
+      "conditions": {
+        "users": {
+          "includeUsers": [],
+          "excludeUsers": [],
+          "includeGroups": [
+            "ad3456dd-4767-48cb-99f1-b561cf4a3855"
+          ],
+          "excludeGroups": [],
+          "includeRoles": [],
+          "excludeRoles": [],
+          "includeGuestsOrExternalUsers": null,
+          "excludeGuestsOrExternalUsers": null
+        },
+        "applications": {
+          "includeApplications": [
+            "Office365"
+          ],
+          "excludeApplications": [],
+          "includeUserActions": [],
+          "includeAuthenticationContextClassReferences": []
+        },
+        "clientAppTypes": [
+          "browser",
+          "mobileAppsAndDesktopClients"
+        ],
+        "signInRiskLevels": [],
+        "userRiskLevels": [],
+        "platforms": {
+          "includePlatforms": [
+            "windows"
+          ],
+          "excludePlatforms": []
+        },
+        "locations": null,
+        "authenticationFlows": null
+      },
+      "grantControls": {
+        "operator": "OR",
+        "builtInControls": [
+          "compliantDevice",
+          "domainJoinedDevice"
+        ],
+        "customAuthenticationFactors": [],
+        "termsOfUse": [],
+        "authenticationStrength": null
+      },
+      "sessionControls": null
+    },
+    {
+      "id": "ef1d2274-e9a5-4d82-bb2c-4d57320588da",
+      "displayName": "CA005 - Block sign-ins from blocked countries",
+      "state": "enabled",
+      "createdDateTime": "2024-05-27T11:02:37Z",
+      "modifiedDateTime": "2025-08-14T07:55:12Z",
+      "conditions": {
+        "users": {
+          "includeUsers": [
+            "All"
+          ],
+          "excludeUsers": [],
+          "includeGroups": [],
+          "excludeGroups": [
+            "ac89a332-272f-4854-b90b-0a4f72ec41ca"
+          ],
+          "includeRoles": [],
+          "excludeRoles": [],
+          "includeGuestsOrExternalUsers": null,
+          "excludeGuestsOrExternalUsers": null
+        },
+        "applications": {
+          "includeApplications": [
+            "All"
+          ],
+          "excludeApplications": [],
+          "includeUserActions": [],
+          "includeAuthenticationContextClassReferences": []
+        },
+        "clientAppTypes": [
+          "all"
+        ],
+        "signInRiskLevels": [],
+        "userRiskLevels": [],
+        "platforms": null,
+        "locations": {
+          "includeLocations": [
+            "401ff627-b98d-43f7-9a59-b75ebd62d43b"
+          ],
+          "excludeLocations": []
+        },
+        "authenticationFlows": null
+      },
+      "grantControls": {
+        "operator": "OR",
+        "builtInControls": [
+          "block"
+        ],
+        "customAuthenticationFactors": [],
+        "termsOfUse": [],
+        "authenticationStrength": null
+      },
+      "sessionControls": null
+    }
+  ]
+}

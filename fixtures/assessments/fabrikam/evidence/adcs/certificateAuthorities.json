@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "adcs.certificateAuthorities",
+  "assessmentId": "8e9699f3-6a2b-4860-9190-a6f8afe9be3c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "ADCS",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-05T14:12:46.0000000Z",
+  "source": {
+    "system": "ActiveDirectory",
+    "operations": [
+      "Get-ADObject -SearchBase \"CN=Enrollment Services,CN=Public Key Services,CN=Services,<ConfigurationNC>\" -Filter \"objectClass -eq 'pKIEnrollmentService'\""
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "name": "Fabrikam Issuing CA",
+      "dnsHostName": "FAB-APP01.corp.fabrikam.example",
+      "certificateTemplates": [
+        "User",
+        "Machine",
+        "DomainController",
+        "FabrikamWorkstationAuth"
+      ],
+      "caCertificateNotAfter": "2031-01-15T00:00:00Z"
+    }
+  ]
+}

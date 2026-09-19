@@ -1,0 +1,156 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "azure.roleAssignments",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Azure",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:22:11.0000000Z",
+  "source": {
+    "system": "AzureResourceManager",
+    "operations": [
+      "Get-AzRoleAssignment -Scope /subscriptions/{id}"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "subscriptionId": "9af60039-512d-4915-9ba3-ec30bf241297",
+      "roleAssignmentId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/providers/Microsoft.Authorization/roleAssignments/384d999d-f787-418f-938d-e2043fe2c486",
+      "scope": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297",
+      "roleDefinitionName": "Owner",
+      "roleDefinitionId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+      "principalId": "d1f86d10-d866-41da-8baf-4dccd57addf1",
+      "principalType": "User",
+      "principalDisplayName": "Alex Admin (Admin)",
+      "principalSignInName": "adm-alex@contoso.example"
+    },
+    {
+      "subscriptionId": "9af60039-512d-4915-9ba3-ec30bf241297",
+      "roleAssignmentId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/providers/Microsoft.Authorization/roleAssignments/dec2c16a-1288-4e4c-aa27-c0fd2283260b",
+      "scope": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297",
+      "roleDefinitionName": "Owner",
+      "roleDefinitionId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+      "principalId": "8976b762-fcd4-4156-86b6-6cfe1ba3edd5",
+      "principalType": "User",
+      "principalDisplayName": "Taylor Ops (Admin)",
+      "principalSignInName": "adm-taylor@contoso.example"
+    },
+    {
+      "subscriptionId": "9af60039-512d-4915-9ba3-ec30bf241297",
+      "roleAssignmentId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/providers/Microsoft.Authorization/roleAssignments/15b4c6fe-dced-411e-b24b-95eeb38ebf90",
+      "scope": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297",
+      "roleDefinitionName": "Owner",
+      "roleDefinitionId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+      "principalId": "0471c97d-e7da-4777-8f43-b3d600d205ba",
+      "principalType": "User",
+      "principalDisplayName": "Jordan IT",
+      "principalSignInName": "jordan.it@contoso.example"
+    },
+    {
+      "subscriptionId": "9af60039-512d-4915-9ba3-ec30bf241297",
+      "roleAssignmentId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/providers/Microsoft.Authorization/roleAssignments/8af1ac56-7513-40ad-887a-1be442e40e43",
+      "scope": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297",
+      "roleDefinitionName": "Owner",
+      "roleDefinitionId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+      "principalId": "abb3d027-21fd-461b-a154-1429b103a0e0",
+      "principalType": "User",
+      "principalDisplayName": "Casey Exec (Admin)",
+      "principalSignInName": "adm-casey@contoso.example"
+    },
+    {
+      "subscriptionId": "9af60039-512d-4915-9ba3-ec30bf241297",
+      "roleAssignmentId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/providers/Microsoft.Authorization/roleAssignments/ec50e47e-55ee-4795-801e-4c2071bf3335",
+      "scope": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297",
+      "roleDefinitionName": "Owner",
+      "roleDefinitionId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+      "principalId": "2e0a3ad6-f0b0-4341-a0f5-f564f2ccaa6d",
+      "principalType": "User",
+      "principalDisplayName": "Morgan Cloud (Partner Co)",
+      "principalSignInName": "morgan.cloud_partner-co.example#EXT#@contoso.onmicrosoft.com"
+    },
+    {
+      "subscriptionId": "9af60039-512d-4915-9ba3-ec30bf241297",
+      "roleAssignmentId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/resourceGroups/rg-identity-automation/providers/Microsoft.Authorization/roleAssignments/fe036d00-4b5e-4d35-9a50-a24add2d0a6e",
+      "scope": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/resourceGroups/rg-identity-automation",
+      "roleDefinitionName": "Contributor",
+      "roleDefinitionId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c",
+      "principalId": "6e3077a8-b4a2-4448-901c-4d5d4641bb3e",
+      "principalType": "ServicePrincipal",
+      "principalDisplayName": "Contoso Provisioning Automation",
+      "principalSignInName": null
+    },
+    {
+      "subscriptionId": "9af60039-512d-4915-9ba3-ec30bf241297",
+      "roleAssignmentId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/providers/Microsoft.Authorization/roleAssignments/ce9acc52-7338-4569-ad63-310197a4ed02",
+      "scope": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297",
+      "roleDefinitionName": "Contributor",
+      "roleDefinitionId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c",
+      "principalId": "28665ab7-f2f1-4601-914b-79ef611549c9",
+      "principalType": "ServicePrincipal",
+      "principalDisplayName": "aa-contoso-prod-automation",
+      "principalSignInName": null
+    },
+    {
+      "subscriptionId": "9af60039-512d-4915-9ba3-ec30bf241297",
+      "roleAssignmentId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/providers/Microsoft.Authorization/roleAssignments/55dc2645-d1eb-4eb1-b965-d00804333d93",
+      "scope": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297",
+      "roleDefinitionName": "Reader",
+      "roleDefinitionId": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+      "principalId": "7565667b-a041-4de5-9dd7-f7dbb8d76bf9",
+      "principalType": "Group",
+      "principalDisplayName": "SG-Azure-Readers",
+      "principalSignInName": null
+    },
+    {
+      "subscriptionId": "12021807-473f-4603-b8e0-151a7c7c1f66",
+      "roleAssignmentId": "/subscriptions/12021807-473f-4603-b8e0-151a7c7c1f66/providers/Microsoft.Authorization/roleAssignments/d586c1f0-1177-4e87-86a1-bff9ab7ab97c",
+      "scope": "/subscriptions/12021807-473f-4603-b8e0-151a7c7c1f66",
+      "roleDefinitionName": "Owner",
+      "roleDefinitionId": "/subscriptions/12021807-473f-4603-b8e0-151a7c7c1f66/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+      "principalId": "d1f86d10-d866-41da-8baf-4dccd57addf1",
+      "principalType": "User",
+      "principalDisplayName": "Alex Admin (Admin)",
+      "principalSignInName": "adm-alex@contoso.example"
+    },
+    {
+      "subscriptionId": "12021807-473f-4603-b8e0-151a7c7c1f66",
+      "roleAssignmentId": "/subscriptions/12021807-473f-4603-b8e0-151a7c7c1f66/providers/Microsoft.Authorization/roleAssignments/5ec230a2-78f6-4511-9130-b49243ab2b6f",
+      "scope": "/subscriptions/12021807-473f-4603-b8e0-151a7c7c1f66",
+      "roleDefinitionName": "Owner",
+      "roleDefinitionId": "/subscriptions/12021807-473f-4603-b8e0-151a7c7c1f66/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+      "principalId": "953e2934-b257-4543-b5b6-ab87d3213b95",
+      "principalType": "User",
+      "principalDisplayName": "Jamie Apps (Admin)",
+      "principalSignInName": "adm-jamie@contoso.example"
+    },
+    {
+      "subscriptionId": "12021807-473f-4603-b8e0-151a7c7c1f66",
+      "roleAssignmentId": "/subscriptions/12021807-473f-4603-b8e0-151a7c7c1f66/providers/Microsoft.Authorization/roleAssignments/7ef80b4d-1bf7-4a7c-b3e2-0728a73865b3",
+      "scope": "/subscriptions/12021807-473f-4603-b8e0-151a7c7c1f66",
+      "roleDefinitionName": "Contributor",
+      "roleDefinitionId": "/subscriptions/12021807-473f-4603-b8e0-151a7c7c1f66/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c",
+      "principalId": "474d94c9-d156-4ab2-b694-65ab6db65be3",
+      "principalType": "Group",
+      "principalDisplayName": "SG-Developers",
+      "principalSignInName": null
+    },
+    {
+      "subscriptionId": "12021807-473f-4603-b8e0-151a7c7c1f66",
+      "roleAssignmentId": "/subscriptions/12021807-473f-4603-b8e0-151a7c7c1f66/providers/Microsoft.Authorization/roleAssignments/fada5220-f7e1-4730-94be-367e3506b8cf",
+      "scope": "/subscriptions/12021807-473f-4603-b8e0-151a7c7c1f66",
+      "roleDefinitionName": "User Access Administrator",
+      "roleDefinitionId": "/subscriptions/12021807-473f-4603-b8e0-151a7c7c1f66/providers/Microsoft.Authorization/roleDefinitions/18d7d88d-d35e-4fb5-a5c3-7773c20a72d9",
+      "principalId": "8976b762-fcd4-4156-86b6-6cfe1ba3edd5",
+      "principalType": "User",
+      "principalDisplayName": "Taylor Ops (Admin)",
+      "principalSignInName": "adm-taylor@contoso.example"
+    }
+  ]
+}

@@ -1,0 +1,264 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "entra.roleAssignments",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Entra",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:09:43.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?$expand=principal"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "id": "FHn5D0gdy36Wlp12-fohH_LEMCae88RXp7VHbHkvyCg",
+      "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10",
+      "principalId": "bdb694b2-e54c-41d1-b1cd-b4cfdb97990f",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "bdb694b2-e54c-41d1-b1cd-b4cfdb97990f",
+        "principalType": "user",
+        "displayName": "Emergency Access 01",
+        "userPrincipalName": "breakglass01@contoso.onmicrosoft.com",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": null
+      }
+    },
+    {
+      "id": "78QYetZ7fxES7CGXrF9GrrUmro5YUpacfFZ19Dy0ZOM",
+      "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10",
+      "principalId": "2a4088d1-99ef-41e4-ac1b-af469902292a",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "2a4088d1-99ef-41e4-ac1b-af469902292a",
+        "principalType": "user",
+        "displayName": "Emergency Access 02",
+        "userPrincipalName": "breakglass02@contoso.onmicrosoft.com",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": null
+      }
+    },
+    {
+      "id": "7uFRc3wvM0BjYXggODlSlbUxM7AazBaXzSSWF5Q63t4",
+      "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10",
+      "principalId": "d1f86d10-d866-41da-8baf-4dccd57addf1",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "d1f86d10-d866-41da-8baf-4dccd57addf1",
+        "principalType": "user",
+        "displayName": "Alex Admin (Admin)",
+        "userPrincipalName": "adm-alex@contoso.example",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": null
+      }
+    },
+    {
+      "id": "JVQOVSTUOxpr6TsVODcg2LmhqfXGhLPhAbrjohpoQZg",
+      "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10",
+      "principalId": "8976b762-fcd4-4156-86b6-6cfe1ba3edd5",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "8976b762-fcd4-4156-86b6-6cfe1ba3edd5",
+        "principalType": "user",
+        "displayName": "Taylor Ops (Admin)",
+        "userPrincipalName": "adm-taylor@contoso.example",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": null
+      }
+    },
+    {
+      "id": "kiYODzEC0S54nJXjxTaOOSrb1WJDJFMgM8Jmqjn7xgs",
+      "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10",
+      "principalId": "0471c97d-e7da-4777-8f43-b3d600d205ba",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "0471c97d-e7da-4777-8f43-b3d600d205ba",
+        "principalType": "user",
+        "displayName": "Jordan IT",
+        "userPrincipalName": "jordan.it@contoso.example",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": true
+      }
+    },
+    {
+      "id": "meTSMyqjWiogvzJjEa8L_zSIkepHTu6geIWaPoQJD7A",
+      "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10",
+      "principalId": "abb3d027-21fd-461b-a154-1429b103a0e0",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "abb3d027-21fd-461b-a154-1429b103a0e0",
+        "principalType": "user",
+        "displayName": "Casey Exec (Admin)",
+        "userPrincipalName": "adm-casey@contoso.example",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": null
+      }
+    },
+    {
+      "id": "7n_TgxMc03a0sfOZ8qHVtYM34ySMO83Qkp2kkO-rtaE",
+      "roleDefinitionId": "194ae4cb-b126-40b2-bd5b-6091b380977d",
+      "principalId": "9f68d979-e791-4b84-bb7b-78a1f37b98df",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "9f68d979-e791-4b84-bb7b-78a1f37b98df",
+        "principalType": "user",
+        "displayName": "Sam Security (Admin)",
+        "userPrincipalName": "adm-sam@contoso.example",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": null
+      }
+    },
+    {
+      "id": "eEgy4geBOjTyx1hmvfngtaXCdx81Wzd7yEyEqYDRJb8",
+      "roleDefinitionId": "29232cdf-9323-42fd-ade2-1d097af3e4de",
+      "principalId": "c6676463-f0f8-41f6-9564-aa34b5953594",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "c6676463-f0f8-41f6-9564-aa34b5953594",
+        "principalType": "user",
+        "displayName": "Riley Mail (Admin)",
+        "userPrincipalName": "adm-riley@contoso.example",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": null
+      }
+    },
+    {
+      "id": "5D0KWwu9N-lWdWB24fmvLKSaMPZkkiAkdLgWqgcK0yc",
+      "roleDefinitionId": "f28a1f50-f6e7-4571-818b-6a12f2af6b6c",
+      "principalId": "90792978-2084-4416-9135-fc7630e38abb",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "90792978-2084-4416-9135-fc7630e38abb",
+        "principalType": "user",
+        "displayName": "Quinn Sites (Admin)",
+        "userPrincipalName": "adm-quinn@contoso.example",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": null
+      }
+    },
+    {
+      "id": "SJjswzbyhO9V9Rn9Umh9KFkV0QS-oy5JTILkJl4v_Fs",
+      "roleDefinitionId": "9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3",
+      "principalId": "953e2934-b257-4543-b5b6-ab87d3213b95",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "953e2934-b257-4543-b5b6-ab87d3213b95",
+        "principalType": "user",
+        "displayName": "Jamie Apps (Admin)",
+        "userPrincipalName": "adm-jamie@contoso.example",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": null
+      }
+    },
+    {
+      "id": "SQjXOPZMo8M8O8u8kfimjKl-9Wi5F7oT73O0HKgxWDY",
+      "roleDefinitionId": "3a2c62db-5318-420d-8d74-23affee5d9d5",
+      "principalId": "cc0f60d6-5924-41bd-968f-786af7ca2639",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "cc0f60d6-5924-41bd-968f-786af7ca2639",
+        "principalType": "user",
+        "displayName": "Morgan Devices (Admin)",
+        "userPrincipalName": "adm-morgan@contoso.example",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": null
+      }
+    },
+    {
+      "id": "NpHm2y2MVc3DpR536uli1viwQVGTeL6h8hMD4mWYUlc",
+      "roleDefinitionId": "729827e3-9c14-49f7-bb1b-9608f156bbb8",
+      "principalId": "a00f14da-e6e7-41a5-914e-26baef8bf254",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "a00f14da-e6e7-41a5-914e-26baef8bf254",
+        "principalType": "user",
+        "displayName": "Avery Helpdesk",
+        "userPrincipalName": "hd-avery@contoso.example",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": true
+      }
+    },
+    {
+      "id": "xGL2nnU5B15L13_YwFO-RI4165phcWXyH091-0woLoI",
+      "roleDefinitionId": "729827e3-9c14-49f7-bb1b-9608f156bbb8",
+      "principalId": "65e7b77b-acc2-4b4a-805a-87ca8acfb6af",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "65e7b77b-acc2-4b4a-805a-87ca8acfb6af",
+        "principalType": "user",
+        "displayName": "Drew Helpdesk",
+        "userPrincipalName": "hd-drew@contoso.example",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": true
+      }
+    },
+    {
+      "id": "GCi7VXVNB0NZBmLLqbvOBw8yfl1w4eImc_P9AKvY-bI",
+      "roleDefinitionId": "f2ef992c-3afb-46b9-b7cf-a126ee74c451",
+      "principalId": "efea51b4-e4ae-4689-92cc-c386df0df339",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "efea51b4-e4ae-4689-92cc-c386df0df339",
+        "principalType": "user",
+        "displayName": "Pat Auditor",
+        "userPrincipalName": "pat.auditor@contoso.example",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": true
+      }
+    },
+    {
+      "id": "EgHFmqc0z6tOFG0IIlFQdDC0eRZ5A9eoCHOFt_HW0dk",
+      "roleDefinitionId": "d29b2b05-8046-44ba-8758-1e26182fcf32",
+      "principalId": "dc654f6e-23fc-49fb-ab51-d219814d2398",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "dc654f6e-23fc-49fb-ab51-d219814d2398",
+        "principalType": "user",
+        "displayName": "On-Premises Directory Synchronization Service Account",
+        "userPrincipalName": "Sync_AADC01_4f2a9c1e7b3d@contoso.onmicrosoft.com",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": null
+      }
+    },
+    {
+      "id": "gbWdSBSKT8r3DIJp4t1U8KkCBU-qTAjC_2QNaMxOzt0",
+      "roleDefinitionId": "fe930be7-5e62-47db-91af-98c3a49a38b1",
+      "principalId": "6e3077a8-b4a2-4448-901c-4d5d4641bb3e",
+      "directoryScopeId": "/",
+      "principal": {
+        "id": "6e3077a8-b4a2-4448-901c-4d5d4641bb3e",
+        "principalType": "servicePrincipal",
+        "displayName": "Contoso Provisioning Automation",
+        "userPrincipalName": null,
+        "userType": null,
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": null
+      }
+    }
+  ]
+}

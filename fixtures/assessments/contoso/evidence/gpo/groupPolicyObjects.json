@@ -1,0 +1,296 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "gpo.groupPolicyObjects",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "GPO",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T10:01:46.0000000Z",
+  "source": {
+    "system": "GroupPolicy",
+    "operations": [
+      "Get-GPO -All",
+      "Get-GPOReport -ReportType Xml"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "id": "31b2f340-016d-11d2-945f-00c04fb984f9",
+      "displayName": "Default Domain Policy",
+      "domain": "corp.contoso.example",
+      "gpoStatus": "AllSettingsEnabled",
+      "createdTime": "2016-05-11T09:14:02Z",
+      "modifiedTime": "2023-02-06T15:40:18Z",
+      "wmiFilter": null,
+      "links": [
+        {
+          "somPath": "DC=corp,DC=contoso,DC=example",
+          "enabled": true,
+          "enforced": false
+        }
+      ],
+      "settings": [
+        {
+          "scope": "Computer",
+          "category": "AccountPolicy",
+          "name": "MinimumPasswordLength",
+          "value": 8
+        },
+        {
+          "scope": "Computer",
+          "category": "AccountPolicy",
+          "name": "PasswordComplexity",
+          "value": true
+        },
+        {
+          "scope": "Computer",
+          "category": "AccountPolicy",
+          "name": "PasswordHistorySize",
+          "value": 24
+        },
+        {
+          "scope": "Computer",
+          "category": "AccountPolicy",
+          "name": "MaximumPasswordAge",
+          "value": 90
+        },
+        {
+          "scope": "Computer",
+          "category": "AccountPolicy",
+          "name": "LockoutBadCount",
+          "value": 0
+        },
+        {
+          "scope": "Computer",
+          "category": "AccountPolicy",
+          "name": "ClearTextPassword",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": "6ac1786c-016f-11d2-945f-00c04fb984f9",
+      "displayName": "Default Domain Controllers Policy",
+      "domain": "corp.contoso.example",
+      "gpoStatus": "AllSettingsEnabled",
+      "createdTime": "2016-05-11T09:14:02Z",
+      "modifiedTime": "2024-10-01T12:03:45Z",
+      "wmiFilter": null,
+      "links": [
+        {
+          "somPath": "OU=Domain Controllers,DC=corp,DC=contoso,DC=example",
+          "enabled": true,
+          "enforced": false
+        }
+      ],
+      "settings": [
+        {
+          "scope": "Computer",
+          "category": "UserRightsAssignment",
+          "name": "SeDebugPrivilege",
+          "value": [
+            "BUILTIN\\Administrators"
+          ]
+        },
+        {
+          "scope": "Computer",
+          "category": "UserRightsAssignment",
+          "name": "SeRemoteInteractiveLogonRight",
+          "value": [
+            "BUILTIN\\Administrators"
+          ]
+        },
+        {
+          "scope": "Computer",
+          "category": "AuditPolicy",
+          "name": "Audit Credential Validation",
+          "value": "Success and Failure"
+        },
+        {
+          "scope": "Computer",
+          "category": "AuditPolicy",
+          "name": "Audit Security Group Management",
+          "value": "Success"
+        },
+        {
+          "scope": "Computer",
+          "category": "AuditPolicy",
+          "name": "Audit Directory Service Changes",
+          "value": "No Auditing"
+        },
+        {
+          "scope": "Computer",
+          "category": "SecurityOptions",
+          "name": "MACHINE\\System\\CurrentControlSet\\Services\\NTDS\\Parameters\\LDAPServerIntegrity",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "4fbefec7-81bf-4982-9739-7dae3cb682a1",
+      "displayName": "CONTOSO - Workstation Baseline",
+      "domain": "corp.contoso.example",
+      "gpoStatus": "UserSettingsDisabled",
+      "createdTime": "2021-03-22T10:31:57Z",
+      "modifiedTime": "2025-11-19T08:12:30Z",
+      "wmiFilter": null,
+      "links": [
+        {
+          "somPath": "OU=Workstations,OU=Contoso,DC=corp,DC=contoso,DC=example",
+          "enabled": true,
+          "enforced": false
+        }
+      ],
+      "settings": [
+        {
+          "scope": "Computer",
+          "category": "SecurityOptions",
+          "name": "MACHINE\\System\\CurrentControlSet\\Control\\Lsa\\LmCompatibilityLevel",
+          "value": 5
+        },
+        {
+          "scope": "Computer",
+          "category": "SecurityOptions",
+          "name": "MACHINE\\System\\CurrentControlSet\\Control\\Lsa\\RestrictAnonymous",
+          "value": 1
+        },
+        {
+          "scope": "Computer",
+          "category": "RegistryPolicy",
+          "name": "Turn on PowerShell Script Block Logging",
+          "value": "Enabled"
+        },
+        {
+          "scope": "Computer",
+          "category": "RegistryPolicy",
+          "name": "Windows Defender Firewall: Protect all network connections",
+          "value": "Enabled"
+        },
+        {
+          "scope": "Computer",
+          "category": "RegistryValue",
+          "name": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\SecurityProviders\\WDigest\\UseLogonCredential",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "d6d2ba5d-c9fa-4f8f-80b4-2e4d5d579bf8",
+      "displayName": "CONTOSO - Server Baseline",
+      "domain": "corp.contoso.example",
+      "gpoStatus": "UserSettingsDisabled",
+      "createdTime": "2019-07-08T13:05:41Z",
+      "modifiedTime": "2022-04-27T17:22:09Z",
+      "wmiFilter": null,
+      "links": [
+        {
+          "somPath": "OU=Servers,OU=Contoso,DC=corp,DC=contoso,DC=example",
+          "enabled": true,
+          "enforced": false
+        }
+      ],
+      "settings": [
+        {
+          "scope": "Computer",
+          "category": "SecurityOptions",
+          "name": "MACHINE\\System\\CurrentControlSet\\Control\\Lsa\\LmCompatibilityLevel",
+          "value": 3
+        },
+        {
+          "scope": "Computer",
+          "category": "SecurityOptions",
+          "name": "MACHINE\\System\\CurrentControlSet\\Services\\LanmanServer\\Parameters\\RequireSecuritySignature",
+          "value": 0
+        },
+        {
+          "scope": "Computer",
+          "category": "UserRightsAssignment",
+          "name": "SeRemoteInteractiveLogonRight",
+          "value": [
+            "BUILTIN\\Administrators",
+            "BUILTIN\\Remote Desktop Users"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "f8cd2fea-ec19-42ff-a6fb-01d6d17d07e1",
+      "displayName": "CONTOSO - Local Administrators (Legacy GPP)",
+      "domain": "corp.contoso.example",
+      "gpoStatus": "UserSettingsDisabled",
+      "createdTime": "2014-10-02T11:48:20Z",
+      "modifiedTime": "2014-10-02T11:52:07Z",
+      "wmiFilter": null,
+      "links": [
+        {
+          "somPath": "OU=Workstations,OU=Contoso,DC=corp,DC=contoso,DC=example",
+          "enabled": true,
+          "enforced": false
+        }
+      ],
+      "settings": [
+        {
+          "scope": "Computer",
+          "category": "Other",
+          "name": "Preferences: Local Users and Groups",
+          "value": "Configured"
+        }
+      ]
+    },
+    {
+      "id": "76ec5e2a-a6fc-4dec-8ba8-8adaa8bb1bd3",
+      "displayName": "Old - Test Policy (do not use)",
+      "domain": "corp.contoso.example",
+      "gpoStatus": "AllSettingsEnabled",
+      "createdTime": "2018-01-15T16:20:44Z",
+      "modifiedTime": "2018-01-15T16:27:31Z",
+      "wmiFilter": null,
+      "links": [],
+      "settings": [
+        {
+          "scope": "Computer",
+          "category": "RegistryPolicy",
+          "name": "Turn off Windows Defender Antivirus",
+          "value": "Enabled"
+        }
+      ]
+    },
+    {
+      "id": "de88ac55-c592-462a-bb38-cb661b260a0e",
+      "displayName": "CONTOSO - PowerShell Logging (Pilot)",
+      "domain": "corp.contoso.example",
+      "gpoStatus": "UserSettingsDisabled",
+      "createdTime": "2026-04-02T09:00:12Z",
+      "modifiedTime": "2026-04-02T09:07:40Z",
+      "wmiFilter": "Windows 11 only",
+      "links": [
+        {
+          "somPath": "OU=Pilot,OU=Workstations,OU=Contoso,DC=corp,DC=contoso,DC=example",
+          "enabled": true,
+          "enforced": false
+        }
+      ],
+      "settings": [
+        {
+          "scope": "Computer",
+          "category": "RegistryPolicy",
+          "name": "Turn on PowerShell Script Block Logging",
+          "value": "Enabled"
+        },
+        {
+          "scope": "Computer",
+          "category": "RegistryPolicy",
+          "name": "Turn on Module Logging",
+          "value": "Enabled"
+        }
+      ]
+    }
+  ]
+}

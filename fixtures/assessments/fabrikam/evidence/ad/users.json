@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "ad.users",
+  "assessmentId": "8e9699f3-6a2b-4860-9190-a6f8afe9be3c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "AD",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-05T14:11:18.0000000Z",
+  "source": {
+    "system": "ActiveDirectory",
+    "operations": [
+      "Get-ADUser -LDAPFilter \"(|(adminCount=1)(servicePrincipalName=*)(userAccountControl:1.2.840.113556.1.4.803:=4194304)(userAccountControl:1.2.840.113556.1.4.803:=32)(userAccountControl:1.2.840.113556.1.4.803:=128)(userAccountControl:1.2.840.113556.1.4.803:=524288))\""
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": {
+    "domains": [
+      {
+        "domain": "corp.fabrikam.example",
+        "totalUsers": 64,
+        "enabledUsers": 58,
+        "protectedUsersGroupSids": [
+          "S-1-5-21-4444444444-5555555555-6666666666-525"
+        ]
+      }
+    ],
+    "users": [
+      {
+        "domain": "corp.fabrikam.example",
+        "samAccountName": "Administrator",
+        "sid": "S-1-5-21-4444444444-5555555555-6666666666-500",
+        "enabled": false,
+        "adminCount": true,
+        "lastLogonTimestamp": "2025-02-11T10:00:00Z",
+        "pwdLastSet": "2025-02-11T09:55:00Z",
+        "whenCreated": "2021-06-01T08:00:00Z",
+        "passwordNeverExpires": false,
+        "passwordNotRequired": false,
+        "doesNotRequirePreAuth": false,
+        "allowReversiblePasswordEncryption": false,
+        "accountNotDelegated": true,
+        "trustedForDelegation": false,
+        "trustedToAuthForDelegation": false,
+        "servicePrincipalNameCount": 0,
+        "memberOfProtectedUsers": false
+      },
+      {
+        "domain": "corp.fabrikam.example",
+        "samAccountName": "adm-lee",
+        "sid": "S-1-5-21-4444444444-5555555555-6666666666-1103",
+        "enabled": true,
+        "adminCount": true,
+        "lastLogonTimestamp": "2026-09-05T11:20:00Z",
+        "pwdLastSet": "2026-06-30T08:15:00Z",
+        "whenCreated": "2021-06-01T08:30:00Z",
+        "passwordNeverExpires": false,
+        "passwordNotRequired": false,
+        "doesNotRequirePreAuth": false,
+        "allowReversiblePasswordEncryption": false,
+        "accountNotDelegated": true,
+        "trustedForDelegation": false,
+        "trustedToAuthForDelegation": false,
+        "servicePrincipalNameCount": 0,
+        "memberOfProtectedUsers": true
+      },
+      {
+        "domain": "corp.fabrikam.example",
+        "samAccountName": "svc-fab-web",
+        "sid": "S-1-5-21-4444444444-5555555555-6666666666-1140",
+        "enabled": true,
+        "adminCount": false,
+        "lastLogonTimestamp": "2026-09-05T02:20:00Z",
+        "pwdLastSet": "2026-05-04T11:00:00Z",
+        "whenCreated": "2022-03-14T13:00:00Z",
+        "passwordNeverExpires": false,
+        "passwordNotRequired": false,
+        "doesNotRequirePreAuth": false,
+        "allowReversiblePasswordEncryption": false,
+        "accountNotDelegated": false,
+        "trustedForDelegation": false,
+        "trustedToAuthForDelegation": false,
+        "servicePrincipalNameCount": 1,
+        "memberOfProtectedUsers": false
+      }
+    ]
+  }
+}

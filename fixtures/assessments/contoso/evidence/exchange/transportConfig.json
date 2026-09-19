@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "exchange.transportConfig",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Exchange",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:39:50.0000000Z",
+  "source": {
+    "system": "ExchangeOnline",
+    "operations": [
+      "Get-TransportConfig"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": {
+    "smtpClientAuthenticationDisabled": true
+  }
+}

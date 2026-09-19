@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "ad.forest",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "AD",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:54:50.0000000Z",
+  "source": {
+    "system": "ActiveDirectory",
+    "operations": [
+      "Get-ADForest",
+      "Get-ADOptionalFeature -Filter \"name -eq 'Recycle Bin Feature'\""
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": {
+    "name": "corp.contoso.example",
+    "forestMode": "Windows2016Forest",
+    "rootDomain": "corp.contoso.example",
+    "domains": [
+      "corp.contoso.example"
+    ],
+    "recycleBinEnabled": true
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "entra.authenticationMethodsPolicy",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Entra",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:35:11.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/policies/authenticationMethodsPolicy"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": {
+    "policyMigrationState": "migrationInProgress",
+    "authenticationMethodConfigurations": [
+      {
+        "id": "Fido2",
+        "state": "enabled",
+        "includeTargets": [
+          {
+            "targetType": "group",
+            "id": "all_users"
+          }
+        ]
+      },
+      {
+        "id": "MicrosoftAuthenticator",
+        "state": "enabled",
+        "includeTargets": [
+          {
+            "targetType": "group",
+            "id": "all_users"
+          }
+        ]
+      },
+      {
+        "id": "Sms",
+        "state": "enabled",
+        "includeTargets": [
+          {
+            "targetType": "group",
+            "id": "all_users"
+          }
+        ]
+      },
+      {
+        "id": "TemporaryAccessPass",
+        "state": "enabled",
+        "includeTargets": [
+          {
+            "targetType": "group",
+            "id": "b5b99c62-be74-4538-8c64-657c3e053cbf"
+          }
+        ]
+      },
+      {
+        "id": "SoftwareOath",
+        "state": "enabled",
+        "includeTargets": [
+          {
+            "targetType": "group",
+            "id": "all_users"
+          }
+        ]
+      },
+      {
+        "id": "Voice",
+        "state": "disabled",
+        "includeTargets": []
+      },
+      {
+        "id": "Email",
+        "state": "enabled",
+        "includeTargets": [
+          {
+            "targetType": "group",
+            "id": "all_users"
+          }
+        ]
+      },
+      {
+        "id": "X509Certificate",
+        "state": "disabled",
+        "includeTargets": []
+      }
+    ]
+  }
+}
