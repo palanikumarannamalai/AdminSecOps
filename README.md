@@ -3,14 +3,23 @@
 **You're the admin. Are you secure?**
 Security assessment and remediation guidance for Microsoft administrators.
 
+AdminSecOps is a free, independent community project by Palanikumar Annamalai. It is not
+affiliated with or endorsed by Microsoft, QatarEnergy or the author's employer.
+
 AdminSecOps answers: *Is my Microsoft environment secure, what have I missed, and what
 should I fix first?* It collects configuration evidence with read-only PowerShell
 collectors, verifies it, evaluates it with deterministic and tested controls, prioritizes
 the findings, and tells you how to fix, roll back and verify each one - all on your own
 machine.
 
-> Status: **0.1.0 development milestone** (free, local-only). See
+> Status: **0.1.0 public beta** (free, local-only). Test in a non-production environment
+> first and review all requested permissions before signing in. See
 > [KNOWN-LIMITATIONS](docs/KNOWN-LIMITATIONS.md) before relying on results.
+
+AdminSecOps performs a point-in-time configuration assessment. It is not a penetration
+test, compliance certification or guarantee of security. The collectors are read-only;
+remediation guidance may contain commands that change configuration and must be reviewed,
+approved and tested separately before use.
 
 ## How it works
 
@@ -116,3 +125,7 @@ See [DEVELOPMENT](docs/DEVELOPMENT.md), [TESTING](docs/TESTING.md),
 Evidence packages and reports describe your security weaknesses and contain account
 identifiers. Keep them in an access-controlled location and delete them when finished.
 Never commit them to source control.
+
+Do not include tenant names, identifiers, credentials, access tokens, logs, screenshots or
+raw assessment output in a public GitHub issue. See [SECURITY](SECURITY.md) for reporting
+security concerns and [PRIVACY](docs/PRIVACY.md) for the local data-handling model.

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "AdminSecOps - security assessment and remediation guidance for Microsoft administrators.",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=22.22.0"

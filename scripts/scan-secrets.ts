@@ -45,48 +45,54 @@ const ALLOWED_REAL_DOMAINS = [
   /^spf\.protection\.outlook\.com$/i,
 ];
 
-const files = execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8' }).split('\0').filter(Boolean);
+const repositoryFiles = execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8' }).split('\0').filter(Boolean);
+const toolPrefix = repositoryFiles.some((file) => file.startsWith('tools/adminsecops/'))
+  ? 'tools/adminsecops/'
+  : '';
+const files = repositoryFiles
+  .filter((file) => !toolPrefix || file.startsWith(toolPrefix))
+  .map((file) => ({ repositoryPath: file, toolPath: toolPrefix ? file.slice(toolPrefix.length) : file }));
 const problems: string[] = [];
 
-for (const file of files) {
-  if (FORBIDDEN_PATHS.some((p) => p.test(file)) && !file.endsWith('.fixture.zip')) {
-    problems.push(`${file}: assessment output or key material must not be committed`);
+for (const { repositoryPath, toolPath } of files) {
+  if (FORBIDDEN_PATHS.some((p) => p.test(toolPath)) && !toolPath.endsWith('.fixture.zip')) {
+    problems.push(`${toolPath}: assessment output or key material must not be committed`);
     continue;
   }
   let size: number;
   try {
-    size = statSync(file).size;
+    size = statSync(repositoryPath).size;
   } catch {
     continue; // deleted in the working tree
   }
   if (size > 20 * 1024 * 1024) continue;
-  const buffer = readFileSync(file);
+  const buffer = readFileSync(repositoryPath);
   if (buffer.includes(0)) continue; // binary
   const text = buffer.toString('utf8');
 
-  if (!PATTERN_ALLOWLIST.some((p) => p.test(file))) {
+  if (!PATTERN_ALLOWLIST.some((p) => p.test(toolPath))) {
     for (const { id, pattern } of TEXT_PATTERNS) {
-      if (pattern.test(text)) problems.push(`${file}: matches secret pattern '${id}'`);
+      if (pattern.test(text)) problems.push(`${toolPath}: matches secret pattern '${id}'`);
     }
   }
 
-  if (file.endsWith('.json') && (file.startsWith('fixtures/') || file.startsWith('collectors/'))) {
+  if (toolPath.endsWith('.json') && (toolPath.startsWith('fixtures/') || toolPath.startsWith('collectors/'))) {
     // Raw replay responses intentionally include fictional secret-bearing properties
     // (e.g. passwordCredentials.hint) to prove the collector drops or blocks them;
     // the collector's own output is scanned by the Pester and contract tests instead.
-    const replayInput = file.startsWith('collectors/powershell/tests/replay/');
+    const replayInput = toolPath.startsWith('collectors/powershell/tests/replay/');
     let parsed: unknown;
     try {
-      parsed = safeJsonParse(buffer, { label: file });
+      parsed = safeJsonParse(buffer, { label: toolPath });
     } catch {
-      problems.push(`${file}: invalid JSON`);
+      problems.push(`${toolPath}: invalid JSON`);
     }
     if (parsed !== undefined && !replayInput) {
-      for (const f of findSensitiveContent(parsed)) problems.push(`${file}: ${f.path} (${f.rule})`);
+      for (const f of findSensitiveContent(parsed)) problems.push(`${toolPath}: ${f.path} (${f.rule})`);
     }
     for (const match of text.matchAll(FIXTURE_DOMAIN)) {
       const domain = match[0].toLowerCase();
-      if (!ALLOWED_REAL_DOMAINS.some((p) => p.test(domain))) problems.push(`${file}: non-fictional domain '${domain}' in sample data`);
+      if (!ALLOWED_REAL_DOMAINS.some((p) => p.test(domain))) problems.push(`${toolPath}: non-fictional domain '${domain}' in sample data`);
     }
   }
 }
@@ -95,4 +101,4 @@ if (problems.length > 0) {
   process.stderr.write(`Secret / hygiene scan found ${problems.length} problem(s):\n${[...new Set(problems)].map((p) => `  - ${p}`).join('\n')}\n`);
   process.exit(1);
 }
-process.stdout.write(`Secret / hygiene scan passed (${files.length} tracked files).\n`);
+process.stdout.write(`Secret / hygiene scan passed (${files.length} AdminSecOps tracked files).\n`);
