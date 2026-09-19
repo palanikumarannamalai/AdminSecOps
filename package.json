@@ -31,7 +31,8 @@
     "demo": "npm run build && tsx scripts/demo.ts",
     "scan:secrets": "tsx scripts/scan-secrets.ts",
     "audit:deps": "npm audit --omit=dev",
-    "verify": "npm run lint && npm run typecheck && npm run test && npm run build && npm run scan:secrets"
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build && npm run scan:secrets",
+    "docs:generate": "tsx scripts/generate-docs.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
