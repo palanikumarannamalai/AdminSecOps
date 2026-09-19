@@ -11,3 +11,4 @@ export * from './derived/windows-lifecycle.js';
 export * from './derived/adcs.js';
 export * from './derived/group-policy.js';
 export * from './derived/windows-servicing.js';
+export * from './derived/ad-parsing.js';

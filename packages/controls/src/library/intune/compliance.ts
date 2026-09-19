@@ -199,11 +199,9 @@ export const intunePlatformCoverage = defineControl({
         `${plural(unassigned.length, 'compliance policy', 'compliance policies')} have no assignments: ${unassigned.map((p) => p.displayName).join(', ')}.`,
       );
     }
-    if ((overview.linuxCount ?? 0) > 0) {
-      notes.push(
-        `${plural(overview.linuxCount ?? 0, 'Linux device')} are enrolled; Linux compliance policies are created in the settings catalog and are not evaluated by this control.`,
-      );
-    }
+    notes.push(
+      'Linux devices are not counted by the Intune managed device overview and Linux compliance policies (settings catalog) are not evaluated by this control.',
+    );
     if (uncovered.length > 0) {
       return fail({
         reason: `${plural(uncovered.length, 'platform')} with enrolled devices ${uncovered.length === 1 ? 'has' : 'have'} no assigned compliance policy: ${uncovered.map((p) => PLATFORM_LABELS[p]).join(', ')}.`,
