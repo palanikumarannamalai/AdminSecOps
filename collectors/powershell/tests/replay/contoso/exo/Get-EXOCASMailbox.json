@@ -1,0 +1,23 @@
+[
+  {
+    "Identity": "aaaa0001-0000-4000-8000-000000000001",
+    "Name": "adele.admin",
+    "PrimarySmtpAddress": "adele.admin@contoso.example",
+    "SmtpClientAuthenticationDisabled": null,
+    "ExternalDirectoryObjectId": "aaaa0001-0000-4000-8000-000000000001"
+  },
+  {
+    "Identity": "aaaa0001-0000-4000-8000-000000000020",
+    "Name": "scanner",
+    "PrimarySmtpAddress": "scanner@contoso.example",
+    "SmtpClientAuthenticationDisabled": false,
+    "ExternalDirectoryObjectId": "aaaa0001-0000-4000-8000-000000000020"
+  },
+  {
+    "Identity": "aaaa0001-0000-4000-8000-000000000004",
+    "Name": "cara.user",
+    "PrimarySmtpAddress": "cara.user@contoso.example",
+    "SmtpClientAuthenticationDisabled": true,
+    "ExternalDirectoryObjectId": "aaaa0001-0000-4000-8000-000000000004"
+  }
+]

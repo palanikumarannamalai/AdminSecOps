@@ -1,0 +1,39 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users(id,userPrincipalName,accountEnabled,createdDateTime,externalUserState,signInActivity)",
+  "value": [
+    {
+      "id": "aaaa0002-0000-4000-8000-000000000001",
+      "userPrincipalName": "pat_partner.example#EXT#@contoso-example.onmicrosoft.com",
+      "accountEnabled": true,
+      "createdDateTime": "2022-02-02T10:00:00Z",
+      "externalUserState": "Accepted",
+      "signInActivity": {
+        "lastSignInDateTime": "2026-08-28T07:15:00Z",
+        "lastSignInRequestId": "00000000-1111-4000-8000-000000000001",
+        "lastNonInteractiveSignInDateTime": "2026-08-29T07:15:00Z",
+        "lastNonInteractiveSignInRequestId": "00000000-1111-4000-8000-000000000002",
+        "lastSuccessfulSignInDateTime": "2026-08-28T07:15:00Z",
+        "lastSuccessfulSignInRequestId": "00000000-1111-4000-8000-000000000003"
+      }
+    },
+    {
+      "id": "aaaa0002-0000-4000-8000-000000000002",
+      "userPrincipalName": "old_vendor.example#EXT#@contoso-example.onmicrosoft.com",
+      "accountEnabled": true,
+      "createdDateTime": "2020-05-05T10:00:00Z",
+      "externalUserState": "PendingAcceptance",
+      "signInActivity": null
+    },
+    {
+      "id": "aaaa0002-0000-4000-8000-000000000003",
+      "userPrincipalName": "sam_supplier.example#EXT#@contoso-example.onmicrosoft.com",
+      "accountEnabled": false,
+      "createdDateTime": "2021-09-09T10:00:00Z",
+      "externalUserState": "Accepted",
+      "signInActivity": {
+        "lastSignInDateTime": "2024-01-15T11:00:00Z",
+        "lastNonInteractiveSignInDateTime": null
+      }
+    }
+  ]
+}

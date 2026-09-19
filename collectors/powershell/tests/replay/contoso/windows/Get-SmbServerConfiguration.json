@@ -1,0 +1,9 @@
+[
+  {
+    "EnableSMB1Protocol": false,
+    "EnableSMB2Protocol": true,
+    "RequireSecuritySignature": false,
+    "EnableSecuritySignature": false,
+    "EncryptData": false
+  }
+]

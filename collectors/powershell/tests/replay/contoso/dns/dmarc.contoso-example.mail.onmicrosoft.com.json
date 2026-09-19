@@ -1,0 +1,7 @@
+{
+  "__replayError": {
+    "statusCode": 0,
+    "errorCode": "DnsServerFailure",
+    "message": "The DNS server did not respond (replayed timeout)."
+  }
+}

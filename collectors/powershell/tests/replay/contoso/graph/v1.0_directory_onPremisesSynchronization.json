@@ -1,0 +1,7 @@
+{
+  "__replayError": {
+    "statusCode": 403,
+    "errorCode": "Authorization_RequestDenied",
+    "message": "Insufficient privileges to complete the operation."
+  }
+}

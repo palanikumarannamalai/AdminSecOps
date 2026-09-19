@@ -1,0 +1,105 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#roleManagement/directory/roleDefinitions",
+  "value": [
+    {
+      "id": "62e90394-69f5-4237-9190-012177145e10",
+      "description": "Global Administrator role.",
+      "displayName": "Global Administrator",
+      "isBuiltIn": true,
+      "isEnabled": true,
+      "resourceScopes": [
+        "/"
+      ],
+      "templateId": "62e90394-69f5-4237-9190-012177145e10",
+      "version": "1",
+      "rolePermissions": [
+        {
+          "allowedResourceActions": [
+            "microsoft.directory/users/standard/read"
+          ],
+          "condition": null
+        }
+      ]
+    },
+    {
+      "id": "e8611ab8-c189-46e8-94e1-60213ab1f814",
+      "description": "Privileged Role Administrator role.",
+      "displayName": "Privileged Role Administrator",
+      "isBuiltIn": true,
+      "isEnabled": true,
+      "resourceScopes": [
+        "/"
+      ],
+      "templateId": "e8611ab8-c189-46e8-94e1-60213ab1f814",
+      "version": "1",
+      "rolePermissions": [
+        {
+          "allowedResourceActions": [
+            "microsoft.directory/users/standard/read"
+          ],
+          "condition": null
+        }
+      ]
+    },
+    {
+      "id": "194ae4cb-b126-40b2-bd5b-6091b380977d",
+      "description": "Security Administrator role.",
+      "displayName": "Security Administrator",
+      "isBuiltIn": true,
+      "isEnabled": true,
+      "resourceScopes": [
+        "/"
+      ],
+      "templateId": "194ae4cb-b126-40b2-bd5b-6091b380977d",
+      "version": "1",
+      "rolePermissions": [
+        {
+          "allowedResourceActions": [
+            "microsoft.directory/users/standard/read"
+          ],
+          "condition": null
+        }
+      ]
+    },
+    {
+      "id": "f2ef992c-3afb-46b9-b7cf-a126ee74c451",
+      "description": "Global Reader role.",
+      "displayName": "Global Reader",
+      "isBuiltIn": true,
+      "isEnabled": true,
+      "resourceScopes": [
+        "/"
+      ],
+      "templateId": "f2ef992c-3afb-46b9-b7cf-a126ee74c451",
+      "version": "1",
+      "rolePermissions": [
+        {
+          "allowedResourceActions": [
+            "microsoft.directory/users/standard/read"
+          ],
+          "condition": null
+        }
+      ]
+    },
+    {
+      "id": "9b000001-0000-4000-8000-000000000001",
+      "description": "Contoso Helpdesk Tier 1 role.",
+      "displayName": "Contoso Helpdesk Tier 1",
+      "isBuiltIn": false,
+      "isEnabled": true,
+      "resourceScopes": [
+        "/"
+      ],
+      "templateId": "9b000001-0000-4000-8000-000000000001",
+      "version": "1",
+      "rolePermissions": [
+        {
+          "allowedResourceActions": [
+            "microsoft.directory/users/standard/read"
+          ],
+          "condition": null
+        }
+      ]
+    }
+  ]
+}

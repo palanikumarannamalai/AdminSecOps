@@ -1,0 +1,30 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#servicePrincipals(id,appId,displayName,appRoles)/$entity",
+  "id": "cccc0001-0000-4000-8000-0000000000aa",
+  "appId": "00000003-0000-0000-c000-000000000000",
+  "displayName": "Microsoft Graph",
+  "appRoles": [
+    {
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "description": "Allows the app to read data in your organization's directory.",
+      "displayName": "Read directory data",
+      "id": "7ab1d382-f21e-4acd-a863-ba3e13f7da61",
+      "isEnabled": true,
+      "origin": "Application",
+      "value": "Directory.Read.All"
+    },
+    {
+      "allowedMemberTypes": [
+        "Application"
+      ],
+      "description": "Allows the app to create, read, update, and delete mail in all mailboxes.",
+      "displayName": "Read and write mail in all mailboxes",
+      "id": "e2a3a72e-5f79-4c64-b1b1-878b674786c9",
+      "isEnabled": true,
+      "origin": "Application",
+      "value": "Mail.ReadWrite"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "records": [
+    "v=spf1 include:spf.protection.outlook.com -all",
+    "contoso-site-verification=replay-fixture-0001"
+  ]
+}

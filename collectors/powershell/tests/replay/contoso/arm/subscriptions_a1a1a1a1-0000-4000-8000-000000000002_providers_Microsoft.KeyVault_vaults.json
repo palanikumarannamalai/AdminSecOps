@@ -1,0 +1,7 @@
+{
+  "__replayError": {
+    "statusCode": 403,
+    "errorCode": "AuthorizationFailed",
+    "message": "The client does not have authorization to perform action 'Microsoft.KeyVault/vaults/read' over scope '/subscriptions/a1a1a1a1-0000-4000-8000-000000000002' or the scope is invalid."
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#directoryObjects(id,displayName,userPrincipalName)/$entity",
+  "@odata.type": "#microsoft.graph.group",
+  "id": "bbbb0001-0000-4000-8000-000000000001",
+  "displayName": "Contoso Security Admins",
+  "userPrincipalName": null
+}

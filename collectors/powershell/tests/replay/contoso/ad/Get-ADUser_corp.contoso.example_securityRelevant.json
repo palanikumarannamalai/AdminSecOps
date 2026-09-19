@@ -1,0 +1,100 @@
+[
+  {
+    "SamAccountName": "Administrator",
+    "SID": "S-1-5-21-1111111111-2222222222-3333333333-500",
+    "Enabled": true,
+    "adminCount": 1,
+    "lastLogonTimestamp": 134000000000000000,
+    "pwdLastSet": 132000000000000000,
+    "whenCreated": "2018-01-01T10:00:00Z",
+    "userAccountControl": 66048,
+    "servicePrincipalName": [],
+    "DistinguishedName": "CN=Administrator,OU=Accounts,DC=corp,DC=contoso,DC=example",
+    "ObjectClass": "user"
+  },
+  {
+    "SamAccountName": "adm-adele",
+    "SID": "S-1-5-21-1111111111-2222222222-3333333333-1104",
+    "Enabled": true,
+    "adminCount": 1,
+    "lastLogonTimestamp": 134010000000000000,
+    "pwdLastSet": 133900000000000000,
+    "whenCreated": "2020-02-02T10:00:00Z",
+    "userAccountControl": 512,
+    "servicePrincipalName": [],
+    "DistinguishedName": "CN=adm-adele,OU=Accounts,DC=corp,DC=contoso,DC=example",
+    "ObjectClass": "user"
+  },
+  {
+    "SamAccountName": "adm-ben",
+    "SID": "S-1-5-21-1111111111-2222222222-3333333333-1105",
+    "Enabled": false,
+    "adminCount": 1,
+    "lastLogonTimestamp": 0,
+    "pwdLastSet": 133000000000000000,
+    "whenCreated": "2020-02-03T10:00:00Z",
+    "userAccountControl": 514,
+    "servicePrincipalName": [],
+    "DistinguishedName": "CN=adm-ben,OU=Accounts,DC=corp,DC=contoso,DC=example",
+    "ObjectClass": "user"
+  },
+  {
+    "SamAccountName": "svc-backup",
+    "SID": "S-1-5-21-1111111111-2222222222-3333333333-1120",
+    "Enabled": true,
+    "adminCount": 1,
+    "lastLogonTimestamp": 134005000000000000,
+    "pwdLastSet": 131000000000000000,
+    "whenCreated": "2019-05-05T10:00:00Z",
+    "userAccountControl": 66048,
+    "servicePrincipalName": [
+      "backup/app01.corp.contoso.example"
+    ],
+    "DistinguishedName": "CN=svc-backup,OU=Accounts,DC=corp,DC=contoso,DC=example",
+    "ObjectClass": "user"
+  },
+  {
+    "SamAccountName": "svc-sql",
+    "SID": "S-1-5-21-1111111111-2222222222-3333333333-1121",
+    "Enabled": true,
+    "adminCount": null,
+    "lastLogonTimestamp": 134005000000000000,
+    "pwdLastSet": 130000000000000000,
+    "whenCreated": "2018-06-06T10:00:00Z",
+    "userAccountControl": 590336,
+    "servicePrincipalName": [
+      "MSSQLSvc/sql01.corp.contoso.example:1433",
+      "MSSQLSvc/sql01.corp.contoso.example"
+    ],
+    "DistinguishedName": "CN=svc-sql,OU=Accounts,DC=corp,DC=contoso,DC=example",
+    "ObjectClass": "user"
+  },
+  {
+    "SamAccountName": "legacy-app",
+    "SID": "S-1-5-21-1111111111-2222222222-3333333333-1122",
+    "Enabled": true,
+    "adminCount": null,
+    "lastLogonTimestamp": 0,
+    "pwdLastSet": 0,
+    "whenCreated": "2016-07-07T10:00:00Z",
+    "userAccountControl": 4260384,
+    "servicePrincipalName": [],
+    "DistinguishedName": "CN=legacy-app,OU=Accounts,DC=corp,DC=contoso,DC=example",
+    "ObjectClass": "user"
+  },
+  {
+    "SamAccountName": "krbtgt",
+    "SID": "S-1-5-21-1111111111-2222222222-3333333333-502",
+    "Enabled": false,
+    "adminCount": 1,
+    "lastLogonTimestamp": 0,
+    "pwdLastSet": 131500000000000000,
+    "whenCreated": "2018-01-01T10:00:00Z",
+    "userAccountControl": 514,
+    "servicePrincipalName": [
+      "kadmin/changepw"
+    ],
+    "DistinguishedName": "CN=krbtgt,OU=Accounts,DC=corp,DC=contoso,DC=example",
+    "ObjectClass": "user"
+  }
+]

@@ -1,0 +1,9 @@
+[
+  {
+    "Name": "APP01",
+    "DNSHostName": "app01",
+    "Domain": "corp.contoso.example",
+    "PartOfDomain": true,
+    "Manufacturer": "Contoso Virtual Hardware"
+  }
+]

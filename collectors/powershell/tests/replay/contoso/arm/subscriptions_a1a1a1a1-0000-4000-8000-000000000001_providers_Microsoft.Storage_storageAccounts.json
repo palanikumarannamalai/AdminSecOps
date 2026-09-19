@@ -1,0 +1,116 @@
+{
+  "value": [
+    {
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "kind": "StorageV2",
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000001/resourceGroups/rg-prod-app/providers/Microsoft.Storage/storageAccounts/stcontosoprodapp01",
+      "name": "stcontosoprodapp01",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "westeurope",
+      "tags": {},
+      "properties": {
+        "dnsEndpointType": "Standard",
+        "defaultToOAuthAuthentication": false,
+        "publicNetworkAccess": "Enabled",
+        "keyCreationTime": {
+          "key1": "2024-01-01T00:00:00.0000000Z",
+          "key2": "2024-01-01T00:00:00.0000000Z"
+        },
+        "allowCrossTenantReplication": false,
+        "minimumTlsVersion": "TLS1_2",
+        "allowBlobPublicAccess": false,
+        "allowSharedKeyAccess": false,
+        "networkAcls": {
+          "ipv6Rules": [],
+          "bypass": "AzureServices",
+          "virtualNetworkRules": [],
+          "ipRules": [
+            {
+              "value": "198.51.100.0/24",
+              "action": "Allow"
+            }
+          ],
+          "defaultAction": "Deny"
+        },
+        "supportsHttpsTrafficOnly": true,
+        "encryption": {
+          "requireInfrastructureEncryption": false,
+          "services": {
+            "blob": {
+              "keyType": "Account",
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        },
+        "accessTier": "Hot",
+        "provisioningState": "Succeeded",
+        "creationTime": "2023-03-03T03:03:03.0000000Z",
+        "primaryEndpoints": {
+          "blob": "https://stcontosoprodapp01.blob.core.windows.net/"
+        },
+        "primaryLocation": "westeurope",
+        "statusOfPrimary": "available"
+      }
+    },
+    {
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "kind": "StorageV2",
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000001/resourceGroups/rg-prod-data/providers/Microsoft.Storage/storageAccounts/stcontosoproddata01",
+      "name": "stcontosoproddata01",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "westeurope",
+      "tags": {},
+      "properties": {
+        "dnsEndpointType": "Standard",
+        "defaultToOAuthAuthentication": false,
+        "publicNetworkAccess": "Enabled",
+        "keyCreationTime": {
+          "key1": "2024-01-01T00:00:00.0000000Z",
+          "key2": "2024-01-01T00:00:00.0000000Z"
+        },
+        "allowCrossTenantReplication": false,
+        "minimumTlsVersion": "TLS1_0",
+        "allowBlobPublicAccess": true,
+        "allowSharedKeyAccess": true,
+        "networkAcls": {
+          "ipv6Rules": [],
+          "bypass": "AzureServices",
+          "virtualNetworkRules": [],
+          "ipRules": [
+            {
+              "value": "198.51.100.0/24",
+              "action": "Allow"
+            }
+          ],
+          "defaultAction": "Allow"
+        },
+        "supportsHttpsTrafficOnly": true,
+        "encryption": {
+          "requireInfrastructureEncryption": false,
+          "services": {
+            "blob": {
+              "keyType": "Account",
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        },
+        "accessTier": "Hot",
+        "provisioningState": "Succeeded",
+        "creationTime": "2023-03-03T03:03:03.0000000Z",
+        "primaryEndpoints": {
+          "blob": "https://stcontosoproddata01.blob.core.windows.net/"
+        },
+        "primaryLocation": "westeurope",
+        "statusOfPrimary": "available"
+      }
+    }
+  ]
+}

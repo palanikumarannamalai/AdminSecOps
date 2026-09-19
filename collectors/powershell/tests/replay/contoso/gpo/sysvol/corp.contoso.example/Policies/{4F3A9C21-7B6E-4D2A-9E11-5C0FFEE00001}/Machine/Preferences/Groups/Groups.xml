@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Groups clsid="{3125E937-EB16-4b4c-9934-544FC6D24D26}">
+  <User clsid="{DF5F1855-51E5-4d24-8B1A-D9BDE98BA1D1}" name="LocalSupport" image="2" changed="2019-03-03 10:00:00" uid="{A0000000-0000-4000-8000-000000000001}">
+    <Properties action="U" newName="" fullName="Local support" description="" cpassword="REPLAYFIXTUREONLYnotarealvalue0000000000000" changeLogon="0" noChange="0" neverExpires="1" acctDisabled="0" userName="LocalSupport"/>
+  </User>
+</Groups>

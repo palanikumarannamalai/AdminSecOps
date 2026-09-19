@@ -1,0 +1,16 @@
+[
+  {
+    "Identity": "Default",
+    "Name": "Default",
+    "IsDefault": true,
+    "AutoForwardingMode": "Automatic",
+    "RecipientLimitExternalPerHour": 0
+  },
+  {
+    "Identity": "Allow forwarding - Finance",
+    "Name": "Allow forwarding - Finance",
+    "IsDefault": false,
+    "AutoForwardingMode": "On",
+    "RecipientLimitExternalPerHour": 500
+  }
+]

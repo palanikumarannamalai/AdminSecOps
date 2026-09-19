@@ -1,0 +1,64 @@
+{
+  "value": [
+    {
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000002/providers/Microsoft.Security/pricings/VirtualMachines",
+      "name": "VirtualMachines",
+      "type": "Microsoft.Security/pricings",
+      "properties": {
+        "pricingTier": "Free",
+        "subPlan": null,
+        "freeTrialRemainingTime": "PT0S",
+        "enablementTime": "2024-01-01T00:00:00Z",
+        "deprecated": false
+      }
+    },
+    {
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000002/providers/Microsoft.Security/pricings/StorageAccounts",
+      "name": "StorageAccounts",
+      "type": "Microsoft.Security/pricings",
+      "properties": {
+        "pricingTier": "Free",
+        "subPlan": null,
+        "freeTrialRemainingTime": "PT0S",
+        "enablementTime": "2024-01-01T00:00:00Z",
+        "deprecated": false
+      }
+    },
+    {
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000002/providers/Microsoft.Security/pricings/KeyVaults",
+      "name": "KeyVaults",
+      "type": "Microsoft.Security/pricings",
+      "properties": {
+        "pricingTier": "Free",
+        "subPlan": null,
+        "freeTrialRemainingTime": "PT0S",
+        "enablementTime": "2024-01-01T00:00:00Z",
+        "deprecated": false
+      }
+    },
+    {
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000002/providers/Microsoft.Security/pricings/Arm",
+      "name": "Arm",
+      "type": "Microsoft.Security/pricings",
+      "properties": {
+        "pricingTier": "Free",
+        "subPlan": null,
+        "freeTrialRemainingTime": "PT0S",
+        "enablementTime": "2024-01-01T00:00:00Z",
+        "deprecated": false
+      }
+    },
+    {
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000002/providers/Microsoft.Security/pricings/CloudPosture",
+      "name": "CloudPosture",
+      "type": "Microsoft.Security/pricings",
+      "properties": {
+        "pricingTier": "Free",
+        "subPlan": null,
+        "freeTrialRemainingTime": "PT0S",
+        "enablementTime": "2024-01-01T00:00:00Z",
+        "deprecated": false
+      }
+    }
+  ]
+}

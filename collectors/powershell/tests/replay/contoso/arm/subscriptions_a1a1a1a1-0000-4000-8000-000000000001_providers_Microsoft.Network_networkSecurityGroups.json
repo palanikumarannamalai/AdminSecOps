@@ -1,0 +1,143 @@
+{
+  "value": [
+    {
+      "name": "nsg-prod-web",
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000001/resourceGroups/rg-prod-app/providers/Microsoft.Network/networkSecurityGroups/nsg-prod-web",
+      "etag": "W/\"00000000-0000-0000-0000-000000000002\"",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "location": "westeurope",
+      "properties": {
+        "provisioningState": "Succeeded",
+        "resourceGuid": "00000000-0000-4000-8000-00000000abcd",
+        "securityRules": [
+          {
+            "name": "Allow-HTTPS-Internet",
+            "id": "rule-Allow-HTTPS-Internet",
+            "etag": "W/\"00000000-0000-0000-0000-000000000001\"",
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "Allow-RDP-Any",
+            "id": "rule-Allow-RDP-Any",
+            "etag": "W/\"00000000-0000-0000-0000-000000000001\"",
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 200,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          }
+        ],
+        "defaultSecurityRules": [
+          {
+            "name": "AllowVnetInBound",
+            "id": "default-AllowVnetInBound",
+            "type": "Microsoft.Network/networkSecurityGroups/defaultSecurityRules",
+            "properties": {
+              "description": "Allow inbound traffic from all VMs in VNET",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 65000,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "nsg-prod-mgmt",
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000001/resourceGroups/rg-prod-app/providers/Microsoft.Network/networkSecurityGroups/nsg-prod-mgmt",
+      "etag": "W/\"00000000-0000-0000-0000-000000000002\"",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "location": "westeurope",
+      "properties": {
+        "provisioningState": "Succeeded",
+        "resourceGuid": "00000000-0000-4000-8000-00000000abcd",
+        "securityRules": [
+          {
+            "name": "Allow-Mgmt-From-Office",
+            "id": "rule-Allow-Mgmt-From-Office",
+            "etag": "W/\"00000000-0000-0000-0000-000000000001\"",
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": null,
+              "sourceAddressPrefix": null,
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [
+                "22",
+                "3389"
+              ],
+              "sourceAddressPrefixes": [
+                "198.51.100.0/24",
+                "192.0.2.0/24"
+              ],
+              "destinationAddressPrefixes": []
+            }
+          }
+        ],
+        "defaultSecurityRules": [
+          {
+            "name": "AllowVnetInBound",
+            "id": "default-AllowVnetInBound",
+            "type": "Microsoft.Network/networkSecurityGroups/defaultSecurityRules",
+            "properties": {
+              "description": "Allow inbound traffic from all VMs in VNET",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 65000,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

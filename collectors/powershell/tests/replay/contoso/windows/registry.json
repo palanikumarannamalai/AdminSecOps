@@ -1,0 +1,14 @@
+{
+  "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\fDenyTSConnections": 0,
+  "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp\\UserAuthentication": 1,
+  "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\RunAsPPL": 1,
+  "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\LmCompatibilityLevel": 3,
+  "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging\\EnableScriptBlockLogging": 1,
+  "HKLM\\SYSTEM\\CurrentControlSet\\Control\\SecurityProviders\\WDigest\\UseLogonCredential": {
+    "__replayError": {
+      "statusCode": 0,
+      "errorCode": "AccessDenied",
+      "message": "Requested registry access is not allowed."
+    }
+  }
+}

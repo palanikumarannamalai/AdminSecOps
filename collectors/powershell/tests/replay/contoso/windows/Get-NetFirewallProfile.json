@@ -1,0 +1,23 @@
+[
+  {
+    "Name": "Domain",
+    "Enabled": "True",
+    "DefaultInboundAction": "Block",
+    "DefaultOutboundAction": "Allow",
+    "LogBlocked": "False"
+  },
+  {
+    "Name": "Private",
+    "Enabled": "True",
+    "DefaultInboundAction": "Block",
+    "DefaultOutboundAction": "Allow",
+    "LogBlocked": "False"
+  },
+  {
+    "Name": "Public",
+    "Enabled": "False",
+    "DefaultInboundAction": "NotConfigured",
+    "DefaultOutboundAction": "Allow",
+    "LogBlocked": "False"
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "UserPrincipalName": "cara.user@contoso.example",
+    "PrimarySmtpAddress": "cara.user@contoso.example",
+    "RecipientTypeDetails": "UserMailbox",
+    "ForwardingSmtpAddress": "smtp:cara.personal@mailbox.example",
+    "ForwardingAddress": null,
+    "DeliverToMailboxAndForward": true,
+    "ExternalDirectoryObjectId": "aaaa0001-0000-4000-8000-000000000004"
+  },
+  {
+    "UserPrincipalName": "finance.shared@contoso.example",
+    "PrimarySmtpAddress": "finance.shared@contoso.example",
+    "RecipientTypeDetails": "SharedMailbox",
+    "ForwardingSmtpAddress": null,
+    "ForwardingAddress": "Finance Archive",
+    "DeliverToMailboxAndForward": false,
+    "ExternalDirectoryObjectId": "aaaa0001-0000-4000-8000-000000000010"
+  }
+]

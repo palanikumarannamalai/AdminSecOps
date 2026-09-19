@@ -1,0 +1,9 @@
+[
+  {
+    "Name": "Key Admins",
+    "SID": "S-1-5-21-1111111111-2222222222-3333333333-526",
+    "GroupScope": "Global",
+    "GroupCategory": "Security",
+    "DistinguishedName": "CN=Key Admins,CN=Users,DC=corp,DC=contoso,DC=example"
+  }
+]

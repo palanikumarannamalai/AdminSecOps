@@ -1,0 +1,23 @@
+{
+  "value": [
+    {
+      "properties": {
+        "roleDefinitionId": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000002/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c",
+        "principalId": "aaaa0001-0000-4000-8000-000000000001",
+        "principalType": "User",
+        "scope": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000002",
+        "condition": null,
+        "conditionVersion": null,
+        "createdOn": "2024-05-05T10:00:00.0000000Z",
+        "updatedOn": "2024-05-05T10:00:00.0000000Z",
+        "createdBy": null,
+        "updatedBy": null,
+        "delegatedManagedIdentityResourceId": null,
+        "description": null
+      },
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000002/providers/Microsoft.Authorization/roleAssignments/7a000002-0000-4000-8000-000000000001",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "name": "7a000002-0000-4000-8000-000000000001"
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#identity/conditionalAccess/policies",
+  "@odata.nextLink": "https://graph.microsoft.com/v1.0/identity/conditionalAccess/policies?$skiptoken=contoso-replay-page-2",
+  "value": [
+    {
+      "id": "9a000001-0000-4000-8000-000000000001",
+      "templateId": null,
+      "displayName": "CA001: Require MFA for administrators",
+      "createdDateTime": "2024-02-01T08:00:00Z",
+      "modifiedDateTime": "2026-06-15T13:45:10.1234567Z",
+      "state": "enabled",
+      "sessionControls": null,
+      "conditions": {
+        "userRiskLevels": [],
+        "signInRiskLevels": [],
+        "clientAppTypes": [
+          "all"
+        ],
+        "servicePrincipalRiskLevels": [],
+        "platforms": null,
+        "locations": null,
+        "devices": null,
+        "clientApplications": null,
+        "applications": {
+          "includeApplications": [
+            "All"
+          ],
+          "excludeApplications": [],
+          "includeUserActions": [],
+          "includeAuthenticationContextClassReferences": [],
+          "applicationFilter": null
+        },
+        "users": {
+          "includeUsers": [],
+          "excludeUsers": [],
+          "includeGroups": [],
+          "excludeGroups": [
+            "bbbb0001-0000-4000-8000-000000000002"
+          ],
+          "includeRoles": [
+            "62e90394-69f5-4237-9190-012177145e10",
+            "e8611ab8-c189-46e8-94e1-60213ab1f814",
+            "194ae4cb-b126-40b2-bd5b-6091b380977d"
+          ],
+          "excludeRoles": [],
+          "includeGuestsOrExternalUsers": null,
+          "excludeGuestsOrExternalUsers": null
+        },
+        "authenticationFlows": null
+      },
+      "grantControls": {
+        "operator": "OR",
+        "builtInControls": [
+          "mfa"
+        ],
+        "customAuthenticationFactors": [],
+        "termsOfUse": [],
+        "authenticationStrength": null
+      }
+    },
+    {
+      "id": "9a000001-0000-4000-8000-000000000002",
+      "templateId": null,
+      "displayName": "CA002: Block legacy authentication",
+      "createdDateTime": "2024-02-01T08:00:00Z",
+      "modifiedDateTime": "2026-06-15T13:45:10.1234567Z",
+      "state": "enabled",
+      "sessionControls": null,
+      "conditions": {
+        "userRiskLevels": [],
+        "signInRiskLevels": [],
+        "clientAppTypes": [
+          "exchangeActiveSync",
+          "other"
+        ],
+        "servicePrincipalRiskLevels": [],
+        "platforms": null,
+        "locations": null,
+        "devices": null,
+        "clientApplications": null,
+        "applications": {
+          "includeApplications": [
+            "All"
+          ],
+          "excludeApplications": [],
+          "includeUserActions": [],
+          "includeAuthenticationContextClassReferences": [],
+          "applicationFilter": null
+        },
+        "users": {
+          "includeUsers": [
+            "All"
+          ],
+          "excludeUsers": [],
+          "includeGroups": [],
+          "excludeGroups": [
+            "bbbb0001-0000-4000-8000-000000000002"
+          ],
+          "includeRoles": [],
+          "excludeRoles": [],
+          "includeGuestsOrExternalUsers": null,
+          "excludeGuestsOrExternalUsers": null
+        },
+        "authenticationFlows": null
+      },
+      "grantControls": {
+        "operator": "OR",
+        "builtInControls": [
+          "block"
+        ],
+        "customAuthenticationFactors": [],
+        "termsOfUse": [],
+        "authenticationStrength": null
+      }
+    },
+    {
+      "id": "9a000001-0000-4000-8000-000000000003",
+      "templateId": null,
+      "displayName": "CA003: Require MFA for all users",
+      "createdDateTime": "2024-02-01T08:00:00Z",
+      "modifiedDateTime": "2026-06-15T13:45:10.1234567Z",
+      "state": "enabledForReportingButNotEnforced",
+      "sessionControls": {
+        "signInFrequency": {
+          "value": 12,
+          "type": "hours",
+          "authenticationType": "primaryAndSecondaryAuthentication",
+          "frequencyInterval": "timeBased",
+          "isEnabled": true
+        },
+        "persistentBrowser": {
+          "mode": "never",
+          "isEnabled": true
+        },
+        "applicationEnforcedRestrictions": null,
+        "cloudAppSecurity": null,
+        "disableResilienceDefaults": null
+      },
+      "conditions": {
+        "userRiskLevels": [],
+        "signInRiskLevels": [],
+        "clientAppTypes": [
+          "all"
+        ],
+        "servicePrincipalRiskLevels": [],
+        "platforms": null,
+        "locations": null,
+        "devices": null,
+        "clientApplications": null,
+        "applications": {
+          "includeApplications": [
+            "All"
+          ],
+          "excludeApplications": [],
+          "includeUserActions": [],
+          "includeAuthenticationContextClassReferences": [],
+          "applicationFilter": null
+        },
+        "users": {
+          "includeUsers": [
+            "All"
+          ],
+          "excludeUsers": [],
+          "includeGroups": [],
+          "excludeGroups": [
+            "bbbb0001-0000-4000-8000-000000000002"
+          ],
+          "includeRoles": [],
+          "excludeRoles": [],
+          "includeGuestsOrExternalUsers": null,
+          "excludeGuestsOrExternalUsers": null
+        },
+        "authenticationFlows": null
+      },
+      "grantControls": {
+        "operator": "OR",
+        "builtInControls": [
+          "mfa"
+        ],
+        "customAuthenticationFactors": [],
+        "termsOfUse": [],
+        "authenticationStrength": {
+          "id": "00000000-0000-0000-0000-000000000002",
+          "displayName": "Multifactor authentication",
+          "description": "Combinations of methods that satisfy strong authentication",
+          "policyType": "builtIn",
+          "requirementsSatisfied": "mfa",
+          "allowedCombinations": [
+            "password,microsoftAuthenticatorPush"
+          ]
+        }
+      }
+    }
+  ]
+}

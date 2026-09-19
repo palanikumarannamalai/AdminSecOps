@@ -1,0 +1,24 @@
+[
+  {
+    "HostName": "dc01.corp.contoso.example",
+    "Name": "DC01",
+    "Site": "HQ",
+    "OperatingSystem": "Windows Server 2022 Datacenter",
+    "OperatingSystemVersion": "10.0 (20348)",
+    "IsGlobalCatalog": true,
+    "IsReadOnly": false,
+    "IPv4Address": "192.0.2.10",
+    "Domain": "corp.contoso.example"
+  },
+  {
+    "HostName": "dc02.corp.contoso.example",
+    "Name": "DC02",
+    "Site": "Branch",
+    "OperatingSystem": "Windows Server 2016 Standard",
+    "OperatingSystemVersion": "10.0 (14393)",
+    "IsGlobalCatalog": true,
+    "IsReadOnly": false,
+    "IPv4Address": "192.0.2.11",
+    "Domain": "corp.contoso.example"
+  }
+]

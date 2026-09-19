@@ -1,0 +1,36 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#servicePrincipals(id,appId,displayName,servicePrincipalType,appOwnerOrganizationId,accountEnabled,passwordCredentials,keyCredentials)",
+  "@odata.nextLink": "https://graph.microsoft.com/v1.0/servicePrincipals?$select=id,appId,displayName,servicePrincipalType,appOwnerOrganizationId,accountEnabled,passwordCredentials,keyCredentials&$top=999&$skiptoken=contoso-replay-sp-2",
+  "value": [
+    {
+      "id": "cccc0001-0000-4000-8000-000000000001",
+      "appId": "dddd1001-0000-4000-8000-000000000001",
+      "displayName": "Contoso Reporting Service",
+      "servicePrincipalType": "Application",
+      "appOwnerOrganizationId": "11111111-2222-4333-8444-555555555555",
+      "accountEnabled": true,
+      "passwordCredentials": [],
+      "keyCredentials": []
+    },
+    {
+      "id": "cccc0001-0000-4000-8000-000000000002",
+      "appId": "dddd1001-0000-4000-8000-000000000002",
+      "displayName": "Contoso HR Connector",
+      "servicePrincipalType": "Application",
+      "appOwnerOrganizationId": "11111111-2222-4333-8444-555555555555",
+      "accountEnabled": true,
+      "passwordCredentials": [
+        {
+          "customKeyIdentifier": null,
+          "displayName": "sp-secret",
+          "endDateTime": "2026-12-31T00:00:00Z",
+          "hint": "Zz1",
+          "keyId": "5e000001-0000-4000-8000-000000000004",
+          "secretText": null,
+          "startDateTime": "2025-12-31T00:00:00Z"
+        }
+      ],
+      "keyCredentials": []
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "Identity": "contoso.example",
+    "Domain": "contoso.example",
+    "Enabled": true,
+    "Status": "Valid",
+    "Selector1CNAME": "selector1-contoso-example._domainkey.contoso-example.onmicrosoft.com"
+  },
+  {
+    "Identity": "contoso-example.onmicrosoft.com",
+    "Domain": "contoso-example.onmicrosoft.com",
+    "Enabled": true,
+    "Status": "Valid",
+    "Selector1CNAME": null
+  }
+]

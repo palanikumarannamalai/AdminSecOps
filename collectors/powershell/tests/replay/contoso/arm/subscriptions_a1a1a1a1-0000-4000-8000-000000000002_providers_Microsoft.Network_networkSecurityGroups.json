@@ -1,0 +1,38 @@
+{
+  "value": [
+    {
+      "name": "nsg-dev-empty",
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000002/resourceGroups/rg-dev/providers/Microsoft.Network/networkSecurityGroups/nsg-dev-empty",
+      "etag": "W/\"00000000-0000-0000-0000-000000000002\"",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "location": "westeurope",
+      "properties": {
+        "provisioningState": "Succeeded",
+        "resourceGuid": "00000000-0000-4000-8000-00000000abcd",
+        "securityRules": [],
+        "defaultSecurityRules": [
+          {
+            "name": "AllowVnetInBound",
+            "id": "default-AllowVnetInBound",
+            "type": "Microsoft.Network/networkSecurityGroups/defaultSecurityRules",
+            "properties": {
+              "description": "Allow inbound traffic from all VMs in VNET",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 65000,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+[
+  {
+    "Identity": "Admin Audit Log Settings",
+    "AdminAuditLogEnabled": true,
+    "UnifiedAuditLogIngestionEnabled": true,
+    "UnifiedAuditLogFirstOptInDate": "2019-03-20T10:00:00Z"
+  }
+]

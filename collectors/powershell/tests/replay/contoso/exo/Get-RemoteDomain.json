@@ -1,0 +1,16 @@
+[
+  {
+    "Identity": "Default",
+    "Name": "Default",
+    "DomainName": "*",
+    "AutoForwardEnabled": true,
+    "AutoReplyEnabled": true
+  },
+  {
+    "Identity": "Partner",
+    "Name": "Partner",
+    "DomainName": "partner.example",
+    "AutoForwardEnabled": false,
+    "AutoReplyEnabled": true
+  }
+]

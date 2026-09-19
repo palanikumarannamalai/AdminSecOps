@@ -1,0 +1,79 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#roleManagement/directory/roleAssignments(principal())",
+  "value": [
+    {
+      "id": "ra-0001",
+      "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10",
+      "principalId": "aaaa0001-0000-4000-8000-000000000001",
+      "directoryScopeId": "/",
+      "principal": {
+        "@odata.type": "#microsoft.graph.user",
+        "id": "aaaa0001-0000-4000-8000-000000000001",
+        "displayName": "Adele Admin",
+        "userPrincipalName": "adele.admin@contoso.example",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": null,
+        "mail": "adele.admin@contoso.example"
+      }
+    },
+    {
+      "id": "ra-0002",
+      "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10",
+      "principalId": "aaaa0001-0000-4000-8000-000000000002",
+      "directoryScopeId": "/",
+      "principal": {
+        "@odata.type": "#microsoft.graph.user",
+        "id": "aaaa0001-0000-4000-8000-000000000002",
+        "displayName": "Break Glass 01",
+        "userPrincipalName": "breakglass01@contoso-example.onmicrosoft.com",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": null,
+        "mail": "breakglass01@contoso-example.onmicrosoft.com"
+      }
+    },
+    {
+      "id": "ra-0003",
+      "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10",
+      "principalId": "aaaa0001-0000-4000-8000-000000000003",
+      "directoryScopeId": "/",
+      "principal": {
+        "@odata.type": "#microsoft.graph.user",
+        "id": "aaaa0001-0000-4000-8000-000000000003",
+        "displayName": "Ben Synced",
+        "userPrincipalName": "ben.synced@contoso.example",
+        "userType": "Member",
+        "accountEnabled": true,
+        "onPremisesSyncEnabled": true,
+        "mail": "ben.synced@contoso.example"
+      }
+    },
+    {
+      "id": "ra-0004",
+      "roleDefinitionId": "194ae4cb-b126-40b2-bd5b-6091b380977d",
+      "principalId": "bbbb0001-0000-4000-8000-000000000001",
+      "directoryScopeId": "/",
+      "principal": {
+        "@odata.type": "#microsoft.graph.group",
+        "id": "bbbb0001-0000-4000-8000-000000000001",
+        "displayName": "Contoso Security Admins",
+        "securityEnabled": true,
+        "isAssignableToRole": true
+      }
+    },
+    {
+      "id": "ra-0005",
+      "roleDefinitionId": "f2ef992c-3afb-46b9-b7cf-a126ee74c451",
+      "principalId": "cccc0001-0000-4000-8000-000000000001",
+      "directoryScopeId": "/",
+      "principal": {
+        "@odata.type": "#microsoft.graph.servicePrincipal",
+        "id": "cccc0001-0000-4000-8000-000000000001",
+        "displayName": "Contoso Reporting Service",
+        "accountEnabled": true,
+        "servicePrincipalType": "Application"
+      }
+    }
+  ]
+}

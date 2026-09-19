@@ -1,0 +1,85 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#deviceManagement/deviceCompliancePolicies(assignments())",
+  "value": [
+    {
+      "@odata.type": "#microsoft.graph.windows10CompliancePolicy",
+      "id": "9e000001-0000-4000-8000-000000000001",
+      "createdDateTime": "2024-01-01T10:00:00Z",
+      "description": "Baseline for corporate Windows devices",
+      "lastModifiedDateTime": "2026-03-03T10:00:00Z",
+      "displayName": "Windows 10/11 baseline",
+      "version": 4,
+      "passwordRequired": true,
+      "passwordBlockSimple": true,
+      "osMinimumVersion": "10.0.19045",
+      "osMaximumVersion": null,
+      "earlyLaunchAntiMalwareDriverEnabled": false,
+      "bitLockerEnabled": true,
+      "secureBootEnabled": true,
+      "codeIntegrityEnabled": true,
+      "storageRequireEncryption": true,
+      "activeFirewallRequired": true,
+      "defenderEnabled": true,
+      "defenderVersion": null,
+      "signatureOutOfDate": true,
+      "rtpEnabled": true,
+      "antivirusRequired": true,
+      "antiSpywareRequired": true,
+      "tpmRequired": true,
+      "deviceThreatProtectionEnabled": false,
+      "assignments": [
+        {
+          "id": "9e000001-0000-4000-8000-000000000001_adadadad-808e-44e2-905a-0b7873a8a531",
+          "target": {
+            "@odata.type": "#microsoft.graph.allDevicesAssignmentTarget"
+          }
+        },
+        {
+          "id": "9e000001-0000-4000-8000-000000000001_bbbb0001",
+          "target": {
+            "@odata.type": "#microsoft.graph.exclusionGroupAssignmentTarget",
+            "groupId": "bbbb0001-0000-4000-8000-000000000002"
+          }
+        }
+      ]
+    },
+    {
+      "@odata.type": "#microsoft.graph.iosCompliancePolicy",
+      "id": "9e000001-0000-4000-8000-000000000002",
+      "createdDateTime": "2024-01-01T10:00:00Z",
+      "description": null,
+      "lastModifiedDateTime": "2025-10-10T10:00:00Z",
+      "displayName": "iOS minimum",
+      "version": 2,
+      "passcodeBlockSimple": true,
+      "passcodeRequired": true,
+      "osMinimumVersion": "17.0",
+      "securityBlockJailbrokenDevices": true,
+      "deviceThreatProtectionEnabled": false,
+      "assignments": [
+        {
+          "id": "9e000001-0000-4000-8000-000000000002_group",
+          "target": {
+            "@odata.type": "#microsoft.graph.groupAssignmentTarget",
+            "groupId": "bbbb0001-0000-4000-8000-000000000010"
+          }
+        }
+      ]
+    },
+    {
+      "@odata.type": "#microsoft.graph.macOSCompliancePolicy",
+      "id": "9e000001-0000-4000-8000-000000000003",
+      "createdDateTime": "2025-01-01T10:00:00Z",
+      "description": null,
+      "lastModifiedDateTime": "2025-01-01T10:00:00Z",
+      "displayName": "macOS (unassigned)",
+      "version": 1,
+      "passwordRequired": false,
+      "storageRequireEncryption": true,
+      "firewallEnabled": true,
+      "osMinimumVersion": null,
+      "systemIntegrityProtectionEnabled": true,
+      "assignments": []
+    }
+  ]
+}

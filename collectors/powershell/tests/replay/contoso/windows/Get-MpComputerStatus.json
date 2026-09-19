@@ -1,0 +1,11 @@
+[
+  {
+    "AMServiceEnabled": true,
+    "AntivirusEnabled": true,
+    "RealTimeProtectionEnabled": true,
+    "IsTamperProtected": false,
+    "AntivirusSignatureAge": 1,
+    "AntivirusSignatureLastUpdated": "2026-08-31T22:00:00Z",
+    "ComputerState": 0
+  }
+]
