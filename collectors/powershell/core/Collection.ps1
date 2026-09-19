@@ -194,12 +194,15 @@ function Invoke-AdminSecOpsCollection {
     $ctx = Initialize-AsoContext -ReplayPath $resolvedReplay -PackagePath $packagePath -Label $Label -TenantId $TenantId -IncludeDomainControllerSettings:$IncludeDomainControllerSettings -SkipConnect:$SkipConnect
     Write-AsoLog -Message "Collection started (assessment $($ctx.AssessmentId), mode $($ctx.Mode), modules $($selected -join ', '))."
 
+    # Exchange runs in an isolated child process when combined with Graph/Azure modules (MSAL conflict).
+    $isolate = (Test-AsoIsolationRequired -Module $selected -Mode $ctx.Mode) -and -not $SkipConnect
+    $inProcess = if ($isolate) { [string[]]@($selected | Where-Object { $_ -ne 'Exchange' }) } else { $selected }
     if ($ctx.Mode -eq 'Live' -and -not $SkipConnect) {
-        Connect-AsoService -Module $selected -TenantId $TenantId -UseDeviceCode:$UseDeviceCode
+        Connect-AsoService -Module $inProcess -TenantId $TenantId -UseDeviceCode:$UseDeviceCode
     }
     if ($ctx.Mode -eq 'Live') {
         # Throws before any evidence is read when sessions belong to an unexpected tenant.
-        Assert-AsoSessionTenant -Module $selected -TenantId $TenantId
+        Assert-AsoSessionTenant -Module $inProcess -TenantId $TenantId
     }
     if ($ctx.Mode -eq 'Live' -and -not $ctx.Environment.tenantId) {
         $graph = Get-AsoGraphConnectionState
@@ -209,7 +212,12 @@ function Invoke-AdminSecOpsCollection {
     $results = [System.Collections.Generic.List[object]]::new()
     foreach ($m in $selected) {
         try {
-            $results.Add((Invoke-AsoModule -Name $m))
+            if ($isolate -and $m -eq 'Exchange') {
+                $results.Add((Invoke-AsoIsolatedModule -Name $m -TenantId $TenantId -UseDeviceCode:$UseDeviceCode))
+            }
+            else {
+                $results.Add((Invoke-AsoModule -Name $m))
+            }
         }
         catch {
             Write-AsoLog -Level Error -Module $m -Message "Module failed unexpectedly: $($_.Exception.Message)"

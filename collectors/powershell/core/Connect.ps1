@@ -169,10 +169,10 @@ function Connect-AsoService {
     }
 
     if ($Module -contains 'Azure' -and (Import-AsoOptionalModule -Name 'Az.Accounts')) {
-        # Az.Accounts persists contexts and tokens to the user profile by default. For this process
-        # only: stop persisting, and ignore a cached context that belongs to a different tenant than
-        # -TenantId (the saved context on disk is left untouched).
-        try { Disable-AzContextAutosave -Scope Process -ErrorAction Stop | Out-Null } catch { Write-AsoLog -Level Warning -Message "Could not disable Az context autosave for this process: $($_.Exception.Message)" }
+        # Ignore a cached Az context that belongs to a different tenant than -TenantId, for this process
+        # only (the saved context on disk is left untouched). Az context autosave is not disabled:
+        # live validation showed token acquisition then fails after sign-in (SharedTokenCacheCredential).
+        # Token persistence therefore follows the operator's own Az.Accounts settings.
         $azState = Get-AsoAzureConnectionState
         if ($TenantId -and $azState.Connected -and $azState.TenantId -and $azState.TenantId -ne $TenantId) {
             Write-AsoLog -Message 'Ignoring a cached Azure context from another tenant for this process.'

@@ -36,6 +36,16 @@ function Write-AsoTextFile {
     [System.IO.File]::WriteAllText($Path, $Text, [System.Text.UTF8Encoding]::new($false))
 }
 
+function Remove-AsoHandoffFile {
+    <# Deletes a transient isolation handoff file inside the package folder (never evidence). #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Deletes only transient handoff files created by this run inside the package folder.')]
+    [CmdletBinding()]
+    param([Parameter(Mandatory)] [string] $Path)
+    $leaf = [System.IO.Path]::GetFileName($Path)
+    if ($leaf -notlike '.isolated-*.json') { throw "Refusing to delete '$leaf': not an isolation handoff file." }
+    if ([System.IO.File]::Exists($Path)) { [System.IO.File]::Delete($Path) }
+}
+
 function Get-AsoFileSha256 {
     [CmdletBinding()]
     [OutputType([string])]

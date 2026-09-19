@@ -10,7 +10,7 @@ $script:ForbiddenVerbs = @(
 )
 # Commands with a forbidden verb that are harmless (no state outside the process) or read-only.
 $script:AllowedCommands = @(
-    'Set-StrictMode', 'Start-Sleep', 'Out-Null', 'Out-String', 'Export-ModuleMember', 'Join-Path', 'Split-Path',
+    'Set-StrictMode', 'Start-Sleep', 'Out-Null', 'Out-String', 'Out-Host', 'Export-ModuleMember', 'Join-Path', 'Split-Path',
     'Write-Verbose', 'Write-Output', 'Write-Warning', 'Write-Debug', 'Write-Information', 'Write-Error'
 )
 # Only these files may call these commands.
@@ -38,7 +38,8 @@ $script:ForbiddenMethods = @(
 )
 # Dynamic invocations (& $var) are allowed only for these variables (script blocks passed as parameters,
 # or the allow-listed command resolved in DataAccess.ps1).
-$script:AllowedDynamicInvocations = @{ 'ScriptBlock' = '*'; 'Read' = '*'; 'command' = 'DataAccess.ps1' }
+# 'pwshExe' is the child PowerShell running this same collector module for authentication isolation.
+$script:AllowedDynamicInvocations = @{ 'ScriptBlock' = '*'; 'Read' = '*'; 'command' = 'DataAccess.ps1'; 'pwshExe' = 'Isolation.ps1' }
 # Other dynamic invocations by exact expression: the dataset collector named in the catalogue (checked by
 # Catalog.Tests.ps1 to be a module Get-Aso* function) and the module loader dot-sourcing its own files.
 $script:AllowedDynamicExpressions = @{ '$Entry.Function' = 'Collection.ps1'; '$file.FullName' = 'AdminSecOps.Collector.psm1' }

@@ -18,10 +18,12 @@ function Initialize-AsoContext {
         [string] $Label,
         [string] $TenantId,
         [switch] $IncludeDomainControllerSettings,
-        [switch] $SkipConnect
+        [switch] $SkipConnect,
+        # Set only by an isolated child process contributing to the parent's package.
+        [ValidatePattern('^$|^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')] [string] $AssessmentId
     )
     $script:AsoContext = [pscustomobject]@{
-        AssessmentId                    = [guid]::NewGuid().ToString()
+        AssessmentId                    = if ($AssessmentId) { $AssessmentId } else { [guid]::NewGuid().ToString() }
         StartedAt                       = [DateTime]::UtcNow
         Mode                            = if ($ReplayPath) { 'Replay' } else { 'Live' }
         ReplayPath                      = $ReplayPath
