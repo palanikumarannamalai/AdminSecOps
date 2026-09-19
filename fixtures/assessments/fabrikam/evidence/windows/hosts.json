@@ -1,0 +1,135 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "windows.hosts",
+  "assessmentId": "8e9699f3-6a2b-4860-9190-a6f8afe9be3c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Windows",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-05T14:18:53.0000000Z",
+  "source": {
+    "system": "WindowsHost",
+    "operations": [
+      "Get-CimInstance Win32_OperatingSystem",
+      "Get-NetFirewallProfile",
+      "Get-SmbServerConfiguration",
+      "Registry reads under HKLM (Terminal Server, Lsa, WDigest, PowerShell policies)",
+      "Get-CimInstance -Namespace root\\Microsoft\\Windows\\DeviceGuard Win32_DeviceGuard",
+      "Get-MpComputerStatus"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "hostName": "FAB-DC01.corp.fabrikam.example",
+      "osCaption": "Microsoft Windows Server 2022 Datacenter",
+      "osVersion": "10.0.20348",
+      "osBuild": "20348",
+      "isServer": true,
+      "isDomainController": true,
+      "domainJoined": true,
+      "firewallProfiles": [
+        {
+          "name": "Domain",
+          "enabled": true,
+          "defaultInboundAction": "Block"
+        },
+        {
+          "name": "Private",
+          "enabled": true,
+          "defaultInboundAction": "Block"
+        },
+        {
+          "name": "Public",
+          "enabled": true,
+          "defaultInboundAction": "Block"
+        }
+      ],
+      "smb": {
+        "smb1ServerEnabled": false,
+        "serverRequireSecuritySignature": true
+      },
+      "rdp": {
+        "enabled": false,
+        "nlaRequired": true
+      },
+      "lsa": {
+        "runAsPPL": 1,
+        "lmCompatibilityLevel": 5,
+        "wdigestUseLogonCredential": 0
+      },
+      "credentialGuard": {
+        "running": true,
+        "vbsStatus": 2
+      },
+      "powershell": {
+        "scriptBlockLoggingEnabled": true
+      },
+      "defender": {
+        "available": true,
+        "antivirusEnabled": true,
+        "realTimeProtectionEnabled": true,
+        "isTamperProtected": true,
+        "antivirusSignatureAgeDays": 0
+      }
+    },
+    {
+      "hostName": "FAB-FS01.corp.fabrikam.example",
+      "osCaption": "Microsoft Windows Server 2019 Standard",
+      "osVersion": "10.0.17763",
+      "osBuild": "17763",
+      "isServer": true,
+      "isDomainController": false,
+      "domainJoined": true,
+      "firewallProfiles": [
+        {
+          "name": "Domain",
+          "enabled": true,
+          "defaultInboundAction": "Block"
+        },
+        {
+          "name": "Private",
+          "enabled": true,
+          "defaultInboundAction": "Block"
+        },
+        {
+          "name": "Public",
+          "enabled": true,
+          "defaultInboundAction": "Block"
+        }
+      ],
+      "smb": {
+        "smb1ServerEnabled": true,
+        "serverRequireSecuritySignature": true
+      },
+      "rdp": {
+        "enabled": true,
+        "nlaRequired": true
+      },
+      "lsa": {
+        "runAsPPL": 1,
+        "lmCompatibilityLevel": 5,
+        "wdigestUseLogonCredential": 0
+      },
+      "credentialGuard": {
+        "running": true,
+        "vbsStatus": 2
+      },
+      "powershell": {
+        "scriptBlockLoggingEnabled": true
+      },
+      "defender": {
+        "available": true,
+        "antivirusEnabled": true,
+        "realTimeProtectionEnabled": true,
+        "isTamperProtected": true,
+        "antivirusSignatureAgeDays": 0
+      }
+    }
+  ]
+}

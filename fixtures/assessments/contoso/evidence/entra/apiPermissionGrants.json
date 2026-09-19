@@ -1,0 +1,137 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "entra.apiPermissionGrants",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Entra",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:35:32.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/servicePrincipals(appId='00000003-0000-0000-c000-000000000000')",
+      "GET https://graph.microsoft.com/v1.0/servicePrincipals/{resourceId}/appRoleAssignedTo"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "resourceAppId": "00000003-0000-0000-c000-000000000000",
+      "resourceDisplayName": "Microsoft Graph",
+      "appRoles": [
+        {
+          "id": "9e3f62cf-ca93-4989-b6ce-bf83c28f9fe8",
+          "value": "RoleManagement.ReadWrite.Directory"
+        },
+        {
+          "id": "7ab1d382-f21e-4acd-a863-ba3e13f7da61",
+          "value": "Directory.Read.All"
+        },
+        {
+          "id": "df021288-bdef-4463-88db-98f22de89214",
+          "value": "User.Read.All"
+        },
+        {
+          "id": "741f803b-c850-494e-b5df-cde7c675a1ca",
+          "value": "User.ReadWrite.All"
+        },
+        {
+          "id": "dbaae8cf-10b5-4b86-a4a1-f871c94c6695",
+          "value": "GroupMember.ReadWrite.All"
+        },
+        {
+          "id": "1bfefb4e-e0b5-418b-a88f-73c46d2cc8e9",
+          "value": "Application.ReadWrite.All"
+        },
+        {
+          "id": "b633e1c5-b582-4048-a93e-9f11b44c7e96",
+          "value": "Mail.Send"
+        },
+        {
+          "id": "332a536c-c7ef-4017-ab91-336970924f0d",
+          "value": "Sites.Read.All"
+        }
+      ],
+      "assignments": [
+        {
+          "id": "R-IhC60lPQbmM66xnSKLSkKV3hdqF5xPWUTS4fnY7Ok",
+          "principalId": "a2ad4bf0-2795-4292-aa9c-d7a350306f8c",
+          "principalType": "ServicePrincipal",
+          "principalDisplayName": "Contoso Identity Automation",
+          "appRoleId": "9e3f62cf-ca93-4989-b6ce-bf83c28f9fe8",
+          "createdDateTime": "2024-10-14T09:30:12Z"
+        },
+        {
+          "id": "P0uPaw_8nkCUK8Q_wQyuN3PgoO3co5uBsBaDn9QhydE",
+          "principalId": "a2ad4bf0-2795-4292-aa9c-d7a350306f8c",
+          "principalType": "ServicePrincipal",
+          "principalDisplayName": "Contoso Identity Automation",
+          "appRoleId": "7ab1d382-f21e-4acd-a863-ba3e13f7da61",
+          "createdDateTime": "2024-10-14T09:30:12Z"
+        },
+        {
+          "id": "3H9NzqYFstSuZC29-WXzVqOZAkLJVeolHf2BCgEPKrU",
+          "principalId": "430b3993-34a0-4d6b-88d7-8bdb510fb3fe",
+          "principalType": "ServicePrincipal",
+          "principalDisplayName": "Contoso HR Connector",
+          "appRoleId": "741f803b-c850-494e-b5df-cde7c675a1ca",
+          "createdDateTime": "2025-03-01T10:31:47Z"
+        },
+        {
+          "id": "BnWXFxKNPq8mOvc3CoIK51vfIT5EsHajI56a4SUkb2Y",
+          "principalId": "6e3077a8-b4a2-4448-901c-4d5d4641bb3e",
+          "principalType": "ServicePrincipal",
+          "principalDisplayName": "Contoso Provisioning Automation",
+          "appRoleId": "dbaae8cf-10b5-4b86-a4a1-f871c94c6695",
+          "createdDateTime": "2025-07-22T13:20:05Z"
+        },
+        {
+          "id": "OJKVPLGdMRrkrsxOFoAIDTFdQnhJiV15SjXoYTwABHI",
+          "principalId": "95a9079a-b353-4d7a-9ab6-aa0e79e2ae13",
+          "principalType": "ServicePrincipal",
+          "principalDisplayName": "Legacy Reporting Tool",
+          "appRoleId": "332a536c-c7ef-4017-ab91-336970924f0d",
+          "createdDateTime": "2021-08-30T15:40:00Z"
+        },
+        {
+          "id": "TsJAG05NOJA8QJPe_WH9Sq0d7DiOUM0psz0bUFMIZ8E",
+          "principalId": "11c8e26f-9399-43eb-a040-f078c9c659b2",
+          "principalType": "ServicePrincipal",
+          "principalDisplayName": "Contoso Intranet",
+          "appRoleId": "df021288-bdef-4463-88db-98f22de89214",
+          "createdDateTime": "2023-04-18T12:55:18Z"
+        }
+      ]
+    },
+    {
+      "resourceAppId": "00000002-0000-0ff1-ce00-000000000000",
+      "resourceDisplayName": "Office 365 Exchange Online",
+      "appRoles": [
+        {
+          "id": "dc890d15-9560-4a4c-9b7f-a736ec74ec40",
+          "value": "full_access_as_app"
+        },
+        {
+          "id": "dc50a0fb-09a3-484d-be87-e023b12c6440",
+          "value": "Exchange.ManageAsApp"
+        }
+      ],
+      "assignments": [
+        {
+          "id": "8yr-pXJaVQwXJU4OrCExBHSiToq2mdozkK2GVN0ZZyw",
+          "principalId": "7fa58dd7-6d88-4a1d-97b5-409bc7cd7549",
+          "principalType": "ServicePrincipal",
+          "principalDisplayName": "Contoso Mail Archiver",
+          "appRoleId": "dc890d15-9560-4a4c-9b7f-a736ec74ec40",
+          "createdDateTime": "2025-01-09T09:12:40Z"
+        }
+      ]
+    }
+  ]
+}

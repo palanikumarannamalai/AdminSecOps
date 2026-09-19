@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "ad.domainControllerSettings",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "AD",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:30:53.0000000Z",
+  "source": {
+    "system": "ActiveDirectory",
+    "operations": [
+      "Remote registry read: HKLM\\SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters (LDAPServerIntegrity, LdapEnforceChannelBinding)",
+      "Remote registry read: HKLM\\SYSTEM\\CurrentControlSet\\Services\\LanmanServer\\Parameters (RequireSecuritySignature, SMB1)"
+    ],
+    "apiVersion": null
+  },
+  "status": "NotCollected",
+  "errors": [],
+  "warnings": [
+    {
+      "code": "OPTION_NOT_SELECTED",
+      "message": "Domain controller registry settings were not collected because -IncludeDomainControllerSettings was not specified.",
+      "target": null
+    }
+  ],
+  "data": null
+}

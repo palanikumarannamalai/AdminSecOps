@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "ad.domains",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "AD",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:29:57.0000000Z",
+  "source": {
+    "system": "ActiveDirectory",
+    "operations": [
+      "Get-ADDomain",
+      "Get-ADObject <domain DN> -Properties ms-DS-MachineAccountQuota"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "dnsRoot": "corp.contoso.example",
+      "netBIOSName": "CONTOSO",
+      "domainSid": "S-1-5-21-1111111111-2222222222-3333333333",
+      "distinguishedName": "DC=corp,DC=contoso,DC=example",
+      "domainMode": "Windows2016Domain",
+      "machineAccountQuota": 10
+    }
+  ]
+}

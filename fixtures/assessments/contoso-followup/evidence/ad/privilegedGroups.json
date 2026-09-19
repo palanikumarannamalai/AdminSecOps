@@ -1,0 +1,156 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "ad.privilegedGroups",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "AD",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:30:11.0000000Z",
+  "source": {
+    "system": "ActiveDirectory",
+    "operations": [
+      "Get-ADGroup -Identity <well-known SID>",
+      "Get-ADGroupMember -Recursive"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "domain": "corp.contoso.example",
+      "groupName": "Domain Admins",
+      "groupSid": "S-1-5-21-1111111111-2222222222-3333333333-512",
+      "members": [
+        {
+          "samAccountName": "Administrator",
+          "sid": "S-1-5-21-1111111111-2222222222-3333333333-500",
+          "objectClass": "user"
+        },
+        {
+          "samAccountName": "adm-alex",
+          "sid": "S-1-5-21-1111111111-2222222222-3333333333-1104",
+          "objectClass": "user"
+        },
+        {
+          "samAccountName": "adm-taylor",
+          "sid": "S-1-5-21-1111111111-2222222222-3333333333-1105",
+          "objectClass": "user"
+        },
+        {
+          "samAccountName": "svc-backup",
+          "sid": "S-1-5-21-1111111111-2222222222-3333333333-1311",
+          "objectClass": "user"
+        }
+      ]
+    },
+    {
+      "domain": "corp.contoso.example",
+      "groupName": "Schema Admins",
+      "groupSid": "S-1-5-21-1111111111-2222222222-3333333333-518",
+      "members": [
+        {
+          "samAccountName": "Administrator",
+          "sid": "S-1-5-21-1111111111-2222222222-3333333333-500",
+          "objectClass": "user"
+        }
+      ]
+    },
+    {
+      "domain": "corp.contoso.example",
+      "groupName": "Enterprise Admins",
+      "groupSid": "S-1-5-21-1111111111-2222222222-3333333333-519",
+      "members": [
+        {
+          "samAccountName": "Administrator",
+          "sid": "S-1-5-21-1111111111-2222222222-3333333333-500",
+          "objectClass": "user"
+        },
+        {
+          "samAccountName": "adm-alex",
+          "sid": "S-1-5-21-1111111111-2222222222-3333333333-1104",
+          "objectClass": "user"
+        }
+      ]
+    },
+    {
+      "domain": "corp.contoso.example",
+      "groupName": "Key Admins",
+      "groupSid": "S-1-5-21-1111111111-2222222222-3333333333-526",
+      "members": []
+    },
+    {
+      "domain": "corp.contoso.example",
+      "groupName": "Enterprise Key Admins",
+      "groupSid": "S-1-5-21-1111111111-2222222222-3333333333-527",
+      "members": []
+    },
+    {
+      "domain": "corp.contoso.example",
+      "groupName": "Administrators",
+      "groupSid": "S-1-5-32-544",
+      "members": [
+        {
+          "samAccountName": "Administrator",
+          "sid": "S-1-5-21-1111111111-2222222222-3333333333-500",
+          "objectClass": "user"
+        },
+        {
+          "samAccountName": "adm-alex",
+          "sid": "S-1-5-21-1111111111-2222222222-3333333333-1104",
+          "objectClass": "user"
+        },
+        {
+          "samAccountName": "adm-taylor",
+          "sid": "S-1-5-21-1111111111-2222222222-3333333333-1105",
+          "objectClass": "user"
+        },
+        {
+          "samAccountName": "svc-backup",
+          "sid": "S-1-5-21-1111111111-2222222222-3333333333-1311",
+          "objectClass": "user"
+        }
+      ]
+    },
+    {
+      "domain": "corp.contoso.example",
+      "groupName": "Account Operators",
+      "groupSid": "S-1-5-32-548",
+      "members": [
+        {
+          "samAccountName": "hd-avery",
+          "sid": "S-1-5-21-1111111111-2222222222-3333333333-1210",
+          "objectClass": "user"
+        }
+      ]
+    },
+    {
+      "domain": "corp.contoso.example",
+      "groupName": "Server Operators",
+      "groupSid": "S-1-5-32-549",
+      "members": []
+    },
+    {
+      "domain": "corp.contoso.example",
+      "groupName": "Print Operators",
+      "groupSid": "S-1-5-32-550",
+      "members": []
+    },
+    {
+      "domain": "corp.contoso.example",
+      "groupName": "Backup Operators",
+      "groupSid": "S-1-5-32-551",
+      "members": [
+        {
+          "samAccountName": "svc-backup",
+          "sid": "S-1-5-21-1111111111-2222222222-3333333333-1311",
+          "objectClass": "user"
+        }
+      ]
+    }
+  ]
+}

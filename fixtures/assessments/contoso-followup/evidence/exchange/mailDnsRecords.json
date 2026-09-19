@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "exchange.mailDnsRecords",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Exchange",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:15:53.0000000Z",
+  "source": {
+    "system": "DNS",
+    "operations": [
+      "Resolve-DnsName -Type TXT <domain>",
+      "Resolve-DnsName -Type TXT _dmarc.<domain>"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "domain": "contoso.example",
+      "spf": {
+        "lookupStatus": "Found",
+        "records": [
+          "v=spf1 include:spf.protection.outlook.com ip4:203.0.113.25 ~all",
+          "contoso-site-verification=4c1f0e9a7b"
+        ]
+      },
+      "dmarc": {
+        "lookupStatus": "Found",
+        "records": [
+          "v=DMARC1; p=none; rua=mailto:dmarc-reports@contoso.example; fo=1"
+        ]
+      }
+    },
+    {
+      "domain": "mail.contoso.example",
+      "spf": {
+        "lookupStatus": "NotFound",
+        "records": []
+      },
+      "dmarc": {
+        "lookupStatus": "NotFound",
+        "records": []
+      }
+    },
+    {
+      "domain": "contoso.onmicrosoft.com",
+      "spf": {
+        "lookupStatus": "Found",
+        "records": [
+          "v=spf1 include:spf.protection.outlook.com -all"
+        ]
+      },
+      "dmarc": {
+        "lookupStatus": "NotFound",
+        "records": []
+      }
+    }
+  ]
+}

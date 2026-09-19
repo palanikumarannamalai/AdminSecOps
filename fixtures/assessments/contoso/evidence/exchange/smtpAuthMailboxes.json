@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "exchange.smtpAuthMailboxes",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Exchange",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:40:39.0000000Z",
+  "source": {
+    "system": "ExchangeOnline",
+    "operations": [
+      "Get-EXOCASMailbox -Properties SmtpClientAuthenticationDisabled"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "userPrincipalName": "scanner-hq@contoso.example",
+      "smtpClientAuthenticationDisabled": false
+    },
+    {
+      "userPrincipalName": "crm-notifications@contoso.example",
+      "smtpClientAuthenticationDisabled": false
+    },
+    {
+      "userPrincipalName": "legacy-fax@contoso.example",
+      "smtpClientAuthenticationDisabled": true
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "exchange.dkimSigningConfigs",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Exchange",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:15:11.0000000Z",
+  "source": {
+    "system": "ExchangeOnline",
+    "operations": [
+      "Get-DkimSigningConfig"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "domain": "contoso.example",
+      "enabled": true,
+      "status": "Valid"
+    },
+    {
+      "domain": "mail.contoso.example",
+      "enabled": false,
+      "status": "CnameMissing"
+    },
+    {
+      "domain": "contoso.onmicrosoft.com",
+      "enabled": true,
+      "status": "Valid"
+    }
+  ]
+}

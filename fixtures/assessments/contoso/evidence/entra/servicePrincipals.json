@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "entra.servicePrincipals",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Entra",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:35:25.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/servicePrincipals?$select=id,appId,displayName,servicePrincipalType,appOwnerOrganizationId,accountEnabled,passwordCredentials,keyCredentials"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Partial",
+  "errors": [
+    {
+      "code": "GRAPH_PAGING_FAILED",
+      "message": "Page 3 of the service principal listing failed with HTTP 503 (Service Unavailable) after 3 retries. Service principals after page 2 were not collected.",
+      "target": "GET https://graph.microsoft.com/v1.0/servicePrincipals"
+    }
+  ],
+  "warnings": [],
+  "data": [
+    {
+      "id": "3696340b-74dd-43fc-a3fe-4beeaaca031b",
+      "appId": "00000003-0000-0000-c000-000000000000",
+      "displayName": "Microsoft Graph",
+      "servicePrincipalType": "Application",
+      "appOwnerOrganizationId": "f8cdef31-a31e-4b4a-93e4-5f571e91255a",
+      "accountEnabled": true,
+      "passwordCredentials": [],
+      "keyCredentials": []
+    },
+    {
+      "id": "b4ed307d-99c6-40d7-8878-ff67906a0cea",
+      "appId": "00000002-0000-0ff1-ce00-000000000000",
+      "displayName": "Office 365 Exchange Online",
+      "servicePrincipalType": "Application",
+      "appOwnerOrganizationId": "f8cdef31-a31e-4b4a-93e4-5f571e91255a",
+      "accountEnabled": true,
+      "passwordCredentials": [],
+      "keyCredentials": []
+    },
+    {
+      "id": "430b3993-34a0-4d6b-88d7-8bdb510fb3fe",
+      "appId": "9f8c6ae1-9362-4260-b929-f0975137a866",
+      "displayName": "Contoso HR Connector",
+      "servicePrincipalType": "Application",
+      "appOwnerOrganizationId": "034f0249-72ae-42e2-bfa6-6eb145375be8",
+      "accountEnabled": true,
+      "passwordCredentials": [],
+      "keyCredentials": []
+    },
+    {
+      "id": "a2ad4bf0-2795-4292-aa9c-d7a350306f8c",
+      "appId": "03b09258-a740-4fca-8f1f-240aa0770b2b",
+      "displayName": "Contoso Identity Automation",
+      "servicePrincipalType": "Application",
+      "appOwnerOrganizationId": "034f0249-72ae-42e2-bfa6-6eb145375be8",
+      "accountEnabled": true,
+      "passwordCredentials": [],
+      "keyCredentials": []
+    },
+    {
+      "id": "11c8e26f-9399-43eb-a040-f078c9c659b2",
+      "appId": "77f1f18c-d73b-44ec-aa24-06818c038549",
+      "displayName": "Contoso Intranet",
+      "servicePrincipalType": "Application",
+      "appOwnerOrganizationId": "034f0249-72ae-42e2-bfa6-6eb145375be8",
+      "accountEnabled": true,
+      "passwordCredentials": [],
+      "keyCredentials": []
+    },
+    {
+      "id": "95a9079a-b353-4d7a-9ab6-aa0e79e2ae13",
+      "appId": "735060d2-900e-44d4-8e01-c3aeefae9549",
+      "displayName": "Legacy Reporting Tool",
+      "servicePrincipalType": "Application",
+      "appOwnerOrganizationId": "034f0249-72ae-42e2-bfa6-6eb145375be8",
+      "accountEnabled": true,
+      "passwordCredentials": [],
+      "keyCredentials": []
+    },
+    {
+      "id": "7fa58dd7-6d88-4a1d-97b5-409bc7cd7549",
+      "appId": "86b26fdd-c5dd-4bf4-a280-fda6c2d6d8f5",
+      "displayName": "Contoso Mail Archiver",
+      "servicePrincipalType": "Application",
+      "appOwnerOrganizationId": "034f0249-72ae-42e2-bfa6-6eb145375be8",
+      "accountEnabled": true,
+      "passwordCredentials": [],
+      "keyCredentials": []
+    },
+    {
+      "id": "6e3077a8-b4a2-4448-901c-4d5d4641bb3e",
+      "appId": "79c05855-276a-409f-9d25-c1ba2b1d6095",
+      "displayName": "Contoso Provisioning Automation",
+      "servicePrincipalType": "Application",
+      "appOwnerOrganizationId": "034f0249-72ae-42e2-bfa6-6eb145375be8",
+      "accountEnabled": true,
+      "passwordCredentials": [],
+      "keyCredentials": []
+    },
+    {
+      "id": "223f1846-c42e-4039-aa7f-6112ff327b0f",
+      "appId": "d4680ba3-8802-4a06-8276-b42590f57fb4",
+      "displayName": "Northwind Survey Builder",
+      "servicePrincipalType": "Application",
+      "appOwnerOrganizationId": "e82911ea-57ff-4bf1-b20f-be24b562817d",
+      "accountEnabled": true,
+      "passwordCredentials": [],
+      "keyCredentials": []
+    },
+    {
+      "id": "28665ab7-f2f1-4601-914b-79ef611549c9",
+      "appId": "df42e318-d274-4bf7-8481-6feae7a93609",
+      "displayName": "aa-contoso-prod-automation",
+      "servicePrincipalType": "ManagedIdentity",
+      "appOwnerOrganizationId": null,
+      "accountEnabled": true,
+      "passwordCredentials": [],
+      "keyCredentials": []
+    }
+  ]
+}

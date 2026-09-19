@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "exchange.remoteDomains",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Exchange",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:15:25.0000000Z",
+  "source": {
+    "system": "ExchangeOnline",
+    "operations": [
+      "Get-RemoteDomain"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "name": "Default",
+      "domainName": "*",
+      "autoForwardEnabled": true
+    },
+    {
+      "name": "Partner Co",
+      "domainName": "partner-co.example",
+      "autoForwardEnabled": true
+    }
+  ]
+}

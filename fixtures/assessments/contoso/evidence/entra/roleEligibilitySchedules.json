@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "entra.roleEligibilitySchedules",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Entra",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:34:57.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/roleManagement/directory/roleEligibilitySchedules"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "id": "ufS_9GtaHJ38hnWViTMHI6-BpZAodanPfg_c1cBmoxc",
+      "roleDefinitionId": "e8611ab8-c189-46e8-94e1-60213ab1f814",
+      "principalId": "d1f86d10-d866-41da-8baf-4dccd57addf1",
+      "directoryScopeId": "/",
+      "memberType": "Direct",
+      "startDateTime": "2025-03-03T09:00:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "gY_peoF9zSD8SIgNleso_y4Q3a-6kG8jgBQHzy5J5WE",
+      "roleDefinitionId": "194ae4cb-b126-40b2-bd5b-6091b380977d",
+      "principalId": "8976b762-fcd4-4156-86b6-6cfe1ba3edd5",
+      "directoryScopeId": "/",
+      "memberType": "Direct",
+      "startDateTime": "2025-03-03T09:05:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "090-IM-sNYI6Eq5gHnRXde8AzqzoshZSfh1ihH9ieYI",
+      "roleDefinitionId": "f28a1f50-f6e7-4571-818b-6a12f2af6b6c",
+      "principalId": "90792978-2084-4416-9135-fc7630e38abb",
+      "directoryScopeId": "/",
+      "memberType": "Direct",
+      "startDateTime": "2025-05-12T10:30:00Z",
+      "endDateTime": "2027-05-12T10:30:00Z"
+    },
+    {
+      "id": "N1m74E40IouX5DwurqEZL9Xfa-DjV7VZS5QeoouZ1zE",
+      "roleDefinitionId": "b1be1c3e-b65d-4f19-8427-f6fa0d97feb9",
+      "principalId": "9f68d979-e791-4b84-bb7b-78a1f37b98df",
+      "directoryScopeId": "/",
+      "memberType": "Direct",
+      "startDateTime": "2025-03-03T09:10:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "YvtSB8KChX3RkfOQNc6AduAMQh-o45L-1Srn_79jceg",
+      "roleDefinitionId": "29232cdf-9323-42fd-ade2-1d097af3e4de",
+      "principalId": "8976b762-fcd4-4156-86b6-6cfe1ba3edd5",
+      "directoryScopeId": "/",
+      "memberType": "Direct",
+      "startDateTime": "2025-06-23T14:00:00Z",
+      "endDateTime": "2026-12-23T14:00:00Z"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "entra.organization",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Entra",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:09:01.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/organization"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": {
+    "id": "034f0249-72ae-42e2-bfa6-6eb145375be8",
+    "displayName": "Contoso",
+    "createdDateTime": "2019-03-11T17:26:04Z",
+    "onPremisesSyncEnabled": true,
+    "onPremisesLastSyncDateTime": "2026-09-09T09:17:00Z",
+    "verifiedDomains": [
+      {
+        "name": "contoso.onmicrosoft.com",
+        "isDefault": false,
+        "isInitial": true,
+        "type": "Managed",
+        "capabilities": "Email, OfficeCommunicationsOnline"
+      },
+      {
+        "name": "contoso.example",
+        "isDefault": true,
+        "isInitial": false,
+        "type": "Managed",
+        "capabilities": "Email, OfficeCommunicationsOnline, Intune"
+      },
+      {
+        "name": "mail.contoso.example",
+        "isDefault": false,
+        "isInitial": false,
+        "type": "Managed",
+        "capabilities": "Email"
+      }
+    ]
+  }
+}

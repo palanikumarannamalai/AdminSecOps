@@ -1,0 +1,184 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "entra.roleAssignmentScheduleInstances",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Entra",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:09:50.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignmentScheduleInstances"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "id": "jC7pU-U3lPyLfhlvTRz0bMJ3KNrlzAIv1cu-uH2rMYg",
+      "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10",
+      "principalId": "bdb694b2-e54c-41d1-b1cd-b4cfdb97990f",
+      "directoryScopeId": "/",
+      "assignmentType": "Assigned",
+      "memberType": "Direct",
+      "startDateTime": "2023-06-01T09:00:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "pMwJsqC07YyMTmgp_vAk7A4PVkDX9bkubOqDFUY0_bQ",
+      "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10",
+      "principalId": "2a4088d1-99ef-41e4-ac1b-af469902292a",
+      "directoryScopeId": "/",
+      "assignmentType": "Assigned",
+      "memberType": "Direct",
+      "startDateTime": "2023-06-01T09:05:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "CGDRISjYAHjKnTq8IDTD6XLJNmcclKm2sN5jKTfCqWY",
+      "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10",
+      "principalId": "d1f86d10-d866-41da-8baf-4dccd57addf1",
+      "directoryScopeId": "/",
+      "assignmentType": "Assigned",
+      "memberType": "Direct",
+      "startDateTime": "2023-06-02T10:12:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "E_nwR9wGijuHTnPeXkjbR021owRSKOyXkrgGrH0teos",
+      "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10",
+      "principalId": "8976b762-fcd4-4156-86b6-6cfe1ba3edd5",
+      "directoryScopeId": "/",
+      "assignmentType": "Assigned",
+      "memberType": "Direct",
+      "startDateTime": "2024-01-15T08:30:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "OnW6VEMKSRo40rdGiw8kFmuvMmaYkW1onH7FaP0rk7w",
+      "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10",
+      "principalId": "0471c97d-e7da-4777-8f43-b3d600d205ba",
+      "directoryScopeId": "/",
+      "assignmentType": "Assigned",
+      "memberType": "Direct",
+      "startDateTime": "2022-11-21T15:44:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "Ja2FNaPnAdy0sp4DDWLDRndvA9ZKCdI_rXaTfYyZvfw",
+      "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10",
+      "principalId": "abb3d027-21fd-461b-a154-1429b103a0e0",
+      "directoryScopeId": "/",
+      "assignmentType": "Assigned",
+      "memberType": "Direct",
+      "startDateTime": "2025-04-07T12:00:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "HYZ6LhHLMtKex6V6p7miNYIBmpWY1V59aci8jlLwI6o",
+      "roleDefinitionId": "194ae4cb-b126-40b2-bd5b-6091b380977d",
+      "principalId": "9f68d979-e791-4b84-bb7b-78a1f37b98df",
+      "directoryScopeId": "/",
+      "assignmentType": "Assigned",
+      "memberType": "Direct",
+      "startDateTime": "2024-09-10T09:20:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "C0RIOsl0yb4FKi98WK8XgWt9tNlNmw5K9eB0eS9SYvc",
+      "roleDefinitionId": "29232cdf-9323-42fd-ade2-1d097af3e4de",
+      "principalId": "c6676463-f0f8-41f6-9564-aa34b5953594",
+      "directoryScopeId": "/",
+      "assignmentType": "Assigned",
+      "memberType": "Direct",
+      "startDateTime": "2025-10-02T14:10:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "OUEAvbtuDIpnRqWR4iCQ63C9NQhubqWj3OWnXVA9GPw",
+      "roleDefinitionId": "f28a1f50-f6e7-4571-818b-6a12f2af6b6c",
+      "principalId": "90792978-2084-4416-9135-fc7630e38abb",
+      "directoryScopeId": "/",
+      "assignmentType": "Activated",
+      "memberType": "Direct",
+      "startDateTime": "2026-09-09T07:40:00Z",
+      "endDateTime": "2026-09-09T15:40:00Z"
+    },
+    {
+      "id": "tTTVuIxvSlqCN3uh6CRnaD7qgy-D9xvq9V-5Cq57YHg",
+      "roleDefinitionId": "9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3",
+      "principalId": "953e2934-b257-4543-b5b6-ab87d3213b95",
+      "directoryScopeId": "/",
+      "assignmentType": "Assigned",
+      "memberType": "Direct",
+      "startDateTime": "2025-02-18T11:35:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "Fp9p-wDv0klDlO2YCn1izjDKrDZ-bNvJhEHekBIW6LA",
+      "roleDefinitionId": "3a2c62db-5318-420d-8d74-23affee5d9d5",
+      "principalId": "cc0f60d6-5924-41bd-968f-786af7ca2639",
+      "directoryScopeId": "/",
+      "assignmentType": "Assigned",
+      "memberType": "Direct",
+      "startDateTime": "2024-06-03T10:00:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "bfzm1zqeMzELyeAGIzQpLSOw9Ro9SGvdxd4pBvFDElY",
+      "roleDefinitionId": "729827e3-9c14-49f7-bb1b-9608f156bbb8",
+      "principalId": "a00f14da-e6e7-41a5-914e-26baef8bf254",
+      "directoryScopeId": "/",
+      "assignmentType": "Assigned",
+      "memberType": "Direct",
+      "startDateTime": "2024-03-11T08:00:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "f04s13z2u4D8-n92qYpD93aLOpwVnZ2dvp5D6LJM8Gw",
+      "roleDefinitionId": "729827e3-9c14-49f7-bb1b-9608f156bbb8",
+      "principalId": "65e7b77b-acc2-4b4a-805a-87ca8acfb6af",
+      "directoryScopeId": "/",
+      "assignmentType": "Assigned",
+      "memberType": "Direct",
+      "startDateTime": "2024-03-11T08:02:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "G56f-Vmp5uUdfNx6a2w5XrdvAf693UzgxZROeLDYs8w",
+      "roleDefinitionId": "f2ef992c-3afb-46b9-b7cf-a126ee74c451",
+      "principalId": "efea51b4-e4ae-4689-92cc-c386df0df339",
+      "directoryScopeId": "/",
+      "assignmentType": "Assigned",
+      "memberType": "Direct",
+      "startDateTime": "2025-01-06T09:00:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "SmQXMS0htzXjF4fpN7QCJSnIjbjftIXGaStp2diD8gY",
+      "roleDefinitionId": "d29b2b05-8046-44ba-8758-1e26182fcf32",
+      "principalId": "dc654f6e-23fc-49fb-ab51-d219814d2398",
+      "directoryScopeId": "/",
+      "assignmentType": "Assigned",
+      "memberType": "Direct",
+      "startDateTime": "2022-05-16T18:25:00Z",
+      "endDateTime": null
+    },
+    {
+      "id": "VJFaCndS2ksWfgz0lkNWtTtYOTHDydky2YTwef_PgYE",
+      "roleDefinitionId": "fe930be7-5e62-47db-91af-98c3a49a38b1",
+      "principalId": "6e3077a8-b4a2-4448-901c-4d5d4641bb3e",
+      "directoryScopeId": "/",
+      "assignmentType": "Assigned",
+      "memberType": "Direct",
+      "startDateTime": "2025-07-22T13:15:00Z",
+      "endDateTime": null
+    }
+  ]
+}

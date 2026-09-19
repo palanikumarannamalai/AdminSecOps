@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "intune.compliancePolicies",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Intune",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:41:53.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/deviceManagement/deviceCompliancePolicies?$expand=assignments"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "id": "41063bcf-c6c5-4a7b-ab53-383d8e183943",
+      "displayName": "Windows 10/11 - Baseline compliance",
+      "odataType": "#microsoft.graph.windows10CompliancePolicy",
+      "lastModifiedDateTime": "2026-02-17T11:24:39Z",
+      "assignments": [
+        {
+          "targetType": "#microsoft.graph.groupAssignmentTarget",
+          "groupId": "9b27d377-c8fd-4f82-beb0-f40a11203249"
+        }
+      ],
+      "settings": {
+        "bitLockerEnabled": true,
+        "secureBootEnabled": true,
+        "codeIntegrityEnabled": true,
+        "storageRequireEncryption": true,
+        "passwordRequired": false,
+        "defenderEnabled": true,
+        "rtpEnabled": true,
+        "antivirusRequired": true,
+        "firewallEnabled": true,
+        "tpmRequired": true,
+        "osMinimumVersion": "10.0.22631"
+      }
+    }
+  ]
+}

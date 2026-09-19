@@ -1,0 +1,135 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "entra.subscribedSkus",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Entra",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:34:08.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/subscribedSkus"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "skuId": "f48f72a4-22c6-4ef3-8fce-91e152732e17",
+      "skuPartNumber": "SPE_E3",
+      "capabilityStatus": "Enabled",
+      "consumedUnits": 486,
+      "prepaidUnits": {
+        "enabled": 500,
+        "suspended": 0,
+        "warning": 0
+      },
+      "servicePlans": [
+        {
+          "servicePlanId": "15abc63e-d71a-427f-b615-75e83a81bc5e",
+          "servicePlanName": "AAD_PREMIUM",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        },
+        {
+          "servicePlanId": "254b0dae-1a7f-4f11-aceb-40bd42a167e3",
+          "servicePlanName": "MFA_PREMIUM",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        },
+        {
+          "servicePlanId": "3c166782-8999-4f67-a975-13ed3b34a7f3",
+          "servicePlanName": "INTUNE_A",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        },
+        {
+          "servicePlanId": "aa75239b-65c7-457d-ade0-c5cacf0e5d25",
+          "servicePlanName": "EXCHANGE_S_ENTERPRISE",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        },
+        {
+          "servicePlanId": "7247d275-ea52-4734-9a38-f233f063cb02",
+          "servicePlanName": "SHAREPOINTENTERPRISE",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        },
+        {
+          "servicePlanId": "e6900523-1d38-4e57-9558-f97841956857",
+          "servicePlanName": "TEAMS1",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        },
+        {
+          "servicePlanId": "8efe6d1d-3f2d-4503-a46c-e89c1a1f5fd7",
+          "servicePlanName": "OFFICESUBSCRIPTION",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        },
+        {
+          "servicePlanId": "18c6c55c-b42c-4fa3-8c97-ae8e206236ea",
+          "servicePlanName": "MICROSOFTBOOKINGS",
+          "provisioningStatus": "Disabled",
+          "appliesTo": "User"
+        }
+      ]
+    },
+    {
+      "skuId": "fe3bf362-fbad-4c6e-ade0-ab1f8253ffaa",
+      "skuPartNumber": "AAD_PREMIUM_P2",
+      "capabilityStatus": "Enabled",
+      "consumedUnits": 18,
+      "prepaidUnits": {
+        "enabled": 25,
+        "suspended": 0,
+        "warning": 0
+      },
+      "servicePlans": [
+        {
+          "servicePlanId": "15abc63e-d71a-427f-b615-75e83a81bc5e",
+          "servicePlanName": "AAD_PREMIUM",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        },
+        {
+          "servicePlanId": "a053f8b4-696b-4e79-80be-000dbcbf36be",
+          "servicePlanName": "AAD_PREMIUM_P2",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        },
+        {
+          "servicePlanId": "254b0dae-1a7f-4f11-aceb-40bd42a167e3",
+          "servicePlanName": "MFA_PREMIUM",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        }
+      ]
+    },
+    {
+      "skuId": "123e656d-b94f-430b-baa5-f1274f064832",
+      "skuPartNumber": "POWER_BI_STANDARD",
+      "capabilityStatus": "Enabled",
+      "consumedUnits": 37,
+      "prepaidUnits": {
+        "enabled": 1000000,
+        "suspended": 0,
+        "warning": 0
+      },
+      "servicePlans": [
+        {
+          "servicePlanId": "a1498ab8-b7cf-4b46-a7c2-79ba80245806",
+          "servicePlanName": "BI_AZURE_P0",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        }
+      ]
+    }
+  ]
+}

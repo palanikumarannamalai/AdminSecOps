@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "azure.keyVaults",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Azure",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:22:39.0000000Z",
+  "source": {
+    "system": "AzureResourceManager",
+    "operations": [
+      "GET https://management.azure.com/subscriptions/{id}/providers/Microsoft.KeyVault/vaults?api-version=2023-07-01"
+    ],
+    "apiVersion": "2023-07-01"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "subscriptionId": "9af60039-512d-4915-9ba3-ec30bf241297",
+      "id": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/resourceGroups/rg-security-prod/providers/Microsoft.KeyVault/vaults/kv-contoso-prod",
+      "name": "kv-contoso-prod",
+      "resourceGroup": "rg-security-prod",
+      "location": "westeurope",
+      "enableSoftDelete": true,
+      "softDeleteRetentionInDays": 90,
+      "enablePurgeProtection": true,
+      "enableRbacAuthorization": true,
+      "publicNetworkAccess": "Disabled",
+      "networkDefaultAction": "Deny"
+    },
+    {
+      "subscriptionId": "12021807-473f-4603-b8e0-151a7c7c1f66",
+      "id": "/subscriptions/12021807-473f-4603-b8e0-151a7c7c1f66/resourceGroups/rg-apps-dev/providers/Microsoft.KeyVault/vaults/kv-contoso-dev",
+      "name": "kv-contoso-dev",
+      "resourceGroup": "rg-apps-dev",
+      "location": "northeurope",
+      "enableSoftDelete": true,
+      "softDeleteRetentionInDays": 90,
+      "enablePurgeProtection": null,
+      "enableRbacAuthorization": false,
+      "publicNetworkAccess": "Enabled",
+      "networkDefaultAction": "Allow"
+    }
+  ]
+}

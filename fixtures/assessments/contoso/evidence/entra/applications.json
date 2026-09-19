@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "entra.applications",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Entra",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:35:18.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/applications?$select=id,appId,displayName,signInAudience,createdDateTime,passwordCredentials,keyCredentials"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "id": "8b2c49c0-8695-44d6-9fcf-ec031ad1409b",
+      "appId": "9f8c6ae1-9362-4260-b929-f0975137a866",
+      "displayName": "Contoso HR Connector",
+      "signInAudience": "AzureADMyOrg",
+      "createdDateTime": "2025-03-01T10:14:22Z",
+      "passwordCredentials": [
+        {
+          "keyId": "5fb33183-edc0-442c-9e6e-1c8e35396c9d",
+          "displayName": "hr-sync",
+          "startDateTime": "2025-03-01T10:20:00Z",
+          "endDateTime": "2027-03-01T10:20:00Z"
+        }
+      ],
+      "keyCredentials": []
+    },
+    {
+      "id": "442c3ac5-535e-4d4e-8705-54be74812928",
+      "appId": "03b09258-a740-4fca-8f1f-240aa0770b2b",
+      "displayName": "Contoso Identity Automation",
+      "signInAudience": "AzureADMyOrg",
+      "createdDateTime": "2024-10-14T09:02:51Z",
+      "passwordCredentials": [],
+      "keyCredentials": [
+        {
+          "keyId": "8fcd49ac-1539-4193-9684-7dd0d109ae74",
+          "displayName": "CN=contoso-identity-automation",
+          "startDateTime": "2025-10-14T00:00:00Z",
+          "endDateTime": "2026-10-14T00:00:00Z",
+          "type": "AsymmetricX509Cert",
+          "usage": "Verify"
+        }
+      ]
+    },
+    {
+      "id": "1d388db5-a0d0-4bd3-8dab-ad13b8b7e0cb",
+      "appId": "77f1f18c-d73b-44ec-aa24-06818c038549",
+      "displayName": "Contoso Intranet",
+      "signInAudience": "AzureADMyOrg",
+      "createdDateTime": "2023-04-18T12:40:09Z",
+      "passwordCredentials": [],
+      "keyCredentials": []
+    },
+    {
+      "id": "4e8bc565-ebd1-4823-8703-9e02550e50e0",
+      "appId": "735060d2-900e-44d4-8e01-c3aeefae9549",
+      "displayName": "Legacy Reporting Tool",
+      "signInAudience": "AzureADMultipleOrgs",
+      "createdDateTime": "2021-08-30T15:27:43Z",
+      "passwordCredentials": [
+        {
+          "keyId": "f2cbf77d-adfd-4837-9cfa-4e61952f31b5",
+          "displayName": "reporting",
+          "startDateTime": "2024-02-01T00:00:00Z",
+          "endDateTime": "2026-02-01T00:00:00Z"
+        }
+      ],
+      "keyCredentials": []
+    },
+    {
+      "id": "b568838c-c4b5-4c44-a1a6-e2da248dac90",
+      "appId": "86b26fdd-c5dd-4bf4-a280-fda6c2d6d8f5",
+      "displayName": "Contoso Mail Archiver",
+      "signInAudience": "AzureADMyOrg",
+      "createdDateTime": "2025-01-09T08:55:30Z",
+      "passwordCredentials": [
+        {
+          "keyId": "3b718f56-c765-409e-9dce-b2d58dfa0856",
+          "displayName": "archiver",
+          "startDateTime": "2026-01-09T09:00:00Z",
+          "endDateTime": "2026-07-08T09:00:00Z"
+        },
+        {
+          "keyId": "1b13ef33-28db-4f29-a7b1-a770594f7324",
+          "displayName": "archiver-2026h2",
+          "startDateTime": "2026-07-01T09:00:00Z",
+          "endDateTime": "2026-12-28T09:00:00Z"
+        }
+      ],
+      "keyCredentials": []
+    },
+    {
+      "id": "1fb4f0d4-1897-460c-9149-000aeb75f44c",
+      "appId": "79c05855-276a-409f-9d25-c1ba2b1d6095",
+      "displayName": "Contoso Provisioning Automation",
+      "signInAudience": "AzureADMyOrg",
+      "createdDateTime": "2025-07-22T12:58:04Z",
+      "passwordCredentials": [],
+      "keyCredentials": [
+        {
+          "keyId": "57da0d88-45de-42dc-8b3d-50da5efba2a8",
+          "displayName": "CN=contoso-provisioning",
+          "startDateTime": "2025-07-22T00:00:00Z",
+          "endDateTime": "2026-07-22T00:00:00Z",
+          "type": "AsymmetricX509Cert",
+          "usage": "Verify"
+        }
+      ]
+    }
+  ]
+}

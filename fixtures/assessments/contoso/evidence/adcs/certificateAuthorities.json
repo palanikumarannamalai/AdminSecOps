@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "adcs.certificateAuthorities",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "ADCS",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:57:46.0000000Z",
+  "source": {
+    "system": "ActiveDirectory",
+    "operations": [
+      "Get-ADObject -SearchBase \"CN=Enrollment Services,CN=Public Key Services,CN=Services,<ConfigurationNC>\" -Filter \"objectClass -eq 'pKIEnrollmentService'\""
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "name": "Contoso Issuing CA 01",
+      "dnsHostName": "CA01.corp.contoso.example",
+      "certificateTemplates": [
+        "User",
+        "Machine",
+        "DomainController",
+        "WebServer",
+        "ContosoWebClientLegacy",
+        "ContosoVPNUser"
+      ],
+      "caCertificateNotAfter": "2029-04-30T12:00:00Z"
+    }
+  ]
+}

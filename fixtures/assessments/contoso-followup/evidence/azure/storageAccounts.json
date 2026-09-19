@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "azure.storageAccounts",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Azure",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:22:32.0000000Z",
+  "source": {
+    "system": "AzureResourceManager",
+    "operations": [
+      "GET https://management.azure.com/subscriptions/{id}/providers/Microsoft.Storage/storageAccounts?api-version=2023-05-01"
+    ],
+    "apiVersion": "2023-05-01"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "subscriptionId": "9af60039-512d-4915-9ba3-ec30bf241297",
+      "id": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/resourceGroups/rg-web-prod/providers/Microsoft.Storage/storageAccounts/stcontosowebprod",
+      "name": "stcontosowebprod",
+      "resourceGroup": "rg-web-prod",
+      "location": "westeurope",
+      "kind": "StorageV2",
+      "allowBlobPublicAccess": false,
+      "supportsHttpsTrafficOnly": true,
+      "minimumTlsVersion": "TLS1_2",
+      "allowSharedKeyAccess": true,
+      "publicNetworkAccess": "Enabled",
+      "networkDefaultAction": "Allow"
+    },
+    {
+      "subscriptionId": "9af60039-512d-4915-9ba3-ec30bf241297",
+      "id": "/subscriptions/9af60039-512d-4915-9ba3-ec30bf241297/resourceGroups/rg-logging-prod/providers/Microsoft.Storage/storageAccounts/stcontosologsprod",
+      "name": "stcontosologsprod",
+      "resourceGroup": "rg-logging-prod",
+      "location": "westeurope",
+      "kind": "StorageV2",
+      "allowBlobPublicAccess": false,
+      "supportsHttpsTrafficOnly": true,
+      "minimumTlsVersion": "TLS1_2",
+      "allowSharedKeyAccess": false,
+      "publicNetworkAccess": "Disabled",
+      "networkDefaultAction": "Deny"
+    },
+    {
+      "subscriptionId": "12021807-473f-4603-b8e0-151a7c7c1f66",
+      "id": "/subscriptions/12021807-473f-4603-b8e0-151a7c7c1f66/resourceGroups/rg-data-dev/providers/Microsoft.Storage/storageAccounts/stcontosodevdata",
+      "name": "stcontosodevdata",
+      "resourceGroup": "rg-data-dev",
+      "location": "northeurope",
+      "kind": "Storage",
+      "allowBlobPublicAccess": null,
+      "supportsHttpsTrafficOnly": true,
+      "minimumTlsVersion": "TLS1_0",
+      "allowSharedKeyAccess": true,
+      "publicNetworkAccess": "Enabled",
+      "networkDefaultAction": "Allow"
+    }
+  ]
+}

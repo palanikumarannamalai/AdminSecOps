@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "exchange.mailboxForwarding",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Exchange",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:15:32.0000000Z",
+  "source": {
+    "system": "ExchangeOnline",
+    "operations": [
+      "Get-EXOMailbox -Filter \"ForwardingSmtpAddress -ne $null -or ForwardingAddress -ne $null\""
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "userPrincipalName": "reception@contoso.example",
+      "recipientTypeDetails": "SharedMailbox",
+      "forwardingSmtpAddress": null,
+      "forwardingAddress": "Front Desk Team",
+      "deliverToMailboxAndForward": true
+    }
+  ]
+}

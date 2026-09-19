@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "ad.trusts",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "AD",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:55:39.0000000Z",
+  "source": {
+    "system": "ActiveDirectory",
+    "operations": [
+      "Get-ADTrust -Filter *"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "domain": "corp.contoso.example",
+      "target": "legacy.northwind.example",
+      "direction": "BiDirectional",
+      "trustType": "Uplevel",
+      "forestTransitive": false,
+      "intraForest": false,
+      "sidFilteringQuarantined": false,
+      "sidFilteringForestAware": false,
+      "selectiveAuthentication": false,
+      "tgtDelegation": false
+    }
+  ]
+}

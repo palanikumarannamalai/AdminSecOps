@@ -1,0 +1,775 @@
+{
+  "manifestVersion": "1.0",
+  "product": "AdminSecOps",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "createdAt": "2026-08-10T10:05:00.0000000Z",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "powershellVersion": "7.4.6",
+    "platform": "Win32NT"
+  },
+  "environment": {
+    "label": "Contoso (sample) - initial assessment",
+    "tenantId": "034f0249-72ae-42e2-bfa6-6eb145375be8",
+    "tenantDisplayName": "Contoso",
+    "primaryDomain": "contoso.example",
+    "adForestName": "corp.contoso.example",
+    "adDomainName": "corp.contoso.example"
+  },
+  "options": {
+    "modules": [
+      "Entra",
+      "M365",
+      "Exchange",
+      "Intune",
+      "Azure",
+      "AD",
+      "ADCS",
+      "GPO",
+      "Windows"
+    ],
+    "includeDomainControllerSettings": false,
+    "windowsHostScope": "LocalHost",
+    "tenantDomain": "contoso.example"
+  },
+  "modules": [
+    {
+      "name": "Entra",
+      "version": "0.1.0",
+      "status": "CompletedWithErrors",
+      "startedAt": "2026-08-10T09:31:00.0000000Z",
+      "completedAt": "2026-08-10T09:36:00.0000000Z",
+      "prerequisites": [
+        {
+          "name": "Microsoft.Graph.Authentication module",
+          "satisfied": true,
+          "detail": "2.25.0"
+        },
+        {
+          "name": "Delegated sign-in (Global Reader)",
+          "satisfied": true,
+          "detail": null
+        }
+      ],
+      "errors": [],
+      "warnings": [
+        {
+          "code": "MODULE_INCOMPLETE",
+          "message": "2 of 17 Entra datasets were not fully collected; see the dataset errors.",
+          "target": null
+        }
+      ]
+    },
+    {
+      "name": "M365",
+      "version": "0.1.0",
+      "status": "Completed",
+      "startedAt": "2026-08-10T09:36:00.0000000Z",
+      "completedAt": "2026-08-10T09:37:00.0000000Z",
+      "prerequisites": [
+        {
+          "name": "Microsoft.Graph.Authentication module",
+          "satisfied": true,
+          "detail": "2.25.0"
+        },
+        {
+          "name": "Delegated sign-in (Global Reader)",
+          "satisfied": true,
+          "detail": null
+        }
+      ],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "name": "Exchange",
+      "version": "0.1.0",
+      "status": "Completed",
+      "startedAt": "2026-08-10T09:37:00.0000000Z",
+      "completedAt": "2026-08-10T09:41:00.0000000Z",
+      "prerequisites": [
+        {
+          "name": "ExchangeOnlineManagement module",
+          "satisfied": true,
+          "detail": "3.7.1"
+        },
+        {
+          "name": "View-Only Organization Management",
+          "satisfied": true,
+          "detail": null
+        }
+      ],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "name": "Intune",
+      "version": "0.1.0",
+      "status": "Completed",
+      "startedAt": "2026-08-10T09:41:00.0000000Z",
+      "completedAt": "2026-08-10T09:42:00.0000000Z",
+      "prerequisites": [
+        {
+          "name": "Microsoft.Graph.Authentication module",
+          "satisfied": true,
+          "detail": "2.25.0"
+        },
+        {
+          "name": "Delegated sign-in (Global Reader)",
+          "satisfied": true,
+          "detail": null
+        }
+      ],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "name": "Azure",
+      "version": "0.1.0",
+      "status": "Completed",
+      "startedAt": "2026-08-10T09:42:00.0000000Z",
+      "completedAt": "2026-08-10T09:48:00.0000000Z",
+      "prerequisites": [
+        {
+          "name": "Az.Accounts module",
+          "satisfied": true,
+          "detail": "4.0.2"
+        },
+        {
+          "name": "Reader on assessed subscriptions",
+          "satisfied": true,
+          "detail": "2 subscriptions"
+        }
+      ],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "name": "AD",
+      "version": "0.1.0",
+      "status": "Completed",
+      "startedAt": "2026-08-10T09:49:00.0000000Z",
+      "completedAt": "2026-08-10T09:56:00.0000000Z",
+      "prerequisites": [
+        {
+          "name": "ActiveDirectory module (RSAT)",
+          "satisfied": true,
+          "detail": null
+        },
+        {
+          "name": "Domain reachable",
+          "satisfied": true,
+          "detail": "corp.contoso.example"
+        }
+      ],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "name": "ADCS",
+      "version": "0.1.0",
+      "status": "Completed",
+      "startedAt": "2026-08-10T09:56:00.0000000Z",
+      "completedAt": "2026-08-10T09:58:00.0000000Z",
+      "prerequisites": [
+        {
+          "name": "ActiveDirectory module (RSAT)",
+          "satisfied": true,
+          "detail": null
+        }
+      ],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "name": "GPO",
+      "version": "0.1.0",
+      "status": "Completed",
+      "startedAt": "2026-08-10T09:58:00.0000000Z",
+      "completedAt": "2026-08-10T10:02:00.0000000Z",
+      "prerequisites": [
+        {
+          "name": "GroupPolicy module (GPMC)",
+          "satisfied": true,
+          "detail": null
+        },
+        {
+          "name": "SYSVOL readable",
+          "satisfied": true,
+          "detail": null
+        }
+      ],
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "name": "Windows",
+      "version": "0.1.0",
+      "status": "Completed",
+      "startedAt": "2026-08-10T10:02:00.0000000Z",
+      "completedAt": "2026-08-10T10:04:00.0000000Z",
+      "prerequisites": [
+        {
+          "name": "Running elevated on the assessed host",
+          "satisfied": true,
+          "detail": null
+        }
+      ],
+      "errors": [],
+      "warnings": []
+    }
+  ],
+  "files": [
+    {
+      "path": "evidence/entra/organization.json",
+      "datasetId": "entra.organization",
+      "module": "Entra",
+      "sha256": "fb605b9a5d88e3c5369433040eb56c01683c68198051216f8c42eb4a3078e50b",
+      "sizeBytes": 1369,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:34:01.0000000Z"
+    },
+    {
+      "path": "evidence/entra/subscribedSkus.json",
+      "datasetId": "entra.subscribedSkus",
+      "module": "Entra",
+      "sha256": "5262877468c55c618d696751cdd8f77d4d09a34f17c29523620c94ace7095eb6",
+      "sizeBytes": 3951,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:34:08.0000000Z"
+    },
+    {
+      "path": "evidence/entra/securityDefaults.json",
+      "datasetId": "entra.securityDefaults",
+      "module": "Entra",
+      "sha256": "cda823e057365d6ff0f09874d1220d1b1d688af8656d99f79c6dfd12262f153e",
+      "sizeBytes": 608,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:34:15.0000000Z"
+    },
+    {
+      "path": "evidence/entra/authorizationPolicy.json",
+      "datasetId": "entra.authorizationPolicy",
+      "module": "Entra",
+      "sha256": "d7bdbd39e7b8cf705e0944bfd4f1e0cb374986a293629008da30535dc3a0d1d6",
+      "sizeBytes": 1238,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:34:22.0000000Z"
+    },
+    {
+      "path": "evidence/entra/conditionalAccessPolicies.json",
+      "datasetId": "entra.conditionalAccessPolicies",
+      "module": "Entra",
+      "sha256": "a8dbe16d4b513a52bd61c3f2792d08c346d7bc86a2d283c21cf336899e1d2e39",
+      "sizeBytes": 8411,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:34:29.0000000Z"
+    },
+    {
+      "path": "evidence/entra/roleDefinitions.json",
+      "datasetId": "entra.roleDefinitions",
+      "module": "Entra",
+      "sha256": "ad18dfffaba236d13dc11f3676749b9c5824fbe22fd444993cb0e1b0c9ff9f67",
+      "sizeBytes": 6115,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:34:36.0000000Z"
+    },
+    {
+      "path": "evidence/entra/roleAssignments.json",
+      "datasetId": "entra.roleAssignments",
+      "module": "Entra",
+      "sha256": "e77e2cd5daabf0d3dd716a5300b083529c705ee71ce7d7c5abc0e37e6101ce75",
+      "sizeBytes": 9435,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:34:43.0000000Z"
+    },
+    {
+      "path": "evidence/entra/roleAssignmentScheduleInstances.json",
+      "datasetId": "entra.roleAssignmentScheduleInstances",
+      "module": "Entra",
+      "sha256": "6a7eb38d430f9a69bc8aec9f8070609db421df769aa87b903e091e0181e42c26",
+      "sizeBytes": 6528,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:34:50.0000000Z"
+    },
+    {
+      "path": "evidence/entra/roleEligibilitySchedules.json",
+      "datasetId": "entra.roleEligibilitySchedules",
+      "module": "Entra",
+      "sha256": "6278632369654f332d5fa790d528b0581a0d0f70b850234d813bd75c4a92f0ed",
+      "sizeBytes": 2292,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:34:57.0000000Z"
+    },
+    {
+      "path": "evidence/entra/userRegistrationDetails.json",
+      "datasetId": "entra.userRegistrationDetails",
+      "module": "Entra",
+      "sha256": "b077cc2be62ec329546a2253680965292719d74d23ab028178d066df7c24cd69",
+      "sizeBytes": 200331,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:35:04.0000000Z"
+    },
+    {
+      "path": "evidence/entra/authenticationMethodsPolicy.json",
+      "datasetId": "entra.authenticationMethodsPolicy",
+      "module": "Entra",
+      "sha256": "8fdea20ecad120e7b7c99fba222b747b20eec445a6d542b2538fc90dce288fe8",
+      "sizeBytes": 2121,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:35:11.0000000Z"
+    },
+    {
+      "path": "evidence/entra/applications.json",
+      "datasetId": "entra.applications",
+      "module": "Entra",
+      "sha256": "9d140b170425ae7c618293288d4a5f683c238ba0232132543053ada9755dcc31",
+      "sizeBytes": 4052,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:35:18.0000000Z"
+    },
+    {
+      "path": "evidence/entra/servicePrincipals.json",
+      "datasetId": "entra.servicePrincipals",
+      "module": "Entra",
+      "sha256": "ba532c684f0f336850f7a300e982a86216d2b0356a0f73642722a170a1bfb249",
+      "sizeBytes": 4689,
+      "schemaVersion": "1.0",
+      "status": "Partial",
+      "collectedAt": "2026-08-10T09:35:25.0000000Z"
+    },
+    {
+      "path": "evidence/entra/apiPermissionGrants.json",
+      "datasetId": "entra.apiPermissionGrants",
+      "module": "Entra",
+      "sha256": "ace7873de3fbb68115880cde2d9d803734e0d0eb09f037a2dba1c8580b405b63",
+      "sizeBytes": 4860,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:35:32.0000000Z"
+    },
+    {
+      "path": "evidence/entra/groupSettings.json",
+      "datasetId": "entra.groupSettings",
+      "module": "Entra",
+      "sha256": "e78f72e34532c787d6cfa8dd1f705078472f6dbb6d900fb7b52176076797439c",
+      "sizeBytes": 1851,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:35:39.0000000Z"
+    },
+    {
+      "path": "evidence/entra/guestUsers.json",
+      "datasetId": "entra.guestUsers",
+      "module": "Entra",
+      "sha256": "3c52274a07730953539f291609a23ab0fa3f92dcaba27ac6c310d2348abb297d",
+      "sizeBytes": 4873,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:35:46.0000000Z"
+    },
+    {
+      "path": "evidence/entra/onPremisesSynchronization.json",
+      "datasetId": "entra.onPremisesSynchronization",
+      "module": "Entra",
+      "sha256": "30e26a92775ce1f4ab35ce6696f4547c7e80d5d4675c2bf070b691db4f397a6b",
+      "sizeBytes": 969,
+      "schemaVersion": "1.0",
+      "status": "Unauthorized",
+      "collectedAt": "2026-08-10T09:35:53.0000000Z"
+    },
+    {
+      "path": "evidence/exchange/organizationConfig.json",
+      "datasetId": "exchange.organizationConfig",
+      "module": "Exchange",
+      "sha256": "31bd9ff689a6cd9d22ac26b5b5a1c5bba00f3c034c2355ddbf7b4bb321ad5767",
+      "sizeBytes": 682,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:39:43.0000000Z"
+    },
+    {
+      "path": "evidence/exchange/transportConfig.json",
+      "datasetId": "exchange.transportConfig",
+      "module": "Exchange",
+      "sha256": "5006551ceb63a597a799dbdae9940420b19dccc82f8b8dee74aa01d36b8072ed",
+      "sizeBytes": 565,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:39:50.0000000Z"
+    },
+    {
+      "path": "evidence/exchange/adminAuditLogConfig.json",
+      "datasetId": "exchange.adminAuditLogConfig",
+      "module": "Exchange",
+      "sha256": "b6f793583cf84b4d388636292ea94f8ae8a60598989653fe669b7d417f40be1a",
+      "sizeBytes": 572,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:39:57.0000000Z"
+    },
+    {
+      "path": "evidence/exchange/acceptedDomains.json",
+      "datasetId": "exchange.acceptedDomains",
+      "module": "Exchange",
+      "sha256": "6beb0ea5838442ec6f3d65e18c8e4038a2dc3e12d7509fc6a1ca3a8cd92529d5",
+      "sizeBytes": 1134,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:40:04.0000000Z"
+    },
+    {
+      "path": "evidence/exchange/dkimSigningConfigs.json",
+      "datasetId": "exchange.dkimSigningConfigs",
+      "module": "Exchange",
+      "sha256": "a7c8a0911eedf473cce01587572ffbc8298cdda87e43854741fb4f3235ffde0f",
+      "sizeBytes": 830,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:40:11.0000000Z"
+    },
+    {
+      "path": "evidence/exchange/outboundSpamPolicies.json",
+      "datasetId": "exchange.outboundSpamPolicies",
+      "module": "Exchange",
+      "sha256": "f4e7a300d333f620de492b933546aad94e698efbccbc5b62c308094210388625",
+      "sizeBytes": 771,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:40:18.0000000Z"
+    },
+    {
+      "path": "evidence/exchange/remoteDomains.json",
+      "datasetId": "exchange.remoteDomains",
+      "module": "Exchange",
+      "sha256": "a4b2ab94c95e94069ed23bd03c46a4f846e440ad53cc2a87da33c11bc5910fa5",
+      "sizeBytes": 726,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:40:25.0000000Z"
+    },
+    {
+      "path": "evidence/exchange/mailboxForwarding.json",
+      "datasetId": "exchange.mailboxForwarding",
+      "module": "Exchange",
+      "sha256": "0333c79d8a0c54c94fecfd28ed88f62562b534d8e19d56594dcaa0f1d69ee6db",
+      "sizeBytes": 1100,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:40:32.0000000Z"
+    },
+    {
+      "path": "evidence/exchange/smtpAuthMailboxes.json",
+      "datasetId": "exchange.smtpAuthMailboxes",
+      "module": "Exchange",
+      "sha256": "8259b2a49eda73fa1f2db19e78f3fae96432cca63652f33e667a44ec690049df",
+      "sizeBytes": 924,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:40:39.0000000Z"
+    },
+    {
+      "path": "evidence/exchange/atpPolicy.json",
+      "datasetId": "exchange.atpPolicy",
+      "module": "Exchange",
+      "sha256": "5a2e013f65ae10324a00b8199999f7c8ae3818074b121544459fa6c21d08c470",
+      "sizeBytes": 764,
+      "schemaVersion": "1.0",
+      "status": "NotApplicable",
+      "collectedAt": "2026-08-10T09:40:46.0000000Z"
+    },
+    {
+      "path": "evidence/exchange/mailDnsRecords.json",
+      "datasetId": "exchange.mailDnsRecords",
+      "module": "Exchange",
+      "sha256": "ef1f72db00d09713b9856ed40a21d951cd83117ce565aee81a0acdd632214208",
+      "sizeBytes": 1505,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:40:53.0000000Z"
+    },
+    {
+      "path": "evidence/m365/sharePointSettings.json",
+      "datasetId": "m365.sharePointSettings",
+      "module": "M365",
+      "sha256": "71be6093f6691e3cda5273d90829b69425ba44b7a4d89c4a323d3449658d6d7e",
+      "sizeBytes": 801,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:36:53.0000000Z"
+    },
+    {
+      "path": "evidence/intune/settings.json",
+      "datasetId": "intune.settings",
+      "module": "Intune",
+      "sha256": "c92792fb2969633b78310063da85dde17dfc29d0ee9e76f276f541cab9f84bdc",
+      "sizeBytes": 677,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:41:39.0000000Z"
+    },
+    {
+      "path": "evidence/intune/deviceOverview.json",
+      "datasetId": "intune.deviceOverview",
+      "module": "Intune",
+      "sha256": "f4a52b44f552dea1cc83c77f4b21720ea1e2210fc4822947af759a416db053c1",
+      "sizeBytes": 693,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:41:46.0000000Z"
+    },
+    {
+      "path": "evidence/intune/compliancePolicies.json",
+      "datasetId": "intune.compliancePolicies",
+      "module": "Intune",
+      "sha256": "6ada1833bff23ce1b53de9a8c31f04c38bfbef9aaeb85f5982bb767014dc69e1",
+      "sizeBytes": 1432,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:41:53.0000000Z"
+    },
+    {
+      "path": "evidence/azure/subscriptions.json",
+      "datasetId": "azure.subscriptions",
+      "module": "Azure",
+      "sha256": "2a5d2329e36cb012ab98ab22011f98c131e623e5d0f8cfd3a6b6a0680b7203e6",
+      "sizeBytes": 979,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:47:04.0000000Z"
+    },
+    {
+      "path": "evidence/azure/roleAssignments.json",
+      "datasetId": "azure.roleAssignments",
+      "module": "Azure",
+      "sha256": "9ee8543720a5c82ab621d1415903c0dc1199ee9cffd657301e27743c06e7dbf5",
+      "sizeBytes": 9295,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:47:11.0000000Z"
+    },
+    {
+      "path": "evidence/azure/defenderPlans.json",
+      "datasetId": "azure.defenderPlans",
+      "module": "Azure",
+      "sha256": "be5707ac58974fe52dbdd2c023b7bff3d740c06b7aaa53e5198f217bbcfd2799",
+      "sizeBytes": 3128,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:47:18.0000000Z"
+    },
+    {
+      "path": "evidence/azure/securityContacts.json",
+      "datasetId": "azure.securityContacts",
+      "module": "Azure",
+      "sha256": "514de646cd0e9b2d9bba2bf7b4b9b8f19c15bcdc867e506e5b64fc216b6a684b",
+      "sizeBytes": 1090,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:47:25.0000000Z"
+    },
+    {
+      "path": "evidence/azure/storageAccounts.json",
+      "datasetId": "azure.storageAccounts",
+      "module": "Azure",
+      "sha256": "0342a96caa496aeb088f8c154b9c21f2ddbd07a18635dd501dbe8596e9d820c4",
+      "sizeBytes": 2410,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:47:32.0000000Z"
+    },
+    {
+      "path": "evidence/azure/keyVaults.json",
+      "datasetId": "azure.keyVaults",
+      "module": "Azure",
+      "sha256": "2cc3df2042dedd137b2a4f95da5d17265117d9342a65e67b64d00cc829ccae24",
+      "sizeBytes": 1724,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:47:39.0000000Z"
+    },
+    {
+      "path": "evidence/azure/networkSecurityGroups.json",
+      "datasetId": "azure.networkSecurityGroups",
+      "module": "Azure",
+      "sha256": "c93db8f31ccd75395e64d8851d44d8432b094f9c6c1119486a2c2d26ccd36daf",
+      "sizeBytes": 3453,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:47:46.0000000Z"
+    },
+    {
+      "path": "evidence/azure/activityLogDiagnostics.json",
+      "datasetId": "azure.activityLogDiagnostics",
+      "module": "Azure",
+      "sha256": "1eba9c22745db5128b8b3d8eb90eb16fb0ce7cc130f4e94f0f147b9f1c8a9034",
+      "sizeBytes": 1298,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:47:53.0000000Z"
+    },
+    {
+      "path": "evidence/ad/forest.json",
+      "datasetId": "ad.forest",
+      "module": "AD",
+      "sha256": "d69597c4ed1e6d0e50c53f6a568c9ccd004689372e7310644e7c95680aee9386",
+      "sizeBytes": 767,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:54:50.0000000Z"
+    },
+    {
+      "path": "evidence/ad/domains.json",
+      "datasetId": "ad.domains",
+      "module": "AD",
+      "sha256": "67eed218f91b02bdcc723fcc89847485fcdb3170323e4bd1de632f4c5c5e5851",
+      "sizeBytes": 848,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:54:57.0000000Z"
+    },
+    {
+      "path": "evidence/ad/passwordPolicies.json",
+      "datasetId": "ad.passwordPolicies",
+      "module": "AD",
+      "sha256": "4aef4cf999fb1d47d6e5948c30a5e26fdcbe75008918c82b53323340f700170c",
+      "sizeBytes": 1335,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:55:04.0000000Z"
+    },
+    {
+      "path": "evidence/ad/privilegedGroups.json",
+      "datasetId": "ad.privilegedGroups",
+      "module": "AD",
+      "sha256": "c8064b8e41de26aed2487016e69b63b89f3d96f79183cbf18fbbf25165601904",
+      "sizeBytes": 4325,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:55:11.0000000Z"
+    },
+    {
+      "path": "evidence/ad/users.json",
+      "datasetId": "ad.users",
+      "module": "AD",
+      "sha256": "a405eb39ca4c1d2aaf91131e93c2fa02727c761b232f4672fbdcbe7da3154847",
+      "sizeBytes": 7623,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:55:18.0000000Z"
+    },
+    {
+      "path": "evidence/ad/krbtgt.json",
+      "datasetId": "ad.krbtgt",
+      "module": "AD",
+      "sha256": "8c699481d3bf835c8b00ae934e52a8a9ddd28d1ac326e878dbcae9e4efca5b7c",
+      "sizeBytes": 616,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:55:25.0000000Z"
+    },
+    {
+      "path": "evidence/ad/computers.json",
+      "datasetId": "ad.computers",
+      "module": "AD",
+      "sha256": "4100b0b2f9aeeac58bc1f8d503085323b51255f646995f00fbd0725b985d0ce8",
+      "sizeBytes": 28232,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:55:32.0000000Z"
+    },
+    {
+      "path": "evidence/ad/trusts.json",
+      "datasetId": "ad.trusts",
+      "module": "AD",
+      "sha256": "23ae841f10740b8e1d26fc25be80f51f7e1f1901331a038c7d9f932c1112a9a2",
+      "sizeBytes": 874,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:55:39.0000000Z"
+    },
+    {
+      "path": "evidence/ad/domainControllers.json",
+      "datasetId": "ad.domainControllers",
+      "module": "AD",
+      "sha256": "9d1d1011cfcf75e56133bab2b411fb65c1603bc9d24b38cbe3bb519315708175",
+      "sizeBytes": 1101,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:55:46.0000000Z"
+    },
+    {
+      "path": "evidence/ad/domainControllerSettings.json",
+      "datasetId": "ad.domainControllerSettings",
+      "module": "AD",
+      "sha256": "aa253f45f854dd84f3952bb7956a9145fd878638685b8f7ee8513258830cc9d9",
+      "sizeBytes": 973,
+      "schemaVersion": "1.0",
+      "status": "NotCollected",
+      "collectedAt": "2026-08-10T09:55:53.0000000Z"
+    },
+    {
+      "path": "evidence/adcs/certificateAuthorities.json",
+      "datasetId": "adcs.certificateAuthorities",
+      "module": "ADCS",
+      "sha256": "ba41c40215a380a77c40bba056259279bf2a68caec09ebf673cb1202ab0ae528",
+      "sizeBytes": 995,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:57:46.0000000Z"
+    },
+    {
+      "path": "evidence/adcs/certificateTemplates.json",
+      "datasetId": "adcs.certificateTemplates",
+      "module": "ADCS",
+      "sha256": "5656a531145e4c7c340c6e3b746b36f4eaf3c588eaadc13b37f4b97fb192efc3",
+      "sizeBytes": 19167,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:57:53.0000000Z"
+    },
+    {
+      "path": "evidence/gpo/groupPolicyObjects.json",
+      "datasetId": "gpo.groupPolicyObjects",
+      "module": "GPO",
+      "sha256": "00f6398b437e5cdc8f56d658bf1fe1094ff1190299e3425c42d8f6bd8c6eca9b",
+      "sizeBytes": 8567,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T10:01:46.0000000Z"
+    },
+    {
+      "path": "evidence/gpo/sysvolPasswordArtifacts.json",
+      "datasetId": "gpo.sysvolPasswordArtifacts",
+      "module": "GPO",
+      "sha256": "08877b68cea097e0443d1b18c35c4ce4a8614669a53fe953116dacd3c28709d4",
+      "sizeBytes": 903,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T10:01:53.0000000Z"
+    },
+    {
+      "path": "evidence/windows/hosts.json",
+      "datasetId": "windows.hosts",
+      "module": "Windows",
+      "sha256": "247c4f02bec1821c0371b8baf2a4c8a804b45bf84960d190ad6383eb17a587fc",
+      "sizeBytes": 2137,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T10:03:53.0000000Z"
+    }
+  ]
+}

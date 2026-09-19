@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "exchange.acceptedDomains",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Exchange",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:15:04.0000000Z",
+  "source": {
+    "system": "ExchangeOnline",
+    "operations": [
+      "Get-AcceptedDomain"
+    ],
+    "apiVersion": null
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "domainName": "contoso.example",
+      "domainType": "Authoritative",
+      "default": true,
+      "isCoexistenceDomain": false
+    },
+    {
+      "domainName": "mail.contoso.example",
+      "domainType": "Authoritative",
+      "default": false,
+      "isCoexistenceDomain": false
+    },
+    {
+      "domainName": "contoso.onmicrosoft.com",
+      "domainType": "Authoritative",
+      "default": false,
+      "isCoexistenceDomain": false
+    },
+    {
+      "domainName": "contoso.mail.onmicrosoft.com",
+      "domainType": "Authoritative",
+      "default": false,
+      "isCoexistenceDomain": true
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "entra.authorizationPolicy",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Entra",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:09:22.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/policies/authorizationPolicy"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": {
+    "allowInvitesFrom": "everyone",
+    "allowedToSignUpEmailBasedSubscriptions": true,
+    "allowEmailVerifiedUsersToJoinOrganization": false,
+    "allowUserConsentForRiskyApps": null,
+    "blockMsolPowerShell": false,
+    "guestUserRoleId": "10dae51f-b6af-4016-8d66-8c2a99b929b3",
+    "permissionGrantPolicyIdsAssignedToDefaultUserRole": [
+      "ManagePermissionGrantsForSelf.microsoft-user-default-low"
+    ],
+    "defaultUserRolePermissions": {
+      "allowedToCreateApps": true,
+      "allowedToCreateSecurityGroups": true,
+      "allowedToCreateTenants": false,
+      "allowedToReadBitlockerKeysForOwnedDevice": true,
+      "allowedToReadOtherUsers": true
+    }
+  }
+}

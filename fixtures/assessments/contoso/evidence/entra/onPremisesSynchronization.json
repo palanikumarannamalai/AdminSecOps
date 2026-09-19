@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "entra.onPremisesSynchronization",
+  "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "Entra",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-08-10T09:35:53.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Unauthorized",
+  "errors": [
+    {
+      "code": "UNAUTHORIZED",
+      "message": "Microsoft Graph returned 403 Forbidden. Reading directory synchronization settings requires the signed-in account to hold the Global Administrator or Hybrid Identity Administrator role; the collecting account holds Global Reader.",
+      "target": "GET https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization"
+    }
+  ],
+  "warnings": [],
+  "data": null
+}
