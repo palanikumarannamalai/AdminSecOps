@@ -9,3 +9,4 @@ export * from './derived/azure-network.js';
 export * from './derived/active-directory.js';
 export * from './derived/windows-lifecycle.js';
 export * from './derived/adcs.js';
+export * from './derived/ad-parsing.js';
