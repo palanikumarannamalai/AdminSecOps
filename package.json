@@ -1,0 +1,50 @@
+{
+  "name": "adminsecops",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AdminSecOps - security assessment and remediation guidance for Microsoft administrators.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build:packages && npm run build -w @adminsecops/web",
+    "build:packages": "tsc -b tsconfig.build.json",
+    "typecheck": "tsc -b tsconfig.build.json && tsc -p tsconfig.json",
+    "lint": "eslint . --max-warnings=0",
+    "lint:ps": "pwsh -NoProfile -File scripts/Invoke-PSScriptAnalyzer.ps1",
+    "test": "vitest run",
+    "test:ps": "pwsh -NoProfile -File scripts/Invoke-PesterTests.ps1",
+    "test:all": "npm run test && npm run test:ps",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "fixtures": "tsx scripts/build-fixtures.ts",
+    "dev:api": "npm run dev -w @adminsecops/api",
+    "dev:web": "npm run dev -w @adminsecops/web",
+    "start": "npm run start -w @adminsecops/api",
+    "cli": "node apps/cli/dist/main.js",
+    "demo": "npm run build && tsx scripts/demo.ts",
+    "scan:secrets": "tsx scripts/scan-secrets.ts",
+    "audit:deps": "npm audit --omit=dev",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build && npm run scan:secrets"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.4",
+    "@types/yauzl": "^3.4.0",
+    "@types/yazl": "^3.3.1",
+    "eslint": "^10.11.0",
+    "globals": "^17.12.0",
+    "prettier": "^3.9.8",
+    "tsx": "^4.23.13",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^5.0.1",
+    "yazl": "^3.3.1"
+  }
+}

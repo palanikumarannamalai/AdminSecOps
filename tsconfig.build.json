@@ -1,0 +1,14 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/schemas" },
+    { "path": "packages/evidence" },
+    { "path": "packages/inventory" },
+    { "path": "packages/controls" },
+    { "path": "packages/engine" },
+    { "path": "packages/reporting" },
+    { "path": "apps/api" },
+    { "path": "apps/cli" }
+  ]
+}

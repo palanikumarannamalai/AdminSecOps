@@ -1,0 +1,32 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "incremental": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": false,
+    "paths": {
+      "@adminsecops/core": ["./packages/core/src/index.ts"],
+      "@adminsecops/schemas": ["./packages/schemas/src/index.ts"],
+      "@adminsecops/evidence": ["./packages/evidence/src/index.ts"],
+      "@adminsecops/inventory": ["./packages/inventory/src/index.ts"],
+      "@adminsecops/controls": ["./packages/controls/src/index.ts"],
+      "@adminsecops/engine": ["./packages/engine/src/index.ts"],
+      "@adminsecops/reporting": ["./packages/reporting/src/index.ts"]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*.test.ts",
+    "packages/*/test/**/*.ts",
+    "apps/api/src/**/*.test.ts",
+    "apps/cli/src/**/*.test.ts",
+    "tests/**/*.ts",
+    "scripts/**/*.ts",
+    "vitest.config.ts"
+  ]
+}
