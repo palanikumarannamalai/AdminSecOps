@@ -129,6 +129,10 @@ function Connect-AsoService {
     # "Method not found ... BrokerExtension.WithBroker" (observed in live validation).
     if ($Module -contains 'Exchange' -and (Import-AsoOptionalModule -Name 'ExchangeOnlineManagement')) {
         if (-not (Get-AsoExchangeConnectionState).Connected) {
+            $preloaded = @(Get-Module -Name 'Microsoft.Graph.Authentication', 'Az.Accounts' | ForEach-Object Name)
+            if ($preloaded.Count -gt 0) {
+                Write-AsoLog -Level Warning -Message ("{0} was loaded before Exchange Online in this PowerShell session; Exchange sign-in may fail with an MSAL 'Method not found' error. Run the collector in a new PowerShell session without importing those modules first." -f ($preloaded -join ' and '))
+            }
             Write-AsoLog -Message 'Signing in to Exchange Online.'
             $params = @{ ShowBanner = $false; ErrorAction = 'Stop' }
             $cmd = Get-Command -Name Connect-ExchangeOnline
@@ -147,7 +151,8 @@ function Connect-AsoService {
             Write-AsoLog -Message 'Signing in to Microsoft Graph with read-only delegated scopes.'
             # Set-MgGraphOption is not used: it persists to the user profile, and the collector must
             # not change the operator's configuration. Use -UseDeviceCode where browser sign-in fails.
-            $params = @{ Scopes = $script:AsoGraphScopes; NoWelcome = $true; ErrorAction = 'Stop' }
+            # ContextScope Process keeps the Graph token cache in memory (not persisted to the user profile).
+            $params = @{ Scopes = $script:AsoGraphScopes; NoWelcome = $true; ContextScope = 'Process'; ErrorAction = 'Stop' }
             if ($TenantId) { $params['TenantId'] = $TenantId }
             if ($UseDeviceCode) { $params['UseDeviceCode'] = $true }
             try { Connect-MgGraph @params | Out-Null }
@@ -164,6 +169,15 @@ function Connect-AsoService {
     }
 
     if ($Module -contains 'Azure' -and (Import-AsoOptionalModule -Name 'Az.Accounts')) {
+        # Az.Accounts persists contexts and tokens to the user profile by default. For this process
+        # only: stop persisting, and ignore a cached context that belongs to a different tenant than
+        # -TenantId (the saved context on disk is left untouched).
+        try { Disable-AzContextAutosave -Scope Process -ErrorAction Stop | Out-Null } catch { Write-AsoLog -Level Warning -Message "Could not disable Az context autosave for this process: $($_.Exception.Message)" }
+        $azState = Get-AsoAzureConnectionState
+        if ($TenantId -and $azState.Connected -and $azState.TenantId -and $azState.TenantId -ne $TenantId) {
+            Write-AsoLog -Message 'Ignoring a cached Azure context from another tenant for this process.'
+            Clear-AzContext -Scope Process -Force -ErrorAction SilentlyContinue | Out-Null
+        }
         if (-not (Get-AsoAzureConnectionState).Connected) {
             Write-AsoLog -Message 'Signing in to Azure.'
             if (Get-Command -Name Update-AzConfig -ErrorAction SilentlyContinue) {

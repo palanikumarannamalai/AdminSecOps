@@ -8,7 +8,12 @@ function Get-AsoIntuneSetting {
     if (-not (Assert-AsoLicence -State $State -ServicePlan $script:AsoIntunePlans -Feature 'Microsoft Intune')) { return }
     $dm = Invoke-AsoGraphGet -Uri "$script:AsoGraphBase/deviceManagement?`$select=settings"
     $s = Get-AsoPropertyValue $dm 'settings'
-    if ($null -eq $s) { throw 'deviceManagement did not return settings.' }
+    if ($null -eq $s) {
+        # Live validation: the deviceManagement singleton may ignore $select and omit settings.
+        $dm = Invoke-AsoGraphGet -Uri "$script:AsoGraphBase/deviceManagement"
+        $s = Get-AsoPropertyValue $dm 'settings'
+    }
+    if ($null -eq $s) { throw 'deviceManagement did not return settings (with or without $select).' }
     $State.Data = [ordered]@{
         secureByDefault                     = [bool](ConvertTo-AsoBool (Get-AsoPropertyValue $s 'secureByDefault'))
         deviceComplianceCheckinThresholdDays = ConvertTo-AsoNumber (Get-AsoPropertyValue $s 'deviceComplianceCheckinThresholdDays')

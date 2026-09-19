@@ -89,12 +89,12 @@ function Get-ReadOnlyViolation {
                 continue
             }
             if ($script:AlwaysForbiddenCommands -contains $name) { & $add $file $cmd "ForbiddenCommand:$name"; continue }
-            # Update-AzConfig changes only the local Az client, and is allowed solely in Connect.ps1 with
-            # an explicit '-Scope Process' (so nothing persists beyond the collector process).
-            if ($name -eq 'Update-AzConfig') {
+            # These change only the local Az client state and are allowed solely in Connect.ps1 with an
+            # explicit '-Scope Process' (so nothing persists beyond the collector process).
+            if ($name -in 'Update-AzConfig', 'Disable-AzContextAutosave', 'Clear-AzContext') {
                 $scopeIndex = [array]::FindIndex([object[]]$cmd.CommandElements, [Predicate[object]] { param($e) $e -is [System.Management.Automation.Language.CommandParameterAst] -and $e.ParameterName -eq 'Scope' })
                 $scopeValue = if ($scopeIndex -ge 0 -and $scopeIndex + 1 -lt $cmd.CommandElements.Count) { $cmd.CommandElements[$scopeIndex + 1].Extent.Text } else { $null }
-                if ($file -ne 'Connect.ps1' -or $scopeValue -ne 'Process') { & $add $file $cmd 'ForbiddenCommand:Update-AzConfig (only Connect.ps1 with -Scope Process)' }
+                if ($file -ne 'Connect.ps1' -or $scopeValue -ne 'Process') { & $add $file $cmd "ForbiddenCommand:$name (only Connect.ps1 with -Scope Process)" }
                 continue
             }
             if ($script:RestrictedCommands.ContainsKey($name)) {

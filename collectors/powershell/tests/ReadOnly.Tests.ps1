@@ -68,6 +68,9 @@ Describe 'The analyzer detects violations (it is not vacuous)' {
         @(Get-ReadOnlyViolation -ScriptText 'Update-AzConfig -EnableLoginByWam $false -Scope CurrentUser' -FileName 'Connect.ps1').Count | Should -Be 1
         @(Get-ReadOnlyViolation -ScriptText 'Update-AzConfig -EnableLoginByWam $false' -FileName 'Connect.ps1').Count | Should -Be 1
         @(Get-ReadOnlyViolation -ScriptText 'Update-AzConfig -EnableLoginByWam $false -Scope Process' -FileName 'azure.ps1').Count | Should -Be 1
+        Get-ReadOnlyViolation -ScriptText 'Disable-AzContextAutosave -Scope Process; Clear-AzContext -Scope Process -Force' -FileName 'Connect.ps1' | Should -BeNullOrEmpty
+        @(Get-ReadOnlyViolation -ScriptText 'Clear-AzContext -Scope CurrentUser -Force' -FileName 'Connect.ps1').Count | Should -Be 1
+        @(Get-ReadOnlyViolation -ScriptText 'Disable-AzContextAutosave' -FileName 'Connect.ps1').Count | Should -Be 1
     }
 
     It 'accepts read-only code' {
