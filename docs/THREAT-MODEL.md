@@ -29,6 +29,7 @@ boundaries below. Status column: **Mitigated** (implemented and tested), **Parti
 | Collector changes configuration (bug or tampering) | All data access goes through GET-only / Get-* allowlisted wrappers; static AST test fails on write verbs or non-GET HTTP methods. | Mitigated (see collector README) |
 | Collector captures secrets (tokens, passwords, secret hints, LAPS passwords, cpassword values) | Datasets request metadata only; explicit dropping of `hint`/key values; pre-write secret scan blocks a dataset; engine re-scans and rejects. | Mitigated |
 | Over-privileged collection account | Least-privilege roles documented per dataset (DATA-COLLECTION.md); read-only Graph scopes; optional elevated collection is opt-in. | Mitigated |
+| Collecting from the wrong tenant via a reused or cached session (e.g. an Az context cached on disk) | Tenant guard: sessions are displayed; with `-TenantId` any session in another tenant aborts the run; without it, multi-tenant sessions abort. | Mitigated, tested |
 | Token persistence | Interactive auth via Microsoft modules; the collector never writes tokens; `-KeepConnections` not default. | Mitigated |
 | Collector script tampering on disk | Module is plain PowerShell; code signing of releases is planned. | Planned |
 

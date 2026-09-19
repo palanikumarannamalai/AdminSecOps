@@ -12,8 +12,8 @@ function Get-AsoGraphConnectionState {
     if ($null -eq $mg) {
         return [pscustomobject]@{ Connected = $false; TenantId = $null; Scopes = [string[]]@(); Detail = 'Not connected to Microsoft Graph.' }
     }
-    # Only the tenant ID and granted scope names are read from the context; never token data.
-    return [pscustomobject]@{ Connected = $true; TenantId = [string]$mg.TenantId; Scopes = ConvertTo-AsoStringArray -Value $mg.Scopes; Detail = 'Connected to Microsoft Graph.' }
+    # Only the tenant ID, account name and granted scope names are read from the context; never token data.
+    return [pscustomobject]@{ Connected = $true; TenantId = [string]$mg.TenantId; Account = [string]$mg.Account; Scopes = ConvertTo-AsoStringArray -Value $mg.Scopes; Detail = 'Connected to Microsoft Graph.' }
 }
 
 function Get-AsoExchangeConnectionState {
@@ -23,8 +23,15 @@ function Get-AsoExchangeConnectionState {
         return [pscustomobject]@{ Connected = $false; Detail = 'ExchangeOnlineManagement is not loaded.' }
     }
     $connections = @(Get-ConnectionInformation -ErrorAction SilentlyContinue | Where-Object { [string]$_.State -eq 'Connected' -and -not $_.IsEopSession })
-    if ($connections.Count -eq 0) { return [pscustomobject]@{ Connected = $false; Detail = 'Not connected to Exchange Online.' } }
-    return [pscustomobject]@{ Connected = $true; Detail = 'Connected to Exchange Online.' }
+    if ($connections.Count -eq 0) { return [pscustomobject]@{ Connected = $false; TenantId = $null; TenantIds = [string[]]@(); Account = $null; Detail = 'Not connected to Exchange Online.' } }
+    $tenants = [string[]]@($connections | ForEach-Object { [string]$_.TenantID } | Where-Object { $_ } | Sort-Object -Unique)
+    return [pscustomobject]@{
+        Connected = $true
+        TenantId  = if ($tenants.Count -eq 1) { $tenants[0] } else { $null }
+        TenantIds = $tenants
+        Account   = [string]$connections[0].UserPrincipalName
+        Detail    = 'Connected to Exchange Online.'
+    }
 }
 
 function Get-AsoAzureConnectionState {
@@ -35,7 +42,57 @@ function Get-AsoAzureConnectionState {
     }
     $az = Get-AzContext -ErrorAction SilentlyContinue
     if ($null -eq $az -or $null -eq $az.Account) { return [pscustomobject]@{ Connected = $false; TenantId = $null; Detail = 'Not connected to Azure.' } }
-    return [pscustomobject]@{ Connected = $true; TenantId = [string]$az.Tenant.Id; Detail = 'Connected to Azure.' }
+    return [pscustomobject]@{ Connected = $true; TenantId = [string]$az.Tenant.Id; Account = [string]$az.Account.Id; Detail = 'Connected to Azure.' }
+}
+
+function Assert-AsoSessionTenant {
+    <#
+    .SYNOPSIS
+    Refuses to collect when the signed-in sessions do not belong to the intended tenant.
+    .DESCRIPTION
+    Existing sessions (Connect-MgGraph / Connect-ExchangeOnline / Connect-AzAccount, including
+    contexts cached by Az.Accounts on disk) are reused, so the collector must verify which tenant
+    it is about to read. When -TenantId is given, every session used by the selected modules must
+    belong to that tenant. Without -TenantId, all sessions must belong to one tenant. Violations
+    throw before any evidence is collected. The account and tenant in use are always displayed.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)] [string[]] $Module, [string] $TenantId)
+
+    $sessions = [System.Collections.Generic.List[object]]::new()
+    $usesGraph = @($Module | Where-Object { $_ -in 'Entra', 'M365', 'Intune', 'Exchange', 'Azure' }).Count -gt 0
+    if ($usesGraph -and (Get-Command -Name Get-MgContext -ErrorAction SilentlyContinue)) {
+        $graph = Get-AsoGraphConnectionState
+        if ($graph.Connected) { $sessions.Add([pscustomobject]@{ Service = 'Microsoft Graph'; TenantIds = [string[]]@($graph.TenantId); Account = $graph.Account }) }
+    }
+    if ($Module -contains 'Exchange' -and (Get-Command -Name Get-ConnectionInformation -ErrorAction SilentlyContinue)) {
+        $exo = Get-AsoExchangeConnectionState
+        if ($exo.Connected) { $sessions.Add([pscustomobject]@{ Service = 'Exchange Online'; TenantIds = $exo.TenantIds; Account = $exo.Account }) }
+    }
+    if ($Module -contains 'Azure' -and (Get-Command -Name Get-AzContext -ErrorAction SilentlyContinue)) {
+        $az = Get-AsoAzureConnectionState
+        if ($az.Connected) { $sessions.Add([pscustomobject]@{ Service = 'Azure'; TenantIds = [string[]]@($az.TenantId); Account = $az.Account }) }
+    }
+
+    foreach ($s in $sessions) {
+        Write-Information -MessageData ("{0}: account {1}, tenant {2}" -f $s.Service, $s.Account, ($s.TenantIds -join ', ')) -InformationAction Continue
+        Write-AsoLog -Message ("{0} session tenant: {1}" -f $s.Service, ($s.TenantIds -join ', '))
+    }
+
+    $all = [string[]]@($sessions | ForEach-Object { $_.TenantIds } | Where-Object { $_ } | ForEach-Object { $_.ToLowerInvariant() } | Sort-Object -Unique)
+    if ($TenantId) {
+        $expected = $TenantId.ToLowerInvariant()
+        $wrong = @($sessions | Where-Object { @($_.TenantIds | Where-Object { $_ -and $_.ToLowerInvariant() -ne $expected }).Count -gt 0 })
+        if ($wrong.Count -gt 0) {
+            throw ("Refusing to collect: {0} signed in to a different tenant than -TenantId {1}. Sign out (Disconnect-MgGraph / Disconnect-ExchangeOnline / Disconnect-AzAccount) or sign in to the intended tenant, then retry." -f (($wrong | ForEach-Object { "$($_.Service) is" }) -join ' and '), $TenantId)
+        }
+    }
+    elseif ($all.Count -gt 1) {
+        throw ("Refusing to collect: the signed-in sessions belong to different tenants ({0}). Specify -TenantId and sign in to that tenant only." -f ($all -join ', '))
+    }
+    elseif ($all.Count -eq 1) {
+        Write-Warning ("No -TenantId was specified. Evidence will be collected from tenant {0}. Pass -TenantId to enforce the intended tenant." -f $all[0])
+    }
 }
 
 function Import-AsoOptionalModule {

@@ -168,6 +168,18 @@ values whose name suggests a credential (recorded with `value: null` and a warni
 Module status in the manifest: `Completed`, `CompletedWithErrors` (some `Partial`/`Failed`/`Unauthorized`),
 `Failed` (all datasets failed) or `Skipped` (prerequisites not met).
 
+## Tenant guard
+
+Existing sessions are reused, including Azure contexts that Az.Accounts caches on disk. Before
+any evidence is read, the collector shows the account and tenant of every session it will use and:
+
+- with `-TenantId`, **refuses to collect** if any Graph, Exchange Online or Azure session belongs to
+  another tenant;
+- without `-TenantId`, refuses if the sessions belong to more than one tenant, and warns which
+  tenant will be assessed.
+
+Always pass `-TenantId` for the tenant you intend to assess.
+
 ## Read-only and secret-handling guarantees
 
 - All data access goes through wrappers in `core/DataAccess.ps1`: `Invoke-AsoGraphGet` (only

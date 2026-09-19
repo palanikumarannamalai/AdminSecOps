@@ -191,6 +191,10 @@ function Invoke-AdminSecOpsCollection {
     if ($ctx.Mode -eq 'Live' -and -not $SkipConnect) {
         Connect-AsoService -Module $selected -TenantId $TenantId
     }
+    if ($ctx.Mode -eq 'Live') {
+        # Throws before any evidence is read when sessions belong to an unexpected tenant.
+        Assert-AsoSessionTenant -Module $selected -TenantId $TenantId
+    }
     if ($ctx.Mode -eq 'Live' -and -not $ctx.Environment.tenantId) {
         $graph = Get-AsoGraphConnectionState
         if ($graph.Connected -and $graph.TenantId) { $ctx.Environment.tenantId = $graph.TenantId }
