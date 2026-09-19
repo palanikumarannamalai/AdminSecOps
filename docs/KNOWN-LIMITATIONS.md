@@ -11,6 +11,16 @@ only partially. Placeholder or planned capabilities are not presented as impleme
   responses (replay mode) and a cross-language contract test. Real tenants, subscriptions
   and forests may return shapes, paging behaviour, throttling or errors not yet covered.
   Run a first collection in a test environment and review `logs/collection-log.json`.
+- Collector specifics:
+  - live error handling (real Graph/ARM error objects, throttling) is exercised only through
+    replay and mocks; licence errors whose text is not recognised are reported as
+    Unauthorized or Failed rather than NotApplicable;
+  - `exchange.smtpAuthMailboxes` records the primary SMTP address (Get-EXOCASMailbox returns no UPN);
+  - `ad.users` counts users with one query per domain, which is memory-heavy in very large domains;
+  - Azure principal name resolution is capped at 500 principals;
+  - GPO parsing does not flatten Preferences, scripts, restricted groups or services;
+  - `Resolve-DnsName` exists only on Windows; elsewhere mail DNS lookups report Error
+    (dependent controls become Not assessed).
 - The dashboard is covered by component tests and by API-level end-to-end tests; there
   are no automated browser (Playwright) tests yet.
 

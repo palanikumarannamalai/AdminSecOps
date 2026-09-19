@@ -154,10 +154,18 @@ describe.skipIf(!hasPwsh)('PowerShell collector contract (replay)', () => {
     const errors = result.results.filter((r) => r.status === 'ERROR').map((r) => r.controlId);
     expect(errors).toEqual([]);
     expect(result.results.length).toBe(CONTROL_LIBRARY.length);
-    // The replayed evidence is actually evaluated, not reported as missing.
-    expect(
-      result.results.filter((r) => r.status === 'NOT_ASSESSED').map((r) => r.controlId),
-    ).toEqual([]);
+    // The replayed evidence is actually evaluated: a control may be NOT_ASSESSED only
+    // when it depends on a dataset the scenario intentionally leaves unusable
+    // (Unauthorized / NotCollected / Failed), never because valid evidence was ignored.
+    const unusable = new Set(
+      result.evidence.datasets
+        .filter((d) => d.state === 'unavailable' && d.collectionStatus !== 'NotApplicable')
+        .map((d) => d.datasetId),
+    );
+    expect(unusable.size).toBeGreaterThan(0);
+    for (const r of result.results.filter((x) => x.status === 'NOT_ASSESSED')) {
+      expect(r.evidence.some((e) => unusable.has(e.datasetId)), `${r.controlId} is NOT_ASSESSED without an unusable dataset`).toBe(true);
+    }
     expect(result.evidence.integrityVerified).toBe(true);
   });
 });

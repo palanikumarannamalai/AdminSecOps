@@ -12,9 +12,11 @@
   "source": {
     "system": "AzureResourceManager",
     "operations": [
-      "Get-AzRoleAssignment -Scope /subscriptions/{id}"
+      "GET https://management.azure.com/subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments?api-version=2022-04-01",
+      "GET https://management.azure.com/subscriptions/{id}/providers/Microsoft.Authorization/roleDefinitions?api-version=2022-04-01",
+      "GET https://graph.microsoft.com/v1.0/directoryObjects/{principalId} (principal name resolution, up to 500 principals)"
     ],
-    "apiVersion": null
+    "apiVersion": "2022-04-01"
   },
   "status": "Success",
   "errors": [],

@@ -139,7 +139,7 @@ export const exchangeMailboxForwarding = defineDataset({
   description:
     'Only mailboxes that have ForwardingSmtpAddress or ForwardingAddress set. Inbox rules and message content are not collected.',
   source: 'ExchangeOnline',
-  operations: ['Get-EXOMailbox -Filter "ForwardingSmtpAddress -ne $null -or ForwardingAddress -ne $null"'],
+  operations: ['Get-EXOMailbox -Filter "ForwardingSmtpAddress -ne $null -or ForwardingAddress -ne $null" -Properties ForwardingSmtpAddress,ForwardingAddress,DeliverToMailboxAndForward'],
   permissions: [EXO_ROLE],
   personalData: 'identifiers',
   schema: z.array(
@@ -166,6 +166,7 @@ export const exchangeSmtpAuthMailboxes = defineDataset({
   personalData: 'identifiers',
   schema: z.array(
     z.object({
+      /** Get-EXOCASMailbox does not return a UPN; the collector records the primary SMTP address here. */
       userPrincipalName: z.string(),
       smtpClientAuthenticationDisabled: z.boolean(),
     }),

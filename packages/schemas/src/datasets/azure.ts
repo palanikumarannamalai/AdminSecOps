@@ -32,7 +32,11 @@ export const azureRoleAssignments = defineDataset({
   title: 'Azure RBAC role assignments',
   description: 'Role assignments at subscription scope and below, with role and principal names resolved.',
   source: 'AzureResourceManager',
-  operations: ['Get-AzRoleAssignment -Scope /subscriptions/{id}'],
+  operations: [
+    'GET https://management.azure.com/subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments?api-version=2022-04-01',
+    'GET https://management.azure.com/subscriptions/{id}/providers/Microsoft.Authorization/roleDefinitions?api-version=2022-04-01',
+    'GET https://graph.microsoft.com/v1.0/directoryObjects/{principalId} (principal name resolution, up to 500 principals)',
+  ],
   permissions: [READER, 'Graph: Directory.Read.All (principal name resolution)'],
   personalData: 'identifiers',
   schema: z.array(

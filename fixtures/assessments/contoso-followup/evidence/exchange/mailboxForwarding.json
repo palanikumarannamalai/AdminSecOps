@@ -12,7 +12,7 @@
   "source": {
     "system": "ExchangeOnline",
     "operations": [
-      "Get-EXOMailbox -Filter \"ForwardingSmtpAddress -ne $null -or ForwardingAddress -ne $null\""
+      "Get-EXOMailbox -Filter \"ForwardingSmtpAddress -ne $null -or ForwardingAddress -ne $null\" -Properties ForwardingSmtpAddress,ForwardingAddress,DeliverToMailboxAndForward"
     ],
     "apiVersion": null
   },

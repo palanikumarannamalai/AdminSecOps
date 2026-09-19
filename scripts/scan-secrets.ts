@@ -37,6 +37,8 @@ const ALLOWED_REAL_DOMAINS = [
   /\.onmicrosoft\.com$/i,
   /^(graph|login|management|learn|www)\.microsoft\.com$/i,
   /^management\.azure\.com$/i,
+  // Fictional resource names under Azure service suffixes (e.g. <account>.blob.core.windows.net)
+  /\.(vault\.azure\.net|core\.windows\.net)$/i,
   /^microsoft\.com$/i,
   /^(outlook|protection\.outlook)\.com$/i,
   /\.protection\.outlook\.com$/i,
@@ -69,11 +71,18 @@ for (const file of files) {
   }
 
   if (file.endsWith('.json') && (file.startsWith('fixtures/') || file.startsWith('collectors/'))) {
+    // Raw replay responses intentionally include fictional secret-bearing properties
+    // (e.g. passwordCredentials.hint) to prove the collector drops or blocks them;
+    // the collector's own output is scanned by the Pester and contract tests instead.
+    const replayInput = file.startsWith('collectors/powershell/tests/replay/');
+    let parsed: unknown;
     try {
-      const findings = findSensitiveContent(safeJsonParse(buffer, { label: file }));
-      for (const f of findings) problems.push(`${file}: ${f.path} (${f.rule})`);
+      parsed = safeJsonParse(buffer, { label: file });
     } catch {
       problems.push(`${file}: invalid JSON`);
+    }
+    if (parsed !== undefined && !replayInput) {
+      for (const f of findSensitiveContent(parsed)) problems.push(`${file}: ${f.path} (${f.rule})`);
     }
     for (const match of text.matchAll(FIXTURE_DOMAIN)) {
       const domain = match[0].toLowerCase();

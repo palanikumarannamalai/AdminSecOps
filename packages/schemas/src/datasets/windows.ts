@@ -72,6 +72,7 @@ export const gpoSysvolPasswordArtifacts = defineDataset({
         domain: z.string(),
         gpoId: optString,
         /** Path relative to the domain Policies folder */
+        /** Path relative to the domain Policies folder, backslash-separated as on SYSVOL. */
         relativePath: z.string(),
         /** Groups.xml | Services.xml | ScheduledTasks.xml | DataSources.xml | Drives.xml | Printers.xml */
         fileName: z.string(),

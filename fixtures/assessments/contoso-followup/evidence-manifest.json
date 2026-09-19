@@ -459,8 +459,8 @@
       "path": "evidence/exchange/mailboxForwarding.json",
       "datasetId": "exchange.mailboxForwarding",
       "module": "Exchange",
-      "sha256": "0fe0ddb8408556c57d28d59c1d9dd9519cadb24ce34a256a5a36dab6d557f1d2",
-      "sizeBytes": 832,
+      "sha256": "70d89b94b0806f3fc73d771fa507ac234c6c0ae04c6d869bb6a95248d7ccce80",
+      "sizeBytes": 911,
       "schemaVersion": "1.0",
       "status": "Success",
       "collectedAt": "2026-09-09T09:15:32.0000000Z"
@@ -549,8 +549,8 @@
       "path": "evidence/azure/roleAssignments.json",
       "datasetId": "azure.roleAssignments",
       "module": "Azure",
-      "sha256": "67be73d070398e1934b2bd32338544d226bc908e6405ee30589ff4c9576851ca",
-      "sizeBytes": 9295,
+      "sha256": "de9196d65e6862cf51a6dd651c128c776ad4b4d6f7fcb35371ea02e250660f71",
+      "sizeBytes": 9641,
       "schemaVersion": "1.0",
       "status": "Success",
       "collectedAt": "2026-09-09T09:22:11.0000000Z"
