@@ -232,6 +232,7 @@ export const entraRoleDefinitions = defineDataset({
       templateId: optString,
       isBuiltIn: z.boolean(),
       isEnabled: optBool,
+      /** Only returned by the Graph beta endpoint; null when collected from v1.0. */
       isPrivileged: optBool,
     }),
   ),
@@ -521,7 +522,10 @@ export const entraOnPremisesSynchronization = defineDataset({
   description: 'Microsoft Entra Connect / Cloud Sync tenant synchronization feature flags.',
   source: 'MicrosoftGraph',
   operations: [`GET ${GRAPH}/directory/onPremisesSynchronization`],
-  permissions: ['Graph: OnPremDirectorySynchronization.Read.All'],
+  permissions: [
+    'Graph: OnPremDirectorySynchronization.Read.All (delegated only)',
+    'Directory role: Global Administrator or Hybrid Identity Administrator is required by this API; if the collecting account lacks it the dataset is reported Unauthorized',
+  ],
   personalData: 'none',
   schema: z.array(
     z.object({

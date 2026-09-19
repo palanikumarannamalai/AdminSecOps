@@ -21,7 +21,7 @@ export const WINDOWS_LIFECYCLE: readonly LifecycleEntry[] = [
   { pattern: /windows server 2016/i, product: 'Windows Server 2016', endOfSupport: '2027-01-12' },
   { pattern: /windows server 2019/i, product: 'Windows Server 2019', endOfSupport: '2029-01-09' },
   { pattern: /windows server 2022/i, product: 'Windows Server 2022', endOfSupport: '2031-10-14' },
-  { pattern: /windows server 2025/i, product: 'Windows Server 2025', endOfSupport: '2034-10-10' },
+  { pattern: /windows server 2025/i, product: 'Windows Server 2025', endOfSupport: '2034-11-14' },
   { pattern: /windows xp/i, product: 'Windows XP', endOfSupport: '2014-04-08' },
   { pattern: /windows vista/i, product: 'Windows Vista', endOfSupport: '2017-04-11' },
   { pattern: /windows 7/i, product: 'Windows 7', endOfSupport: '2020-01-14' },

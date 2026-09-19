@@ -56,3 +56,6 @@ desktop.ini
 # PowerShell test output
 TestResults/
 testResults.xml
+
+# Local agent/tooling state
+.claude/

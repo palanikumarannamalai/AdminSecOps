@@ -39,7 +39,6 @@ export const intuneDeviceOverview = defineDataset({
     macOSCount: z.number().int().nonnegative(),
     iosCount: z.number().int().nonnegative(),
     androidCount: z.number().int().nonnegative(),
-    linuxCount: optNumber,
   }),
 });
 

@@ -30,11 +30,21 @@ export const gpoGroupPolicyObjects = defineDataset({
           enforced: z.boolean(),
         }),
       ),
+      /**
+       * Flattened settings parsed from the GPO XML report. Naming convention:
+       * - SecurityOptions: name = registry KeyName as in the report
+       *   (e.g. MACHINE\System\CurrentControlSet\Control\Lsa\LmCompatibilityLevel), value = number|string
+       * - AccountPolicy: name = policy Name (e.g. MinimumPasswordLength), value = number|boolean
+       * - UserRightsAssignment: name = right constant (e.g. SeDebugPrivilege), value = member names/SIDs
+       * - AuditPolicy: name = audit (sub)category, value = Success | Failure | Success and Failure | No Auditing
+       * - RegistryPolicy (Administrative Templates): name = policy name as displayed, value = Enabled | Disabled
+       * - RegistryValue: name = full registry path incl. value name, value = number|string
+       */
       settings: list(
         z.object({
           /** Computer | User */
           scope: z.string(),
-          /** SecurityOptions | AccountPolicy | UserRightsAssignment | RegistryPolicy | AuditPolicy | Other */
+          /** SecurityOptions | AccountPolicy | UserRightsAssignment | AuditPolicy | RegistryPolicy | RegistryValue | Other */
           category: z.string(),
           name: z.string(),
           value: z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]).nullable(),

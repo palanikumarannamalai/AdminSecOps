@@ -91,32 +91,48 @@ export const REF = {
   ),
   userRegistrationDetails: ms(
     'userRegistrationDetails resource type (Microsoft Graph)',
-    `${LEARN}/graph/api/resources/userregistrationdetails`,
+    `${LEARN}/graph/api/resources/userregistrationdetails?view=graph-rest-1.0`,
   ),
   appCredentialBestPractices: ms(
     'Best practices for Microsoft Entra application credentials',
     `${LEARN}/entra/identity-platform/security-best-practices-for-app-registration`,
   ),
+  restrictAppRegistration: ms(
+    'Restrict who can create applications',
+    `${LEARN}/entra/identity/role-based-access-control/delegate-app-roles#restrict-who-can-create-applications`,
+  ),
+  pimDeploymentPlan: ms(
+    'Plan a Privileged Identity Management deployment',
+    `${LEARN}/entra/id-governance/privileged-identity-management/pim-deployment-plan`,
+  ),
+  secretStandards: ms(
+    'Enforce secret and certificate standards for applications',
+    `${LEARN}/entra/identity/enterprise-apps/tutorial-enforce-secret-standards`,
+  ),
+  syncHealth: ms(
+    'Monitor Microsoft Entra Connect sync with Microsoft Entra Connect Health',
+    `${LEARN}/entra/identity/hybrid/connect/how-to-connect-health-sync`,
+  ),
   graphPermissionsReference: ms('Microsoft Graph permissions reference', `${LEARN}/graph/permissions-reference`),
   appPermissionRisk: ms(
-    'Investigate and remediate risky OAuth apps',
-    `${LEARN}/defender-cloud-apps/investigate-risky-oauth`,
+    'Enhance security with the principle of least privilege (overprivileged applications)',
+    `${LEARN}/entra/identity-platform/secure-least-privileged-access#overprivileged-applications`,
   ),
   passwordProtectionOnPrem: ms(
     'Enforce on-premises Microsoft Entra Password Protection for AD DS',
     `${LEARN}/entra/identity/authentication/concept-password-ban-bad-on-premises`,
   ),
   accessReviewsGuests: ms(
-    'Manage guest access with access reviews',
-    `${LEARN}/entra/id-governance/manage-guest-access-with-access-reviews`,
+    'Clean up stale guest accounts using access reviews',
+    `${LEARN}/entra/identity/users/clean-up-stale-guest-accounts`,
   ),
   syncHardMatchSoftMatch: ms(
-    'Microsoft Entra Connect: When you have an existing tenant (hard match and soft match)',
-    `${LEARN}/entra/identity/hybrid/connect/how-to-connect-install-existing-tenant`,
+    'onPremisesDirectorySynchronizationFeature resource type (hard match and soft match blocking)',
+    `${LEARN}/graph/api/resources/onpremisesdirectorysynchronizationfeature?view=graph-rest-1.0`,
   ),
   onPremisesSyncResource: ms(
     'onPremisesDirectorySynchronization resource type (Microsoft Graph)',
-    `${LEARN}/graph/api/resources/onpremisesdirectorysynchronization`,
+    `${LEARN}/graph/api/resources/onpremisesdirectorysynchronization?view=graph-rest-1.0`,
   ),
   syncTroubleshooting: ms(
     'Troubleshoot Microsoft Entra Connect sync',
@@ -125,7 +141,7 @@ export const REF = {
 
   // --- Standards ---------------------------------------------------------------
   nist80053: nist('NIST SP 800-53 Rev. 5', 'https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final'),
-  nist80063b: nist('NIST SP 800-63B Digital Identity Guidelines: Authentication', 'https://pages.nist.gov/800-63-4/sp800-63b.html'),
+  nist80063b: nist('NIST SP 800-63B-4 Digital Identity Guidelines: Authentication and Authenticator Management', 'https://csrc.nist.gov/pubs/sp/800/63/b/4/final'),
   cisaScuba: cisa(
     'CISA Secure Cloud Business Applications (SCuBA) project',
     'https://www.cisa.gov/resources-tools/services/secure-cloud-business-applications-scuba-project',
