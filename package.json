@@ -6,7 +6,7 @@
   "license": "UNLICENSED",
   "type": "module",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.22.0"
   },
   "workspaces": [
     "packages/*",
@@ -15,7 +15,7 @@
   "scripts": {
     "build": "npm run build:packages && npm run build -w @adminsecops/web",
     "build:packages": "tsc -b tsconfig.build.json",
-    "typecheck": "tsc -b tsconfig.build.json && tsc -p tsconfig.json",
+    "typecheck": "tsc -b tsconfig.build.json && tsc -p tsconfig.json && npm run typecheck -w @adminsecops/web",
     "lint": "eslint . --max-warnings=0",
     "lint:ps": "pwsh -NoProfile -File scripts/Invoke-PSScriptAnalyzer.ps1",
     "test": "vitest run",
@@ -39,6 +39,7 @@
     "@types/yauzl": "^3.4.0",
     "@types/yazl": "^3.3.1",
     "eslint": "^10.11.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.12.0",
     "prettier": "^3.9.8",
     "tsx": "^4.23.13",
