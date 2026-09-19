@@ -26,6 +26,21 @@ export const webAliases: AliasOptions = [
 export const HOSTED_BASE = '/tools/adminsecops/app/';
 export const HOSTED_CANONICAL = 'https://www.palanikumar.net/tools/adminsecops/app';
 
+/** AdminSecOps shield as an inline icon: no extra request, allowed by img-src data:. */
+const HOSTED_ICON =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z" fill="#1d4e89"/><path d="m8.5 12 2.5 2.5 4.5-5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>',
+  );
+
+const HOSTED_NOSCRIPT = [
+  '<noscript>',
+  '<h1>AdminSecOps Browser Assessment</h1>',
+  '<p>This application needs JavaScript. Evidence is processed in your browser and is not uploaded to palanikumar.net.</p>',
+  '<p><a href="/tools/adminsecops">Return to the AdminSecOps overview</a></p>',
+  '</noscript>',
+].join('');
+
 /**
  * Hosted page metadata. The application shows visitor-specific assessment state, so it is
  * excluded from search indexing (noindex); the public landing page remains indexable.
@@ -35,14 +50,15 @@ function hostedHtml(): Plugin {
     '<meta name="description" content="Explore a free Microsoft security assessment in your browser using fictional samples or locally processed AdminSecOps evidence." />',
     '<meta name="robots" content="noindex" />',
     `<link rel="canonical" href="${HOSTED_CANONICAL}" />`,
-    '<link rel="icon" href="/favicon.svg" type="image/svg+xml" />',
+    `<link rel="icon" href="${HOSTED_ICON}" type="image/svg+xml" />`,
   ].join('\n    ');
   return {
     name: 'adminsecops-hosted-html',
     transformIndexHtml(html) {
       return html
         .replace('<title>AdminSecOps</title>', `<title>AdminSecOps Browser Assessment | Palanikumar Annamalai</title>\n    ${meta}`)
-        .replace('<html lang="en">', '<html lang="en-GB">');
+        .replace('<html lang="en">', '<html lang="en-GB">')
+        .replace(/<noscript>.*?<\/noscript>/s, HOSTED_NOSCRIPT);
     },
   };
 }
