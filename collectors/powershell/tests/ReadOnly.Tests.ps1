@@ -63,6 +63,13 @@ Describe 'The analyzer detects violations (it is not vacuous)' {
         @($violations | Where-Object { $_.Rule -eq $Rule }).Count | Should -BeGreaterThan 0
     }
 
+    It 'allows Update-AzConfig only in Connect.ps1 with -Scope Process' {
+        Get-ReadOnlyViolation -ScriptText 'Update-AzConfig -EnableLoginByWam $false -Scope Process' -FileName 'Connect.ps1' | Should -BeNullOrEmpty
+        @(Get-ReadOnlyViolation -ScriptText 'Update-AzConfig -EnableLoginByWam $false -Scope CurrentUser' -FileName 'Connect.ps1').Count | Should -Be 1
+        @(Get-ReadOnlyViolation -ScriptText 'Update-AzConfig -EnableLoginByWam $false' -FileName 'Connect.ps1').Count | Should -Be 1
+        @(Get-ReadOnlyViolation -ScriptText 'Update-AzConfig -EnableLoginByWam $false -Scope Process' -FileName 'azure.ps1').Count | Should -Be 1
+    }
+
     It 'accepts read-only code' {
         $violations = Get-ReadOnlyViolation -ScriptText 'Get-ADUser -Filter * -Properties pwdLastSet | Select-Object Name; [System.IO.File]::ReadAllText("x")' -FileName 'ad.ps1'
         $violations | Should -BeNullOrEmpty

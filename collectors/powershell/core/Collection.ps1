@@ -158,6 +158,11 @@ function Invoke-AdminSecOpsCollection {
     .PARAMETER SkipConnect
     Do not sign in; use existing sessions (Connect-MgGraph / Connect-ExchangeOnline / Connect-AzAccount).
 
+    .PARAMETER UseDeviceCode
+    Sign in with the device code flow (enter a code at https://microsoft.com/devicelogin) instead
+    of a browser window. Useful on hosts without a desktop session. Note that tenants may block the
+    device code flow with Conditional Access (as AdminSecOps control ENTRA-CA-005 recommends).
+
     .EXAMPLE
     Invoke-AdminSecOpsCollection -Module Entra, Exchange -OutputPath C:\Assessments -Label 'Contoso'
 
@@ -175,7 +180,8 @@ function Invoke-AdminSecOpsCollection {
         [switch] $IncludeDomainControllerSettings,
         [string] $ReplayPath,
         [switch] $NoZip,
-        [switch] $SkipConnect
+        [switch] $SkipConnect,
+        [switch] $UseDeviceCode
     )
     $selected = Resolve-AsoModuleSelection -Module $Module
     $resolvedReplay = $null
@@ -189,7 +195,7 @@ function Invoke-AdminSecOpsCollection {
     Write-AsoLog -Message "Collection started (assessment $($ctx.AssessmentId), mode $($ctx.Mode), modules $($selected -join ', '))."
 
     if ($ctx.Mode -eq 'Live' -and -not $SkipConnect) {
-        Connect-AsoService -Module $selected -TenantId $TenantId
+        Connect-AsoService -Module $selected -TenantId $TenantId -UseDeviceCode:$UseDeviceCode
     }
     if ($ctx.Mode -eq 'Live') {
         # Throws before any evidence is read when sessions belong to an unexpected tenant.

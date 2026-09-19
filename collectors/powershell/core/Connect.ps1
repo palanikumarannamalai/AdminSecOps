@@ -118,18 +118,42 @@ function Connect-AsoService {
     session is present. Never used in replay mode or with -SkipConnect.
     #>
     [CmdletBinding()]
-    param([Parameter(Mandatory)] [string[]] $Module, [string] $TenantId)
+    param([Parameter(Mandatory)] [string[]] $Module, [string] $TenantId, [switch] $UseDeviceCode)
+
+    # Sign-in uses the system browser (or a device code) instead of the Windows account broker (WAM):
+    # WAM needs a parent console window and fails in background or non-interactive hosts.
+    # Settings are changed for this process only.
+
+    # Exchange Online must be signed in BEFORE Microsoft.Graph.Authentication is loaded: Graph ships an
+    # older MSAL broker assembly and, when it loads first, Connect-ExchangeOnline fails with
+    # "Method not found ... BrokerExtension.WithBroker" (observed in live validation).
+    if ($Module -contains 'Exchange' -and (Import-AsoOptionalModule -Name 'ExchangeOnlineManagement')) {
+        if (-not (Get-AsoExchangeConnectionState).Connected) {
+            Write-AsoLog -Message 'Signing in to Exchange Online.'
+            $params = @{ ShowBanner = $false; ErrorAction = 'Stop' }
+            $cmd = Get-Command -Name Connect-ExchangeOnline
+            if ($UseDeviceCode -and $cmd.Parameters.ContainsKey('Device')) { $params['Device'] = $true }
+            elseif ($cmd.Parameters.ContainsKey('DisableWAM')) { $params['DisableWAM'] = $true }
+            try { Connect-ExchangeOnline @params | Out-Null }
+            catch { Write-AsoLog -Level Error -Message "Exchange Online sign-in failed: $($_.Exception.Message)" }
+            if (-not (Get-AsoExchangeConnectionState).Connected) { Write-AsoLog -Level Error -Message 'Exchange Online sign-in did not complete; the Exchange module will be skipped.' }
+        }
+    }
 
     $needsGraph = @($Module | Where-Object { $_ -in 'Entra', 'M365', 'Intune' }).Count -gt 0
     if ($needsGraph -and (Import-AsoOptionalModule -Name 'Microsoft.Graph.Authentication')) {
         $state = Get-AsoGraphConnectionState
         if (-not $state.Connected) {
             Write-AsoLog -Message 'Signing in to Microsoft Graph with read-only delegated scopes.'
+            # Set-MgGraphOption is not used: it persists to the user profile, and the collector must
+            # not change the operator's configuration. Use -UseDeviceCode where browser sign-in fails.
             $params = @{ Scopes = $script:AsoGraphScopes; NoWelcome = $true; ErrorAction = 'Stop' }
             if ($TenantId) { $params['TenantId'] = $TenantId }
+            if ($UseDeviceCode) { $params['UseDeviceCode'] = $true }
             try { Connect-MgGraph @params | Out-Null }
             catch { Write-AsoLog -Level Error -Message "Microsoft Graph sign-in failed: $($_.Exception.Message)" }
             $state = Get-AsoGraphConnectionState
+            if (-not $state.Connected) { Write-AsoLog -Level Error -Message 'Microsoft Graph sign-in did not complete; Graph-based modules will be skipped.' }
         }
         if ($state.Connected) {
             $missing = @($script:AsoGraphScopes | Where-Object { $state.Scopes -notcontains $_ })
@@ -138,20 +162,19 @@ function Connect-AsoService {
             }
         }
     }
-    if ($Module -contains 'Exchange' -and (Import-AsoOptionalModule -Name 'ExchangeOnlineManagement')) {
-        if (-not (Get-AsoExchangeConnectionState).Connected) {
-            Write-AsoLog -Message 'Signing in to Exchange Online.'
-            try { Connect-ExchangeOnline -ShowBanner:$false -ErrorAction Stop | Out-Null }
-            catch { Write-AsoLog -Level Error -Message "Exchange Online sign-in failed: $($_.Exception.Message)" }
-        }
-    }
+
     if ($Module -contains 'Azure' -and (Import-AsoOptionalModule -Name 'Az.Accounts')) {
         if (-not (Get-AsoAzureConnectionState).Connected) {
             Write-AsoLog -Message 'Signing in to Azure.'
+            if (Get-Command -Name Update-AzConfig -ErrorAction SilentlyContinue) {
+                try { Update-AzConfig -EnableLoginByWam $false -Scope Process -ErrorAction Stop | Out-Null } catch { Write-AsoLog -Level Warning -Message "Could not disable WAM for Azure: $($_.Exception.Message)" }
+            }
             $params = @{ ErrorAction = 'Stop' }
             if ($TenantId) { $params['Tenant'] = $TenantId }
+            if ($UseDeviceCode) { $params['UseDeviceAuthentication'] = $true }
             try { Connect-AzAccount @params | Out-Null }
             catch { Write-AsoLog -Level Error -Message "Azure sign-in failed: $($_.Exception.Message)" }
+            if (-not (Get-AsoAzureConnectionState).Connected) { Write-AsoLog -Level Error -Message 'Azure sign-in did not complete; the Azure module will be skipped.' }
         }
     }
 }
