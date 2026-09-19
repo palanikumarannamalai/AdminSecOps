@@ -1,0 +1,6 @@
+[
+  {
+    "DNSRoot": "corp.contoso.example",
+    "NetBIOSName": "CORP"
+  }
+]

@@ -1,0 +1,31 @@
+{
+  "value": [
+    {
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000001/providers/Microsoft.Security/securityContacts/default",
+      "name": "default",
+      "type": "Microsoft.Security/securityContacts",
+      "properties": {
+        "emails": "secops@contoso.example;cloud-alerts@contoso.example",
+        "phone": "",
+        "isEnabled": true,
+        "notificationsByRole": {
+          "state": "On",
+          "roles": [
+            "Owner",
+            "ServiceAdmin"
+          ]
+        },
+        "notificationsSources": [
+          {
+            "sourceType": "Alert",
+            "minimalSeverity": "Medium"
+          },
+          {
+            "sourceType": "AttackPath",
+            "minimalRiskLevel": "Critical"
+          }
+        ]
+      }
+    }
+  ]
+}

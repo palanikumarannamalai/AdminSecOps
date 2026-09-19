@@ -1,0 +1,18 @@
+[
+  {
+    "SecurityServicesConfigured": [
+      1,
+      2
+    ],
+    "SecurityServicesRunning": [
+      2
+    ],
+    "VirtualizationBasedSecurityStatus": 2,
+    "AvailableSecurityProperties": [
+      1,
+      2,
+      3,
+      5
+    ]
+  }
+]

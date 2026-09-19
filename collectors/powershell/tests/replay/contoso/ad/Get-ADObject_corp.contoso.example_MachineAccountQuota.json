@@ -1,0 +1,7 @@
+[
+  {
+    "DistinguishedName": "DC=corp,DC=contoso,DC=example",
+    "ms-DS-MachineAccountQuota": 10,
+    "ObjectClass": "domainDNS"
+  }
+]

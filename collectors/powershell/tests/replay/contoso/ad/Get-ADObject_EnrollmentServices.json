@@ -1,0 +1,19 @@
+[
+  {
+    "Name": "Contoso-Issuing-CA",
+    "DistinguishedName": "CN=Contoso-Issuing-CA,CN=Enrollment Services,CN=Public Key Services,CN=Services,CN=Configuration,DC=corp,DC=contoso,DC=example",
+    "ObjectClass": "pKIEnrollmentService",
+    "dNSHostName": "pki01.corp.contoso.example",
+    "certificateTemplates": [
+      "ContosoWebServer",
+      "ContosoUserAuth",
+      "User",
+      "Machine",
+      "DomainController",
+      "SubCA"
+    ],
+    "cACertificate": [
+      "MIIDWjCCAkKgAwIBAgIIR6GKHobAbBIwDQYJKoZIhvcNAQELBQAwbTEXMBUGCgmSJomT8ixkARkWB2V4YW1wbGUxFzAVBgoJkiaJk/IsZAEZFgdjb250b3NvMRQwEgYKCZImiZPyLGQBGRYEY29ycDEjMCEGA1UEAxMaQ29udG9zbyBFeGFtcGxlIElzc3VpbmcgQ0EwHhcNMjEwMTAxMDAwMDAwWhcNMzEwMTAxMDAwMDAwWjBtMRcwFQYKCZImiZPyLGQBGRYHZXhhbXBsZTEXMBUGCgmSJomT8ixkARkWB2NvbnRvc28xFDASBgoJkiaJk/IsZAEZFgRjb3JwMSMwIQYDVQQDExpDb250b3NvIEV4YW1wbGUgSXNzdWluZyBDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALI/TYKizxYxY2UNfTqr5CHckB4Jj3v05jT8b7VB6PbE7Nm0tllpuz3HIDGbx4STGVHE0Gz388Z/BB8z/7xifKq0MIeV9S3Q2QU2emtmQmz8qyOwhaLkeyZK+eoihzoE33oEpPWFjmPE/A8KUJwQzrz6QxhJWpeaDtW1IhOpfcR+X7haWOrYmKZVl5EGw3CptudZuKlexY5l/+n55fYo1wqF26EI2iYp++OsTcD0UJXGJ3jfogVdNrQG7L18ilpiUUKqr1NWLxNC4aLqBgDSLe2qQgcMTRkeO4js1jnUrhAdRr0SU0L5wmeCGPbEC9auoKOzRNVZYklko1+peHYz8WECAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAWHbmVMkUb4gI6LhdofiAOtZb1ukaAkH7zPfxNSH6K6+dp3xde8fsfFPM5m/7b2d5AcLQub85bOczTRhZEFP20MEPxiYsQFOT/jCYRx9uC6e1/Zgmi6nUoQpt6qjdzAYq1zrS9SKOswKY+QTM+6gnN1ywPpLytJyJVkaMcjfdRo24P6PtusblQFuYA3gPwFbIiofnkzdE6x4C+5ICdZJdH3ZdyAYGdzgcCN8SkMvRToVYbxEwquMizfD+MNBIBmEIaQSKg9Q89WG95yK3oCQQO7G1hjz7iURj0+HAn4xCipeGVvgJiRKlf75H4GsAlSmladIrrrqNPGCM7JExeZMVxQ=="
+    ]
+  }
+]

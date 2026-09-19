@@ -1,0 +1,35 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#servicePrincipals",
+  "value": [
+    {
+      "id": "cccc0001-0000-4000-8000-0000000000aa",
+      "appId": "00000003-0000-0000-c000-000000000000",
+      "displayName": "Microsoft Graph",
+      "servicePrincipalType": "Application",
+      "appOwnerOrganizationId": "f8cdef31-a31e-4b4a-93e4-5f571e91255a",
+      "accountEnabled": true,
+      "passwordCredentials": [],
+      "keyCredentials": []
+    },
+    {
+      "id": "cccc0001-0000-4000-8000-0000000000bb",
+      "appId": "00000002-0000-0ff1-ce00-000000000000",
+      "displayName": "Office 365 Exchange Online",
+      "servicePrincipalType": "Application",
+      "appOwnerOrganizationId": "f8cdef31-a31e-4b4a-93e4-5f571e91255a",
+      "accountEnabled": true,
+      "passwordCredentials": [],
+      "keyCredentials": []
+    },
+    {
+      "id": "cccc0001-0000-4000-8000-0000000000cc",
+      "appId": "dddd1001-0000-4000-8000-0000000000cc",
+      "displayName": "mi-contoso-automation",
+      "servicePrincipalType": "ManagedIdentity",
+      "appOwnerOrganizationId": null,
+      "accountEnabled": true,
+      "passwordCredentials": [],
+      "keyCredentials": []
+    }
+  ]
+}

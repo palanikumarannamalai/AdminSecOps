@@ -1,0 +1,30 @@
+[
+  {
+    "SamAccountName": "Administrator",
+    "SID": "S-1-5-21-1111111111-2222222222-3333333333-500",
+    "objectClass": "user",
+    "distinguishedName": "CN=Administrator,OU=Admins,DC=corp,DC=contoso,DC=example",
+    "name": "Administrator"
+  },
+  {
+    "SamAccountName": "adm-adele",
+    "SID": "S-1-5-21-1111111111-2222222222-3333333333-1104",
+    "objectClass": "user",
+    "distinguishedName": "CN=adm-adele,OU=Admins,DC=corp,DC=contoso,DC=example",
+    "name": "adm-adele"
+  },
+  {
+    "SamAccountName": "svc-backup",
+    "SID": "S-1-5-21-1111111111-2222222222-3333333333-1120",
+    "objectClass": "user",
+    "distinguishedName": "CN=svc-backup,OU=Admins,DC=corp,DC=contoso,DC=example",
+    "name": "svc-backup"
+  },
+  {
+    "SamAccountName": "adm-ben",
+    "SID": "S-1-5-21-1111111111-2222222222-3333333333-1105",
+    "objectClass": "user",
+    "distinguishedName": "CN=adm-ben,OU=Admins,DC=corp,DC=contoso,DC=example",
+    "name": "adm-ben"
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "dc01.corp.contoso.example": {
+    "SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters\\LDAPServerIntegrity": 2,
+    "SYSTEM\\CurrentControlSet\\Services\\NTDS\\Parameters\\LdapEnforceChannelBinding": 1,
+    "SYSTEM\\CurrentControlSet\\Services\\LanmanServer\\Parameters\\RequireSecuritySignature": 1
+  },
+  "dc02.corp.contoso.example": {
+    "__replayError": {
+      "statusCode": 0,
+      "errorCode": "AccessDenied",
+      "message": "Access is denied."
+    }
+  }
+}

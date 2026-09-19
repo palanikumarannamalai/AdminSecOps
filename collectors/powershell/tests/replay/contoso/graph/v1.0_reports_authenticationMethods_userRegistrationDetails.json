@@ -1,0 +1,84 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#reports/authenticationMethods/userRegistrationDetails",
+  "value": [
+    {
+      "id": "aaaa0001-0000-4000-8000-000000000001",
+      "userPrincipalName": "adele.admin@contoso.example",
+      "userDisplayName": "adele.admin",
+      "userType": "member",
+      "isAdmin": true,
+      "isSsprRegistered": true,
+      "isSsprEnabled": true,
+      "isSsprCapable": true,
+      "isMfaRegistered": true,
+      "isMfaCapable": true,
+      "isPasswordlessCapable": false,
+      "methodsRegistered": [
+        "microsoftAuthenticatorPush",
+        "fido2"
+      ],
+      "isSystemPreferredAuthenticationMethodEnabled": true,
+      "systemPreferredAuthenticationMethods": [],
+      "userPreferredMethodForSecondaryAuthentication": "push",
+      "lastUpdatedDateTime": "2026-08-30T02:00:00Z"
+    },
+    {
+      "id": "aaaa0001-0000-4000-8000-000000000002",
+      "userPrincipalName": "breakglass01@contoso-example.onmicrosoft.com",
+      "userDisplayName": "breakglass01",
+      "userType": "member",
+      "isAdmin": true,
+      "isSsprRegistered": true,
+      "isSsprEnabled": true,
+      "isSsprCapable": true,
+      "isMfaRegistered": true,
+      "isMfaCapable": true,
+      "isPasswordlessCapable": false,
+      "methodsRegistered": [
+        "fido2"
+      ],
+      "isSystemPreferredAuthenticationMethodEnabled": true,
+      "systemPreferredAuthenticationMethods": [],
+      "userPreferredMethodForSecondaryAuthentication": "push",
+      "lastUpdatedDateTime": "2026-08-30T02:00:00Z"
+    },
+    {
+      "id": "aaaa0001-0000-4000-8000-000000000003",
+      "userPrincipalName": "ben.synced@contoso.example",
+      "userDisplayName": "ben.synced",
+      "userType": "member",
+      "isAdmin": true,
+      "isSsprRegistered": false,
+      "isSsprEnabled": true,
+      "isSsprCapable": false,
+      "isMfaRegistered": false,
+      "isMfaCapable": false,
+      "isPasswordlessCapable": false,
+      "methodsRegistered": [],
+      "isSystemPreferredAuthenticationMethodEnabled": true,
+      "systemPreferredAuthenticationMethods": [],
+      "userPreferredMethodForSecondaryAuthentication": "push",
+      "lastUpdatedDateTime": "2026-08-30T02:00:00Z"
+    },
+    {
+      "id": "aaaa0001-0000-4000-8000-000000000004",
+      "userPrincipalName": "cara.user@contoso.example",
+      "userDisplayName": "cara.user",
+      "userType": "member",
+      "isAdmin": false,
+      "isSsprRegistered": false,
+      "isSsprEnabled": true,
+      "isSsprCapable": false,
+      "isMfaRegistered": false,
+      "isMfaCapable": false,
+      "isPasswordlessCapable": false,
+      "methodsRegistered": [
+        "email"
+      ],
+      "isSystemPreferredAuthenticationMethodEnabled": true,
+      "systemPreferredAuthenticationMethods": [],
+      "userPreferredMethodForSecondaryAuthentication": "push",
+      "lastUpdatedDateTime": "2026-08-30T02:00:00Z"
+    }
+  ]
+}

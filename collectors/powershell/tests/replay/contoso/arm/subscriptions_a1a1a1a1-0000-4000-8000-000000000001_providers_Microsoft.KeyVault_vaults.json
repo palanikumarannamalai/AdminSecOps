@@ -1,0 +1,40 @@
+{
+  "value": [
+    {
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000001/resourceGroups/rg-prod-sec/providers/Microsoft.KeyVault/vaults/kv-contoso-prod",
+      "name": "kv-contoso-prod",
+      "type": "Microsoft.KeyVault/vaults",
+      "location": "westeurope",
+      "tags": {},
+      "systemData": {
+        "createdBy": "adele.admin@contoso.example",
+        "createdByType": "User",
+        "createdAt": "2023-01-01T00:00:00Z"
+      },
+      "properties": {
+        "sku": {
+          "family": "A",
+          "name": "standard"
+        },
+        "tenantId": "11111111-2222-4333-8444-555555555555",
+        "networkAcls": {
+          "bypass": "AzureServices",
+          "defaultAction": "Deny",
+          "ipRules": [],
+          "virtualNetworkRules": []
+        },
+        "accessPolicies": [],
+        "enabledForDeployment": false,
+        "enabledForDiskEncryption": false,
+        "enabledForTemplateDeployment": false,
+        "enableSoftDelete": true,
+        "softDeleteRetentionInDays": 90,
+        "enableRbacAuthorization": true,
+        "enablePurgeProtection": true,
+        "vaultUri": "https://kv-contoso-prod.vault.azure.net/",
+        "provisioningState": "Succeeded",
+        "publicNetworkAccess": "Disabled"
+      }
+    }
+  ]
+}

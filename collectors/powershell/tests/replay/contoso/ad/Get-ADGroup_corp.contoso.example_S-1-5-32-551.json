@@ -1,0 +1,9 @@
+[
+  {
+    "Name": "Backup Operators",
+    "SID": "S-1-5-32-551",
+    "GroupScope": "Global",
+    "GroupCategory": "Security",
+    "DistinguishedName": "CN=Backup Operators,CN=Users,DC=corp,DC=contoso,DC=example"
+  }
+]

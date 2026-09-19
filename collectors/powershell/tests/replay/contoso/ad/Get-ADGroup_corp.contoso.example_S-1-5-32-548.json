@@ -1,0 +1,9 @@
+[
+  {
+    "Name": "Account Operators",
+    "SID": "S-1-5-32-548",
+    "GroupScope": "Global",
+    "GroupCategory": "Security",
+    "DistinguishedName": "CN=Account Operators,CN=Users,DC=corp,DC=contoso,DC=example"
+  }
+]

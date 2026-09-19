@@ -1,0 +1,27 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#servicePrincipals('cccc0001-0000-4000-8000-0000000000aa')/appRoleAssignedTo",
+  "value": [
+    {
+      "id": "ar-0001",
+      "deletedDateTime": null,
+      "appRoleId": "7ab1d382-f21e-4acd-a863-ba3e13f7da61",
+      "createdDateTime": "2024-04-01T12:00:00Z",
+      "principalDisplayName": "Contoso Reporting Service",
+      "principalId": "cccc0001-0000-4000-8000-000000000001",
+      "principalType": "ServicePrincipal",
+      "resourceDisplayName": "Microsoft Graph",
+      "resourceId": "cccc0001-0000-4000-8000-0000000000aa"
+    },
+    {
+      "id": "ar-0002",
+      "deletedDateTime": null,
+      "appRoleId": "e2a3a72e-5f79-4c64-b1b1-878b674786c9",
+      "createdDateTime": "2022-11-20T12:00:00Z",
+      "principalDisplayName": "Contoso HR Connector",
+      "principalId": "cccc0001-0000-4000-8000-000000000002",
+      "principalType": "ServicePrincipal",
+      "resourceDisplayName": "Microsoft Graph",
+      "resourceId": "cccc0001-0000-4000-8000-0000000000aa"
+    }
+  ]
+}

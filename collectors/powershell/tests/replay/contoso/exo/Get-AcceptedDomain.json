@@ -1,0 +1,38 @@
+[
+  {
+    "Identity": "contoso.example",
+    "Name": "contoso.example",
+    "DomainName": "contoso.example",
+    "DomainType": "Authoritative",
+    "Default": true,
+    "IsCoexistenceDomain": false,
+    "AuthenticationType": "Managed"
+  },
+  {
+    "Identity": "contoso-example.onmicrosoft.com",
+    "Name": "contoso-example.onmicrosoft.com",
+    "DomainName": "contoso-example.onmicrosoft.com",
+    "DomainType": "Authoritative",
+    "Default": false,
+    "IsCoexistenceDomain": false,
+    "AuthenticationType": "Managed"
+  },
+  {
+    "Identity": "contoso-example.mail.onmicrosoft.com",
+    "Name": "contoso-example.mail.onmicrosoft.com",
+    "DomainName": "contoso-example.mail.onmicrosoft.com",
+    "DomainType": "Authoritative",
+    "Default": false,
+    "IsCoexistenceDomain": true,
+    "AuthenticationType": "Managed"
+  },
+  {
+    "Identity": "mail.contoso.example",
+    "Name": "mail.contoso.example",
+    "DomainName": "mail.contoso.example",
+    "DomainType": "InternalRelay",
+    "Default": false,
+    "IsCoexistenceDomain": false,
+    "AuthenticationType": "Federated"
+  }
+]

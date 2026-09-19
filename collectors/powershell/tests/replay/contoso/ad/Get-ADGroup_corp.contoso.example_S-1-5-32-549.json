@@ -1,0 +1,9 @@
+[
+  {
+    "Name": "Server Operators",
+    "SID": "S-1-5-32-549",
+    "GroupScope": "Global",
+    "GroupCategory": "Security",
+    "DistinguishedName": "CN=Server Operators,CN=Users,DC=corp,DC=contoso,DC=example"
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "__replayError": {
+    "statusCode": 404,
+    "errorCode": "Request_ResourceNotFound",
+    "message": "Resource 'aaaa0001-0000-4000-8000-000000000099' does not exist or one of its queried reference-property objects are not present."
+  }
+}

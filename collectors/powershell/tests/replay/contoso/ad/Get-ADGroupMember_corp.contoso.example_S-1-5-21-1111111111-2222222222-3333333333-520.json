@@ -1,0 +1,9 @@
+[
+  {
+    "SamAccountName": "Administrator",
+    "SID": "S-1-5-21-1111111111-2222222222-3333333333-500",
+    "objectClass": "user",
+    "distinguishedName": "CN=Administrator,OU=Admins,DC=corp,DC=contoso,DC=example",
+    "name": "Administrator"
+  }
+]

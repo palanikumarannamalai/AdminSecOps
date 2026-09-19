@@ -1,0 +1,73 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#subscribedSkus",
+  "value": [
+    {
+      "capabilityStatus": "Enabled",
+      "consumedUnits": 212,
+      "id": "11111111-2222-4333-8444-555555555555_eeee0001-0000-4000-8000-000000000001",
+      "skuId": "eeee0001-0000-4000-8000-000000000001",
+      "skuPartNumber": "SPE_E3",
+      "appliesTo": "User",
+      "prepaidUnits": {
+        "enabled": 250,
+        "lockedOut": 0,
+        "suspended": 0,
+        "warning": 0
+      },
+      "servicePlans": [
+        {
+          "servicePlanId": "ffff0001-0000-4000-8000-000000000001",
+          "servicePlanName": "AAD_PREMIUM",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        },
+        {
+          "servicePlanId": "ffff0001-0000-4000-8000-000000000002",
+          "servicePlanName": "INTUNE_A",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        },
+        {
+          "servicePlanId": "ffff0001-0000-4000-8000-000000000003",
+          "servicePlanName": "EXCHANGE_S_ENTERPRISE",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        },
+        {
+          "servicePlanId": "ffff0001-0000-4000-8000-000000000004",
+          "servicePlanName": "SHAREPOINTENTERPRISE",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        },
+        {
+          "servicePlanId": "ffff0001-0000-4000-8000-000000000005",
+          "servicePlanName": "MCOSTANDARD",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        }
+      ]
+    },
+    {
+      "capabilityStatus": "Enabled",
+      "consumedUnits": 3,
+      "id": "11111111-2222-4333-8444-555555555555_eeee0001-0000-4000-8000-000000000002",
+      "skuId": "eeee0001-0000-4000-8000-000000000002",
+      "skuPartNumber": "POWER_BI_STANDARD",
+      "appliesTo": "User",
+      "prepaidUnits": {
+        "enabled": 1000000,
+        "lockedOut": 0,
+        "suspended": 0,
+        "warning": 0
+      },
+      "servicePlans": [
+        {
+          "servicePlanId": "ffff0001-0000-4000-8000-000000000006",
+          "servicePlanName": "BI_AZURE_P0",
+          "provisioningStatus": "Success",
+          "appliesTo": "User"
+        }
+      ]
+    }
+  ]
+}

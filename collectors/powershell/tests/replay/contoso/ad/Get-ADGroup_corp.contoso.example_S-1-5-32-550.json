@@ -1,0 +1,9 @@
+[
+  {
+    "Name": "Print Operators",
+    "SID": "S-1-5-32-550",
+    "GroupScope": "Global",
+    "GroupCategory": "Security",
+    "DistinguishedName": "CN=Print Operators,CN=Users,DC=corp,DC=contoso,DC=example"
+  }
+]

@@ -1,0 +1,128 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#identity/conditionalAccess/policies",
+  "value": [
+    {
+      "id": "9a000001-0000-4000-8000-000000000004",
+      "templateId": null,
+      "displayName": "CA004: Block device code flow",
+      "createdDateTime": "2024-02-01T08:00:00Z",
+      "modifiedDateTime": "2026-06-15T13:45:10.1234567Z",
+      "state": "enabled",
+      "sessionControls": null,
+      "conditions": {
+        "userRiskLevels": [],
+        "signInRiskLevels": [],
+        "clientAppTypes": [
+          "all"
+        ],
+        "servicePrincipalRiskLevels": [],
+        "platforms": null,
+        "locations": null,
+        "devices": null,
+        "clientApplications": null,
+        "applications": {
+          "includeApplications": [
+            "All"
+          ],
+          "excludeApplications": [],
+          "includeUserActions": [],
+          "includeAuthenticationContextClassReferences": [],
+          "applicationFilter": null
+        },
+        "users": {
+          "includeUsers": [
+            "All"
+          ],
+          "excludeUsers": [],
+          "includeGroups": [],
+          "excludeGroups": [
+            "bbbb0001-0000-4000-8000-000000000002"
+          ],
+          "includeRoles": [],
+          "excludeRoles": [],
+          "includeGuestsOrExternalUsers": {
+            "guestOrExternalUserTypes": "b2bCollaborationGuest,b2bCollaborationMember",
+            "externalTenants": {
+              "@odata.type": "#microsoft.graph.conditionalAccessAllExternalTenants",
+              "membershipKind": "all"
+            }
+          },
+          "excludeGuestsOrExternalUsers": null
+        },
+        "authenticationFlows": {
+          "transferMethods": "deviceCodeFlow"
+        }
+      },
+      "grantControls": {
+        "operator": "OR",
+        "builtInControls": [
+          "block"
+        ],
+        "customAuthenticationFactors": [],
+        "termsOfUse": [],
+        "authenticationStrength": null
+      }
+    },
+    {
+      "id": "9a000001-0000-4000-8000-000000000005",
+      "templateId": null,
+      "displayName": "CA005: Legacy pilot policy (disabled)",
+      "createdDateTime": "2024-02-01T08:00:00Z",
+      "modifiedDateTime": "2026-06-15T13:45:10.1234567Z",
+      "state": "disabled",
+      "sessionControls": null,
+      "conditions": {
+        "userRiskLevels": [],
+        "signInRiskLevels": [],
+        "clientAppTypes": [
+          "browser",
+          "mobileAppsAndDesktopClients"
+        ],
+        "servicePrincipalRiskLevels": [],
+        "platforms": null,
+        "locations": {
+          "includeLocations": [
+            "All"
+          ],
+          "excludeLocations": [
+            "AllTrusted"
+          ]
+        },
+        "devices": null,
+        "clientApplications": null,
+        "applications": {
+          "includeApplications": [
+            "00000002-0000-0ff1-ce00-000000000000"
+          ],
+          "excludeApplications": [],
+          "includeUserActions": [],
+          "includeAuthenticationContextClassReferences": [],
+          "applicationFilter": null
+        },
+        "users": {
+          "includeUsers": [
+            "aaaa0001-0000-4000-8000-000000000003"
+          ],
+          "excludeUsers": [],
+          "includeGroups": [],
+          "excludeGroups": [],
+          "includeRoles": [],
+          "excludeRoles": [],
+          "includeGuestsOrExternalUsers": null,
+          "excludeGuestsOrExternalUsers": null
+        },
+        "authenticationFlows": null
+      },
+      "grantControls": {
+        "operator": "AND",
+        "builtInControls": [
+          "mfa",
+          "compliantDevice"
+        ],
+        "customAuthenticationFactors": [],
+        "termsOfUse": [],
+        "authenticationStrength": null
+      }
+    }
+  ]
+}

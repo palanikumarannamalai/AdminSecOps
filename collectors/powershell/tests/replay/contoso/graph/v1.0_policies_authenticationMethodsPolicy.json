@@ -1,0 +1,62 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#policies/authenticationMethodsPolicy/$entity",
+  "id": "authenticationMethodsPolicy",
+  "displayName": "Authentication Methods Policy",
+  "description": "The tenant-wide policy that controls which authentication methods are allowed.",
+  "lastModifiedDateTime": "2026-05-10T10:00:00Z",
+  "policyVersion": "1.5",
+  "policyMigrationState": "migrationInProgress",
+  "registrationEnforcement": {
+    "authenticationMethodsRegistrationCampaign": {
+      "snoozeDurationInDays": 1,
+      "state": "default",
+      "excludeTargets": [],
+      "includeTargets": []
+    }
+  },
+  "authenticationMethodConfigurations": [
+    {
+      "@odata.type": "#microsoft.graph.fido2AuthenticationMethodConfiguration",
+      "id": "Fido2",
+      "state": "enabled",
+      "isSelfServiceRegistrationAllowed": true,
+      "isAttestationEnforced": true,
+      "excludeTargets": [],
+      "includeTargets": [
+        {
+          "targetType": "group",
+          "id": "all_users",
+          "isRegistrationRequired": false
+        }
+      ]
+    },
+    {
+      "@odata.type": "#microsoft.graph.microsoftAuthenticatorAuthenticationMethodConfiguration",
+      "id": "MicrosoftAuthenticator",
+      "state": "enabled",
+      "excludeTargets": [],
+      "includeTargets": [
+        {
+          "targetType": "group",
+          "id": "all_users",
+          "isRegistrationRequired": false,
+          "authenticationMode": "any"
+        }
+      ]
+    },
+    {
+      "@odata.type": "#microsoft.graph.smsAuthenticationMethodConfiguration",
+      "id": "Sms",
+      "state": "disabled",
+      "excludeTargets": [],
+      "includeTargets": []
+    },
+    {
+      "@odata.type": "#microsoft.graph.emailAuthenticationMethodConfiguration",
+      "id": "Email",
+      "state": "enabled",
+      "excludeTargets": [],
+      "allowExternalIdToUseEmailOtp": "default"
+    }
+  ]
+}

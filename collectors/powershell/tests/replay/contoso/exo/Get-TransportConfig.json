@@ -1,0 +1,8 @@
+[
+  {
+    "Identity": "Transport Settings",
+    "SmtpClientAuthenticationDisabled": false,
+    "ExternalPostmasterAddress": null,
+    "MaxRecipientEnvelopeLimit": "Unlimited"
+  }
+]

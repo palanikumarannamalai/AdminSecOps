@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-16"?>
+<GPO xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.microsoft.com/GroupPolicy/Settings">
+  <Identifier>
+    <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{4F3A9C21-7B6E-4D2A-9E11-5C0FFEE00001}</Identifier>
+    <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">corp.contoso.example</Domain>
+  </Identifier>
+  <Name>Contoso Workstation Baseline</Name>
+  <IncludeComments>true</IncludeComments>
+  <CreatedTime>2018-01-01T10:00:00</CreatedTime>
+  <ModifiedTime>2026-02-02T10:00:00</ModifiedTime>
+  <ReadTime>2026-09-01T10:00:00.0000000Z</ReadTime>
+  <FilterDataAvailable>true</FilterDataAvailable>
+  <Computer>
+    <VersionDirectory>12</VersionDirectory>
+    <VersionSysvol>12</VersionSysvol>
+    <Enabled>true</Enabled>
+    <ExtensionData>
+      <Extension xmlns:q3="http://www.microsoft.com/GroupPolicy/Settings/Registry" xsi:type="q3:RegistrySettings">
+        <q3:Policy>
+          <q3:Name>Turn on PowerShell Script Block Logging</q3:Name>
+          <q3:State>Enabled</q3:State>
+          <q3:Explain>This policy setting enables logging of all PowerShell script input to the Microsoft-Windows-PowerShell/Operational event log.</q3:Explain>
+          <q3:Supported>At least Microsoft Windows 7 or Windows Server 2008 family</q3:Supported>
+          <q3:Category>Windows Components/Windows PowerShell</q3:Category>
+          <q3:CheckBox>
+            <q3:Name>Log script block invocation start / stop events:</q3:Name>
+            <q3:State>Disabled</q3:State>
+          </q3:CheckBox>
+        </q3:Policy>
+        <q3:Policy>
+          <q3:Name>Allow Basic authentication</q3:Name>
+          <q3:State>Disabled</q3:State>
+          <q3:Category>Windows Components/Windows Remote Management (WinRM)/WinRM Client</q3:Category>
+        </q3:Policy>
+        <q3:RegistrySetting>
+          <q3:KeyPath>SYSTEM\CurrentControlSet\Control\Lsa</q3:KeyPath>
+          <q3:AdmSetting>false</q3:AdmSetting>
+          <q3:Value>
+            <q3:Name>RunAsPPL</q3:Name>
+            <q3:Number>1</q3:Number>
+          </q3:Value>
+        </q3:RegistrySetting>
+        <q3:RegistrySetting>
+          <q3:KeyPath>SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon</q3:KeyPath>
+          <q3:AdmSetting>false</q3:AdmSetting>
+          <q3:Value>
+            <q3:Name>DefaultPassword</q3:Name>
+            <q3:String>replay-fixture-autologon-value</q3:String>
+          </q3:Value>
+        </q3:RegistrySetting>
+      </Extension>
+      <Name>Registry</Name>
+    </ExtensionData>
+  </Computer>
+  <User>
+    <VersionDirectory>0</VersionDirectory>
+    <VersionSysvol>0</VersionSysvol>
+    <Enabled>true</Enabled>
+
+  </User>
+  <LinksTo>
+    <SOMName>Workstations</SOMName>
+    <SOMPath>corp.contoso.example/Contoso/Workstations</SOMPath>
+    <Enabled>true</Enabled>
+    <NoOverride>true</NoOverride>
+  </LinksTo>
+  <LinksTo>
+    <SOMName>Kiosks</SOMName>
+    <SOMPath>corp.contoso.example/Contoso/Kiosks</SOMPath>
+    <Enabled>false</Enabled>
+    <NoOverride>false</NoOverride>
+  </LinksTo>
+</GPO>

@@ -1,0 +1,35 @@
+[
+  {
+    "Id": "31B2F340-016D-11D2-945F-00C04FB984F9",
+    "DisplayName": "Default Domain Policy",
+    "DomainName": "corp.contoso.example",
+    "Owner": "CORP\\Domain Admins",
+    "GpoStatus": "AllSettingsEnabled",
+    "Description": null,
+    "CreationTime": "2018-01-01T10:00:00Z",
+    "ModificationTime": "2026-02-02T10:00:00Z",
+    "WmiFilter": null
+  },
+  {
+    "Id": "6AC1786C-016F-11D2-945F-00C04FB984F9",
+    "DisplayName": "Default Domain Controllers Policy",
+    "DomainName": "corp.contoso.example",
+    "Owner": "CORP\\Domain Admins",
+    "GpoStatus": "AllSettingsEnabled",
+    "Description": null,
+    "CreationTime": "2018-01-01T10:00:00Z",
+    "ModificationTime": "2025-05-05T10:00:00Z",
+    "WmiFilter": null
+  },
+  {
+    "Id": "4F3A9C21-7B6E-4D2A-9E11-5C0FFEE00001",
+    "DisplayName": "Contoso Workstation Baseline",
+    "DomainName": "corp.contoso.example",
+    "Owner": "CORP\\Domain Admins",
+    "GpoStatus": "UserSettingsDisabled",
+    "Description": "Security baseline for workstations",
+    "CreationTime": "2022-09-09T10:00:00Z",
+    "ModificationTime": "2026-07-07T10:00:00Z",
+    "WmiFilter": "Windows 11 only"
+  }
+]

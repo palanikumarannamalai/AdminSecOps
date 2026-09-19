@@ -1,0 +1,50 @@
+{
+  "value": [
+    {
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000001",
+      "authorizationSource": "RoleBased",
+      "managedByTenants": [],
+      "subscriptionId": "a1a1a1a1-0000-4000-8000-000000000001",
+      "tenantId": "11111111-2222-4333-8444-555555555555",
+      "displayName": "Contoso Production",
+      "state": "Enabled",
+      "subscriptionPolicies": {
+        "locationPlacementId": "Public_2014-09-01",
+        "quotaId": "EnterpriseAgreement_2014-09-01",
+        "spendingLimit": "Off"
+      }
+    },
+    {
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000002",
+      "authorizationSource": "RoleBased",
+      "managedByTenants": [],
+      "subscriptionId": "a1a1a1a1-0000-4000-8000-000000000002",
+      "tenantId": "11111111-2222-4333-8444-555555555555",
+      "displayName": "Contoso Development",
+      "state": "Enabled",
+      "subscriptionPolicies": {
+        "locationPlacementId": "Public_2014-09-01",
+        "quotaId": "EnterpriseAgreement_2014-09-01",
+        "spendingLimit": "Off"
+      }
+    },
+    {
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000003",
+      "authorizationSource": "RoleBased",
+      "managedByTenants": [],
+      "subscriptionId": "a1a1a1a1-0000-4000-8000-000000000003",
+      "tenantId": "11111111-2222-4333-8444-555555555555",
+      "displayName": "Contoso Legacy (disabled)",
+      "state": "Disabled",
+      "subscriptionPolicies": {
+        "locationPlacementId": "Public_2014-09-01",
+        "quotaId": "PayAsYouGo_2014-09-01",
+        "spendingLimit": "Off"
+      }
+    }
+  ],
+  "count": {
+    "type": "Total",
+    "value": 3
+  }
+}

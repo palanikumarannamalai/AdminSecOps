@@ -1,0 +1,28 @@
+[
+  {
+    "Name": "partner.example",
+    "Target": "partner.example",
+    "Direction": "BiDirectional",
+    "TrustType": "Uplevel",
+    "ForestTransitive": true,
+    "IntraForest": false,
+    "SIDFilteringQuarantined": false,
+    "SIDFilteringForestAware": false,
+    "SelectiveAuthentication": false,
+    "TGTDelegation": false,
+    "Source": "DC=corp,DC=contoso,DC=example"
+  },
+  {
+    "Name": "legacy.example",
+    "Target": "LEGACY",
+    "Direction": "Outbound",
+    "TrustType": "Downlevel",
+    "ForestTransitive": false,
+    "IntraForest": false,
+    "SIDFilteringQuarantined": true,
+    "SIDFilteringForestAware": false,
+    "SelectiveAuthentication": true,
+    "TGTDelegation": null,
+    "Source": "DC=corp,DC=contoso,DC=example"
+  }
+]

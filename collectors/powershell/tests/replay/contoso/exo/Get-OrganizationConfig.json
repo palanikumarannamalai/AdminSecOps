@@ -1,0 +1,13 @@
+[
+  {
+    "Identity": "contoso-example.onmicrosoft.com",
+    "Name": "contoso-example.onmicrosoft.com",
+    "DisplayName": "Contoso",
+    "AuditDisabled": false,
+    "OAuth2ClientProfileEnabled": true,
+    "CustomerLockBoxEnabled": false,
+    "MailTipsExternalRecipientsTipsEnabled": false,
+    "IsDehydrated": false,
+    "SendFromAliasEnabled": false
+  }
+]

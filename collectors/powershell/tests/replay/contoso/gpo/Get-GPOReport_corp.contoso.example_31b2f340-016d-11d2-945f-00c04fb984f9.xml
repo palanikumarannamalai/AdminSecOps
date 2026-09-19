@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-16"?>
+<GPO xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.microsoft.com/GroupPolicy/Settings">
+  <Identifier>
+    <Identifier xmlns="http://www.microsoft.com/GroupPolicy/Types">{31B2F340-016D-11D2-945F-00C04FB984F9}</Identifier>
+    <Domain xmlns="http://www.microsoft.com/GroupPolicy/Types">corp.contoso.example</Domain>
+  </Identifier>
+  <Name>Default Domain Policy</Name>
+  <IncludeComments>true</IncludeComments>
+  <CreatedTime>2018-01-01T10:00:00</CreatedTime>
+  <ModifiedTime>2026-02-02T10:00:00</ModifiedTime>
+  <ReadTime>2026-09-01T10:00:00.0000000Z</ReadTime>
+  <FilterDataAvailable>true</FilterDataAvailable>
+  <Computer>
+    <VersionDirectory>12</VersionDirectory>
+    <VersionSysvol>12</VersionSysvol>
+    <Enabled>true</Enabled>
+    <ExtensionData>
+      <Extension xmlns:q1="http://www.microsoft.com/GroupPolicy/Settings/Security" xsi:type="q1:SecuritySettings">
+        <q1:Account>
+          <q1:Name>MinimumPasswordLength</q1:Name>
+          <q1:SettingNumber>7</q1:SettingNumber>
+          <q1:Type>Password</q1:Type>
+        </q1:Account>
+        <q1:Account>
+          <q1:Name>PasswordComplexity</q1:Name>
+          <q1:SettingBoolean>true</q1:SettingBoolean>
+          <q1:Type>Password</q1:Type>
+        </q1:Account>
+        <q1:Account>
+          <q1:Name>ClearTextPassword</q1:Name>
+          <q1:SettingBoolean>false</q1:SettingBoolean>
+          <q1:Type>Password</q1:Type>
+        </q1:Account>
+        <q1:Account>
+          <q1:Name>LockoutBadCount</q1:Name>
+          <q1:SettingNumber>0</q1:SettingNumber>
+          <q1:Type>Account Lockout</q1:Type>
+        </q1:Account>
+        <q1:SecurityOptions>
+          <q1:SystemAccessPolicyName>LSAAnonymousNameLookup</q1:SystemAccessPolicyName>
+          <q1:SettingNumber>0</q1:SettingNumber>
+        </q1:SecurityOptions>
+      </Extension>
+      <Name>Security</Name>
+    </ExtensionData>
+  </Computer>
+  <User>
+    <VersionDirectory>0</VersionDirectory>
+    <VersionSysvol>0</VersionSysvol>
+    <Enabled>true</Enabled>
+
+  </User>
+  <LinksTo>
+    <SOMName>corp</SOMName>
+    <SOMPath>corp.contoso.example</SOMPath>
+    <Enabled>true</Enabled>
+    <NoOverride>false</NoOverride>
+  </LinksTo>
+</GPO>

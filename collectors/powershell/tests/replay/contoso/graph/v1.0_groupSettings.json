@@ -1,0 +1,63 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#groupSettings",
+  "value": [
+    {
+      "id": "9c000001-0000-4000-8000-000000000001",
+      "displayName": "Password Rule Settings",
+      "templateId": "5cf42378-d67d-4f36-ba46-e8b86229381d",
+      "values": [
+        {
+          "name": "BannedPasswordCheckOnPremisesMode",
+          "value": "Audit"
+        },
+        {
+          "name": "EnableBannedPasswordCheckOnPremises",
+          "value": "True"
+        },
+        {
+          "name": "EnableBannedPasswordCheck",
+          "value": "True"
+        },
+        {
+          "name": "LockoutDurationInSeconds",
+          "value": "60"
+        },
+        {
+          "name": "LockoutThreshold",
+          "value": "10"
+        },
+        {
+          "name": "BannedPasswordList",
+          "value": "contoso\tfabrikam\texample-banned-term"
+        }
+      ]
+    },
+    {
+      "id": "9c000001-0000-4000-8000-000000000002",
+      "displayName": "Group.Unified",
+      "templateId": "62375ab9-6b52-47ed-826b-58e47e0e304b",
+      "values": [
+        {
+          "name": "EnableGroupCreation",
+          "value": "true"
+        },
+        {
+          "name": "AllowGuestsToAccessGroups",
+          "value": "true"
+        },
+        {
+          "name": "AllowToAddGuests",
+          "value": "true"
+        },
+        {
+          "name": "UsageGuidelinesUrl",
+          "value": "https://intranet.contoso.example/groups-guidelines"
+        },
+        {
+          "name": "ClassificationList",
+          "value": ""
+        }
+      ]
+    }
+  ]
+}

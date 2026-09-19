@@ -1,0 +1,8 @@
+[
+  {
+    "schemaNamingContext": "CN=Schema,CN=Configuration,DC=corp,DC=contoso,DC=example",
+    "configurationNamingContext": "CN=Configuration,DC=corp,DC=contoso,DC=example",
+    "defaultNamingContext": "DC=corp,DC=contoso,DC=example",
+    "dnsHostName": "dc01.corp.contoso.example"
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#deviceManagement/managedDeviceOverview/$entity",
+  "id": "9d000001-0000-4000-8000-000000000001",
+  "enrolledDeviceCount": 187,
+  "mdmEnrolledCount": 180,
+  "dualEnrolledDeviceCount": 7,
+  "deviceOperatingSystemSummary": {
+    "androidCount": 21,
+    "iosCount": 34,
+    "macOSCount": 9,
+    "windowsMobileCount": 0,
+    "windowsCount": 123,
+    "unknownCount": 0
+  },
+  "deviceExchangeAccessStateSummary": {
+    "allowedDeviceCount": 150,
+    "blockedDeviceCount": 0,
+    "quarantinedDeviceCount": 0,
+    "unknownDeviceCount": 0,
+    "unavailableDeviceCount": 37
+  }
+}

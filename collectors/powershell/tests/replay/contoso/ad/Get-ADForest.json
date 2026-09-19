@@ -1,0 +1,20 @@
+[
+  {
+    "Name": "corp.contoso.example",
+    "ForestMode": "Windows2016Forest",
+    "RootDomain": "corp.contoso.example",
+    "Domains": [
+      "corp.contoso.example"
+    ],
+    "GlobalCatalogs": [
+      "dc01.corp.contoso.example",
+      "dc02.corp.contoso.example"
+    ],
+    "SchemaMaster": "dc01.corp.contoso.example",
+    "DomainNamingMaster": "dc01.corp.contoso.example",
+    "Sites": [
+      "HQ",
+      "Branch"
+    ]
+  }
+]

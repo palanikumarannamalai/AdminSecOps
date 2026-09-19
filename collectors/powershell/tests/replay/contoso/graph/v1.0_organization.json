@@ -1,0 +1,37 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#organization",
+  "value": [
+    {
+      "id": "11111111-2222-4333-8444-555555555555",
+      "displayName": "Contoso",
+      "createdDateTime": "2019-03-14T09:12:00Z",
+      "onPremisesSyncEnabled": true,
+      "onPremisesLastSyncDateTime": "2026-09-01T09:30:00Z",
+      "countryLetterCode": "US",
+      "tenantType": "AAD",
+      "verifiedDomains": [
+        {
+          "capabilities": "Email, OfficeCommunicationsOnline",
+          "isDefault": true,
+          "isInitial": false,
+          "name": "contoso.example",
+          "type": "Managed"
+        },
+        {
+          "capabilities": "Email, OfficeCommunicationsOnline",
+          "isDefault": false,
+          "isInitial": true,
+          "name": "contoso-example.onmicrosoft.com",
+          "type": "Managed"
+        },
+        {
+          "capabilities": "Email",
+          "isDefault": false,
+          "isInitial": false,
+          "name": "mail.contoso.example",
+          "type": "Federated"
+        }
+      ]
+    }
+  ]
+}

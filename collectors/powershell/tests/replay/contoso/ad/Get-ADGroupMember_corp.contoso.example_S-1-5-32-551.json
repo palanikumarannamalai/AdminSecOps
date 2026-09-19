@@ -1,0 +1,9 @@
+[
+  {
+    "SamAccountName": "svc-backup",
+    "SID": "S-1-5-21-1111111111-2222222222-3333333333-1120",
+    "objectClass": "user",
+    "distinguishedName": "CN=svc-backup,OU=Admins,DC=corp,DC=contoso,DC=example",
+    "name": "svc-backup"
+  }
+]

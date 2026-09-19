@@ -1,0 +1,7 @@
+[
+  {
+    "SamAccountName": "krbtgt",
+    "pwdLastSet": 131500000000000000,
+    "DistinguishedName": "CN=krbtgt,CN=Users,DC=corp,DC=contoso,DC=example"
+  }
+]

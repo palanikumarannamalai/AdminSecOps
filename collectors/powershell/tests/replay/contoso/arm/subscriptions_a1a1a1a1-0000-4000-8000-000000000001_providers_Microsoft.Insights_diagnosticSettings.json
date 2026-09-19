@@ -1,0 +1,39 @@
+{
+  "value": [
+    {
+      "id": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000001/providers/microsoft.insights/diagnosticSettings/activity-to-law",
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "name": "activity-to-law",
+      "location": "global",
+      "properties": {
+        "storageAccountId": null,
+        "serviceBusRuleId": null,
+        "workspaceId": "/subscriptions/a1a1a1a1-0000-4000-8000-000000000001/resourceGroups/rg-prod-sec/providers/Microsoft.OperationalInsights/workspaces/law-contoso-sec",
+        "eventHubAuthorizationRuleId": null,
+        "eventHubName": null,
+        "logs": [
+          {
+            "category": "Administrative",
+            "categoryGroup": null,
+            "enabled": true
+          },
+          {
+            "category": "Security",
+            "categoryGroup": null,
+            "enabled": true
+          },
+          {
+            "category": "Policy",
+            "categoryGroup": null,
+            "enabled": false
+          },
+          {
+            "category": "Alert",
+            "categoryGroup": null,
+            "enabled": true
+          }
+        ]
+      }
+    }
+  ]
+}

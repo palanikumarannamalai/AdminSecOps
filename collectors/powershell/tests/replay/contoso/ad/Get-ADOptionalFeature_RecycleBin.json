@@ -1,0 +1,12 @@
+[
+  {
+    "Name": "Recycle Bin Feature",
+    "EnabledScopes": [
+      "CN=Partitions,CN=Configuration,DC=corp,DC=contoso,DC=example",
+      "CN=NTDS Settings,CN=DC01,CN=Servers,CN=HQ,CN=Sites,CN=Configuration,DC=corp,DC=contoso,DC=example"
+    ],
+    "FeatureScope": [
+      "ForestOrConfigurationSet"
+    ]
+  }
+]

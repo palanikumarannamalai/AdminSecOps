@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScheduledTasks clsid="{CC63F200-7309-4ba0-B154-A71CD118DBCC}">
+  <TaskV2 clsid="{D8896631-B747-47a7-84A6-C155337F3BC8}" name="Inventory" image="2" changed="2024-02-02 10:00:00" uid="{A0000000-0000-4000-8000-000000000003}">
+    <Properties action="U" name="Inventory" runAs="NT AUTHORITY\System" cpassword="" logonType="S4U"/>
+  </TaskV2>
+</ScheduledTasks>
