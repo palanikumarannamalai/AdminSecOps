@@ -1,0 +1,102 @@
+/*
+ * AdminSecOps design tokens. All colours used by components are defined here.
+ * Text/background pairs meet WCAG 2.1 AA contrast (4.5:1) for normal text.
+ */
+:root {
+  /* Neutrals */
+  --color-bg: #f4f6f9;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f8fafc;
+  --color-border: #d8dee8;
+  --color-border-strong: #b4bfcf;
+  --color-text: #17202e;
+  --color-text-muted: #4a5568;
+  --color-heading: #0f1a2b;
+
+  /* Brand and interaction */
+  --color-brand: #1d4e89;
+  --color-brand-strong: #133a68;
+  --color-brand-soft: #e6eef8;
+  --color-link: #1a4f8b;
+  --color-focus: #f59e0b;
+  --color-nav-bg: #13233a;
+  --color-nav-text: #d7e0ec;
+  --color-nav-muted: #93a3b8;
+  --color-nav-active: #ffffff;
+  --color-nav-active-bg: #24395a;
+
+  /* Severity: text on soft background, solid colour for bars and markers */
+  --sev-critical-text: #7a1414;
+  --sev-critical-bg: #fbe3e3;
+  --sev-critical-solid: #9b1c1c;
+  --sev-high-text: #8a2f08;
+  --sev-high-bg: #fde9d9;
+  --sev-high-solid: #dd5b17;
+  --sev-medium-text: #7a4a00;
+  --sev-medium-bg: #fdf1cf;
+  --sev-medium-solid: #d49a12;
+  --sev-low-text: #1e3f8f;
+  --sev-low-bg: #e1eafc;
+  --sev-low-solid: #3b6fd8;
+  --sev-info-text: #3a4556;
+  --sev-info-bg: #eceff3;
+  --sev-info-solid: #8a96a8;
+
+  /* Control status */
+  --st-pass-text: #14532d;
+  --st-pass-bg: #dcf5e4;
+  --st-pass-solid: #1f9d55;
+  --st-fail-text: #8f1515;
+  --st-fail-bg: #fde2e2;
+  --st-fail-solid: #d42a2a;
+  --st-review-text: #6f4a00;
+  --st-review-bg: #fcf0c4;
+  --st-review-solid: #c99400;
+  --st-na-text: #454f5e;
+  --st-na-bg: #eceff3;
+  --st-na-solid: #b9c2cf;
+  --st-notassessed-text: #4c2a8f;
+  --st-notassessed-bg: #ece6fb;
+  --st-notassessed-solid: #7c5ad6;
+  --st-error-text: #8a1245;
+  --st-error-bg: #fbe2ee;
+  --st-error-solid: #c8286e;
+
+  /* Generic tones */
+  --tone-ok-text: #14532d;
+  --tone-ok-bg: #dcf5e4;
+  --tone-warn-text: #6f4a00;
+  --tone-warn-bg: #fcf0c4;
+  --tone-bad-text: #8f1515;
+  --tone-bad-bg: #fde2e2;
+  --tone-info-text: #1e3f8f;
+  --tone-info-bg: #e1eafc;
+  --tone-muted-text: #454f5e;
+  --tone-muted-bg: #eceff3;
+
+  /* Typography */
+  --font-sans: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Mono', Consolas, 'SFMono-Regular', Menlo, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.625rem;
+  --leading: 1.5;
+
+  /* Spacing, radius, shadow */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-lg: 10px;
+  --shadow: 0 1px 2px rgb(15 26 43 / 6%), 0 1px 3px rgb(15 26 43 / 8%);
+
+  --nav-width: 232px;
+  --topbar-height: 60px;
+}

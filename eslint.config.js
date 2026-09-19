@@ -1,6 +1,7 @@
 // @ts-check
 import js from '@eslint/js';
 import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
@@ -23,7 +24,8 @@ export default tseslint.config(
       globals: { ...globals.node },
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['eslint.config.js', 'apps/web/vite.config.ts', 'apps/web/vitest.config.ts'],
+          // apps/web/vite.config.ts and vitest.config.ts are covered by apps/web/tsconfig.json.
+          allowDefaultProject: ['eslint.config.js'],
         },
         tsconfigRootDir: import.meta.dirname,
       },
@@ -59,6 +61,18 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
+    },
+  },
+  {
+    // Web dashboard: browser globals and the React hooks rules.
+    files: ['apps/web/src/**/*.ts', 'apps/web/src/**/*.tsx'],
+    plugins: reactHooks.configs.flat.recommended.plugins,
+    languageOptions: {
+      globals: { ...globals.browser },
+    },
+    rules: {
+      ...reactHooks.configs.flat.recommended.rules,
+      'react-hooks/exhaustive-deps': 'error',
     },
   },
   {

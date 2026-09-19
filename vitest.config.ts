@@ -28,6 +28,7 @@ export default defineConfig({
           testTimeout: 30000,
         },
       },
+      'apps/web/vitest.config.ts',
     ],
   },
 });
