@@ -23,6 +23,12 @@ export const ComparisonFindingRefSchema = z.object({
   title: z.string(),
   severity: SeveritySchema,
   status: z.enum(['FAIL', 'REVIEW']),
+  /**
+   * Status of the control in the other assessment. For a new finding, NOT_ASSESSED
+   * means the issue was newly *observed* (evidence newly collected) rather than a
+   * configuration regression.
+   */
+  otherStatus: ControlStatusSchema.nullable(),
 });
 
 /**

@@ -177,7 +177,7 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
   if (existsSync(path.join(config.webDistDir, 'index.html'))) {
     await app.register(fastifyStatic, { root: config.webDistDir, index: ['index.html'], dotfiles: 'deny' });
     app.setNotFoundHandler(async (request, reply) => {
-      if (request.method === 'GET' && !request.url.startsWith('/api/')) return reply.sendFile('index.html');
+      if ((request.method === 'GET' || request.method === 'HEAD') && !request.url.startsWith('/api/')) return reply.sendFile('index.html');
       return reply.code(404).send({ error: { code: 'NOT_FOUND', message: 'Not found.' } });
     });
   }

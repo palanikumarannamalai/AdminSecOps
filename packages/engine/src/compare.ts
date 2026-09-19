@@ -2,13 +2,14 @@ import type { AssessmentComparison, AssessmentResult, Finding } from '@adminseco
 
 type FindingChange = AssessmentComparison['changedFindings'][number];
 
-function ref(finding: Finding): AssessmentComparison['newFindings'][number] {
+function ref(finding: Finding, other: AssessmentResult): AssessmentComparison['newFindings'][number] {
   return {
     findingKey: finding.findingKey,
     controlId: finding.controlId,
     title: finding.title,
     severity: finding.severity,
     status: finding.status,
+    otherStatus: other.results.find((r) => r.controlId === finding.controlId)?.status ?? null,
   };
 }
 
@@ -25,8 +26,8 @@ export function compareAssessments(baseline: AssessmentResult, current: Assessme
   const before = new Map(baseline.findings.map((f) => [f.findingKey, f]));
   const after = new Map(current.findings.map((f) => [f.findingKey, f]));
 
-  const newFindings = [...after.values()].filter((f) => !before.has(f.findingKey)).map(ref);
-  const resolvedFindings = [...before.values()].filter((f) => !after.has(f.findingKey)).map(ref);
+  const newFindings = [...after.values()].filter((f) => !before.has(f.findingKey)).map((f) => ref(f, baseline));
+  const resolvedFindings = [...before.values()].filter((f) => !after.has(f.findingKey)).map((f) => ref(f, current));
 
   const changedFindings: FindingChange[] = [];
   let unchanged = 0;
@@ -82,8 +83,12 @@ export function compareAssessments(baseline: AssessmentResult, current: Assessme
     (envA.tenantId === null || envB.tenantId === null || envA.tenantId.toLowerCase() === envB.tenantId.toLowerCase()) &&
     (envA.adForestName === null || envB.adForestName === null || envA.adForestName.toLowerCase() === envB.adForestName.toLowerCase());
 
-  const improved = resolvedFindings.length > 0;
-  const regressed = newFindings.length > 0;
+  // Only changes between two *assessed* states count as improvement or regression:
+  // a finding that disappears because evidence was not collected is not an improvement,
+  // and a finding that appears because evidence was newly collected is not a regression.
+  const assessed = (status: string | null) => status !== null && status !== 'NOT_ASSESSED' && status !== 'ERROR';
+  const improved = resolvedFindings.some((f) => assessed(f.otherStatus));
+  const regressed = newFindings.some((f) => assessed(f.otherStatus));
   const direction = improved && regressed ? 'mixed' : improved ? 'improved' : regressed ? 'regressed' : 'unchanged';
 
   return {

@@ -221,5 +221,17 @@ describe('compareAssessments', () => {
     expect(compareAssessments(before, before).direction).toBe('unchanged');
     expect(compareAssessments(before, before).unchangedFindingCount).toBe(1);
     expect(improved.sameEnvironment).toBe(true);
+    expect(improved.resolvedFindings[0]?.otherStatus).toBe('PASS');
+  });
+
+  it('does not count findings that disappear because evidence was not collected as improvement', () => {
+    const before = assessmentWith(false, '6f1c1a52-4b7e-4f8e-9a51-0c6f7d2b9e10');
+    const { files } = buildEvidencePackage({ ...manifestBase(), assessmentId: '8f1c1a52-4b7e-4f8e-9a51-0c6f7d2b9e10' }, []);
+    const empty = runAssessment(loadEvidenceBundle(files), [sdControl], { processedAt: new Date('2026-09-02T00:00:00Z') });
+    const comparison = compareAssessments(before, empty);
+    expect(comparison.resolvedFindings).toHaveLength(1);
+    expect(comparison.resolvedFindings[0]?.otherStatus).toBe('NOT_ASSESSED');
+    expect(comparison.direction).toBe('unchanged');
+    expect(compareAssessments(empty, before).direction).toBe('unchanged');
   });
 });

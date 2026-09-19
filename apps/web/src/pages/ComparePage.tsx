@@ -39,6 +39,7 @@ function FindingRefTable({ items, caption }: { items: AssessmentComparison['newF
             <th scope="col">Finding</th>
             <th scope="col">Severity</th>
             <th scope="col">Status</th>
+            <th scope="col">In the other assessment</th>
           </tr>
         </thead>
         <tbody>
@@ -53,6 +54,12 @@ function FindingRefTable({ items, caption }: { items: AssessmentComparison['newF
               </td>
               <td>
                 <StatusBadge status={f.status} />
+              </td>
+              <td>
+                <StatusOrNone status={f.otherStatus} />
+                {f.otherStatus === 'NOT_ASSESSED' || f.otherStatus === null ? (
+                  <div className="muted">Evidence was not available there; not counted as a change in posture.</div>
+                ) : null}
               </td>
             </tr>
           ))}

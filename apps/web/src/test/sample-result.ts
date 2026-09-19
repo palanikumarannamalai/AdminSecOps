@@ -558,6 +558,7 @@ export const sampleComparison: AssessmentComparison = {
       title: 'Guest users can invite other guests',
       severity: 'medium',
       status: 'FAIL',
+      otherStatus: 'PASS',
     },
   ],
   resolvedFindings: [
@@ -567,6 +568,7 @@ export const sampleComparison: AssessmentComparison = {
       title: 'Certificate templates allow requesters to supply the subject (ESC1)',
       severity: 'critical',
       status: 'FAIL',
+      otherStatus: 'PASS',
     },
     {
       findingKey: 'ENTRA-CA-001:tenant',
@@ -574,6 +576,7 @@ export const sampleComparison: AssessmentComparison = {
       title: 'Legacy authentication is not blocked by Conditional Access',
       severity: 'high',
       status: 'FAIL',
+      otherStatus: 'PASS',
     },
   ],
   changedFindings: [
