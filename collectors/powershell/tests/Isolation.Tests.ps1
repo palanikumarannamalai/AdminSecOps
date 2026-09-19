@@ -47,6 +47,11 @@ Describe 'Invoke-AsoIsolatedModule (parent side)' {
         @($files | Where-Object { $_.status -eq 'Success' }).Count | Should -Be 1
         @($files | Where-Object { $_.status -eq 'Failed' }).Count | Should -Be ($script:exchangeCount - 1)
         (& $script:mod { (Get-AsoContext).Environment.primaryDomain }) | Should -Be 'contoso.example'
+        # Regression (live validation): ConvertFrom-Json turns ISO strings into DateTime; the merged
+        # manifest entry must keep the round-trip ISO-8601 UTC format required by the evidence schema.
+        $merged = @($files | Where-Object { $_.status -eq 'Success' })[0]
+        $merged.collectedAt | Should -Be '2026-09-19T00:00:00.0000000Z'
+        $merged.collectedAt | Should -BeOfType [string]
         (& $script:mod { @((Get-AsoContext).Log | Where-Object { $_.message -eq 'child log line' }).Count }) | Should -Be 1
         @(Get-ChildItem -LiteralPath $script:pkg -Filter '.isolated-*' -Force).Count | Should -Be 0
     }

@@ -7,6 +7,21 @@
 # imports this same module, signs in to Exchange Online only, and contributes its evidence files to
 # the parent's package (same assessment ID). The parent merges the child's manifest entries and log.
 
+function ConvertTo-AsoRoundTripString {
+    <#
+    ConvertFrom-Json (PowerShell 7) turns ISO-8601 strings into DateTime values; casting those with
+    [string] produces a culture-specific format that the evidence schema rejects (found in live
+    validation). Normalise back to the round-trip UTC format.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param([AllowNull()] $Value)
+    if ($null -eq $Value) { return $null }
+    if ($Value -is [datetime]) { return $Value.ToUniversalTime().ToString('o', [Globalization.CultureInfo]::InvariantCulture) }
+    if ($Value -is [datetimeoffset]) { return $Value.UtcDateTime.ToString('o', [Globalization.CultureInfo]::InvariantCulture) }
+    return [string]$Value
+}
+
 function Test-AsoIsolationRequired {
     [CmdletBinding()]
     [OutputType([bool])]
@@ -73,7 +88,7 @@ function Invoke-AsoIsolatedModule {
                 if ([string]$f.module -ne $Name) { throw "The isolated process returned a file for module $($f.module)." }
                 $ctx.Files.Add([ordered]@{
                         path = [string]$f.path; datasetId = [string]$f.datasetId; module = [string]$f.module; sha256 = [string]$f.sha256
-                        sizeBytes = [long]$f.sizeBytes; schemaVersion = [string]$f.schemaVersion; status = [string]$f.status; collectedAt = [string]$f.collectedAt
+                        sizeBytes = [long]$f.sizeBytes; schemaVersion = [string]$f.schemaVersion; status = [string]$f.status; collectedAt = ConvertTo-AsoRoundTripString $f.collectedAt
                     })
             }
             foreach ($l in @($handoff.log)) { if ($null -ne $l) { $ctx.Log.Add($l) } }
@@ -82,6 +97,10 @@ function Invoke-AsoIsolatedModule {
                 if ($value -and -not $ctx.Environment[$key]) { $ctx.Environment[$key] = [string]$value }
             }
             $moduleRecord = $handoff.moduleRecord
+            if ($null -ne $moduleRecord) {
+                $moduleRecord.startedAt = ConvertTo-AsoRoundTripString $moduleRecord.startedAt
+                $moduleRecord.completedAt = ConvertTo-AsoRoundTripString $moduleRecord.completedAt
+            }
         }
         catch {
             Write-AsoLog -Level Error -Module $Name -Message "Isolated module results could not be merged: $($_.Exception.Message)"
