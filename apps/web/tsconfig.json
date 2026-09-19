@@ -18,8 +18,20 @@
       "@adminsecops/schemas": ["../../packages/schemas/src/index.ts"],
       "@adminsecops/core": ["../../packages/core/src/index.ts"],
       "@adminsecops/core/vocabulary": ["../../packages/core/src/vocabulary.ts"],
-      "@adminsecops/core/version": ["../../packages/core/src/version.ts"]
+      "@adminsecops/core/version": ["../../packages/core/src/version.ts"],
+      "@adminsecops/inventory": ["../../packages/inventory/src/index.ts"],
+      "@adminsecops/controls": ["../../packages/controls/src/index.ts"],
+      "@adminsecops/reporting": ["../../packages/reporting/src/index.ts"],
+      "@adminsecops/evidence/browser": ["../../packages/evidence/src/browser.ts"],
+      "@adminsecops/engine/browser": ["../../packages/engine/src/browser.ts"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts", "vitest.config.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "playwright.config.ts",
+    "e2e/**/*.ts"
+  ]
 }

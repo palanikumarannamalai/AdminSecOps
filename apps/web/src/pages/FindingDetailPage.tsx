@@ -207,7 +207,7 @@ export function FindingDetail({ finding, assessmentId }: { finding: Finding; ass
       <Section id="observed" title={titleOf('observed')}>
         <p>{finding.observedState.summary}</p>
         {finding.observedState.facts.length > 0 ? (
-          <div className="table-wrap">
+          <div className="table-wrap" tabIndex={0}>
             <table className="table table--compact">
               <caption className="visually-hidden">Observed facts</caption>
               <thead>
@@ -241,7 +241,7 @@ export function FindingDetail({ finding, assessmentId }: { finding: Finding; ass
             : ''}
         </p>
         {shown > 0 ? (
-          <div className="table-wrap">
+          <div className="table-wrap" tabIndex={0}>
             <table className="table table--compact">
               <caption className="visually-hidden">Affected objects</caption>
               <thead>

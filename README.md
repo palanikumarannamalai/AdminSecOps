@@ -35,7 +35,8 @@ Administrator -> PowerShell collector (read-only) -> adminsecops-assessment.zip
 - Missing, failed or unauthorized evidence is reported as **Not assessed** - never Pass.
 - No AI decides results. No composite "security score" - counts, coverage and a
   documented "What should I fix first?" order instead.
-- Nothing is sent to any cloud service. The local API only listens on 127.0.0.1.
+- Nothing is sent to any cloud service. The local API only listens on 127.0.0.1; the
+  hosted browser build has no API at all and processes evidence in the browser tab.
 
 ## What it covers today
 
@@ -54,6 +55,13 @@ Administrator -> PowerShell collector (read-only) -> adminsecops-assessment.zip
 The full list with severities and framework mappings is in
 [docs/CONTROL-CATALOG.md](docs/CONTROL-CATALOG.md); exactly what is collected and the
 permissions needed are in [docs/DATA-COLLECTION.md](docs/DATA-COLLECTION.md).
+
+## Try it in your browser
+
+The hosted browser version at <https://www.palanikumar.net/tools/adminsecops/app> runs the
+same engine entirely in your browser tab: explore the fictional Contoso and Fabrikam
+samples or analyse a compatible evidence package. There is no server-side API; evidence is
+not uploaded. See [HOSTED-BROWSER-MODE](docs/HOSTED-BROWSER-MODE.md).
 
 ## Quick start
 
@@ -90,7 +98,7 @@ Run the end-to-end demonstration on sanitized data: `npm run demo`.
 
 | Path | Contents |
 |---|---|
-| `apps/web` | React dashboard |
+| `apps/web` | React dashboard (local mode, and the static hosted browser build) |
 | `apps/api` | Local REST API (serves the dashboard) |
 | `apps/cli` | Command-line interface |
 | `packages/core` | Vocabulary, safe JSON, hashing, secret detection, logging |
@@ -118,7 +126,8 @@ See [DEVELOPMENT](docs/DEVELOPMENT.md), [TESTING](docs/TESTING.md),
 [PRIVACY](docs/PRIVACY.md), [SECURITY](docs/SECURITY.md),
 [ADDING-A-CONTROL](docs/ADDING-A-CONTROL.md), [ADDING-A-COLLECTOR](docs/ADDING-A-COLLECTOR.md),
 [COLLECTOR-ARCHITECTURE](docs/COLLECTOR-ARCHITECTURE.md), [ROADMAP](docs/ROADMAP.md),
-[PRODUCT-VISION](docs/PRODUCT-VISION.md), [KNOWN-LIMITATIONS](docs/KNOWN-LIMITATIONS.md).
+[PRODUCT-VISION](docs/PRODUCT-VISION.md), [KNOWN-LIMITATIONS](docs/KNOWN-LIMITATIONS.md),
+[HOSTED-BROWSER-MODE](docs/HOSTED-BROWSER-MODE.md).
 
 ## Handling assessment data
 

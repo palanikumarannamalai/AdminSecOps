@@ -1,5 +1,5 @@
 import type { CollectionStatus } from '@adminsecops/core';
-import type { LoadedDataset } from '@adminsecops/evidence';
+import type { LoadedDataset } from '@adminsecops/evidence/browser';
 import { getDatasetDefinition, type DatasetId, type ManifestEnvironment } from '@adminsecops/schemas';
 import { Inventory } from './inventory.js';
 

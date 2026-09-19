@@ -75,3 +75,17 @@ only partially. Placeholder or planned capabilities are not presented as impleme
   status changes); value-level configuration drift is planned.
 - Reports: HTML and JSON only. PDF, executive and remediation-tracker formats are planned.
 - No exceptions / risk-acceptance workflow yet.
+
+## Hosted browser mode
+
+See [HOSTED-BROWSER-MODE.md](HOSTED-BROWSER-MODE.md#hosted-mode-limitations).
+
+- Processing runs on the page's main thread; large packages can make the tab unresponsive
+  for a few seconds.
+- The archive, inflated files and results are held in browser memory together; packages
+  near the 256 MB uncompressed limit may fail on mobile devices. Use local mode for those.
+- The browser cannot collect evidence (no PowerShell, AD, AD CS, Group Policy, Windows host
+  or cloud API access). Collection remains a separate, read-only administrative step.
+- Opt-in on-device persistence (IndexedDB) is not encrypted by the application.
+- Automated keyboard-navigation tests do not run on WebKit, because Safari's Tab key
+  behaviour depends on a user preference; Chromium and Firefox are tested.

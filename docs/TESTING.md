@@ -14,6 +14,7 @@ All tests run offline with sanitized, fictional data. No tenant or domain access
 | `npm run build` | Production build of packages, API, CLI and web |
 | `npm run scan:secrets` | Repository secret / hygiene scan |
 | `npm run verify` | lint + typecheck + test + build + secret scan |
+| `npm run build:hosted -w @adminsecops/web`, then `npx playwright test` in `apps/web` | Browser tests of the hosted build on Chromium desktop and mobile; `E2E_ALL_BROWSERS=1` adds Firefox and WebKit; `E2E_BASE_URL=https://www.palanikumar.net` tests production |
 
 ## Test layers
 
@@ -28,6 +29,8 @@ All tests run offline with sanitized, fictional data. No tenant or domain access
 | API integration | `apps/api/src/server.test.ts` | Upload end to end, DNS rebinding, CSRF, cross-origin, size limits, ID traversal, persistence, reports |
 | CLI | `apps/cli/src/cli.test.ts` | assess/validate/compare/controls/datasets |
 | Web | `apps/web/src/**/*.test.tsx` | API client, finding page sections and escaping, filters, compare, upload validation |
+| Browser ZIP reader | `packages/evidence/src/zip-reader.test.ts` | Parity with the Node reader, hostile archives, CRC/size checks, and a guard that the browser entry points import no Node modules |
+| Hosted browser app | `apps/web/e2e/hosted.spec.ts` (Playwright + axe-core) | Samples, import, malformed/hostile/oversized rejection, tamper detection, no network egress, CSP, refresh, persistence and deletion, exports, themes, WCAG 2.1 AA checks, keyboard, mobile layout |
 | Fixtures | `tests/fixtures.test.ts` | Sample packages verify, are deterministic, and assess without errors |
 | End to end | `tests/e2e-pipeline.test.ts` | ZIP -> validation -> inventory -> controls -> findings -> prioritization -> reports -> drift |
 | Collector contract | `tests/collector-contract.test.ts` | Runs the PowerShell collector in replay mode and validates its package with the engine (skipped if `pwsh` is absent) |

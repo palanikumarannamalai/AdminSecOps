@@ -2,6 +2,8 @@ import { PRODUCT_DESCRIPTION, PRODUCT_NAME, PRODUCT_TAGLINE } from '@adminsecops
 import { type ChangeEvent } from 'react';
 import { NavLink, Outlet, useLocation, useMatch, useNavigate } from 'react-router';
 import { environmentName, formatDate } from '../lib/format';
+import { IS_HOSTED, OVERVIEW_URL } from '../mode';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { useAssessmentList } from './context';
 
 /** Assessment-scoped pages, in navigation order. */
@@ -78,7 +80,15 @@ export function Layout() {
 
   return (
     <div className="shell">
-      <a href="#main" className="skip-link">
+      <a
+        href="#main"
+        className="skip-link"
+        onClick={(event) => {
+          // Move focus without changing the URL: with hash routing, "#main" would be treated as a route.
+          event.preventDefault();
+          document.getElementById('main')?.focus();
+        }}
+      >
         Skip to main content
       </a>
       <header className="topbar">
@@ -87,7 +97,7 @@ export function Layout() {
             <span className="brand__mark" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
                 <path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z" fill="currentColor" />
-                <path d="m8.5 12 2.5 2.5 4.5-5" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+                <path className="brand__check" d="m8.5 12 2.5 2.5 4.5-5" fill="none" strokeWidth="2" strokeLinecap="round" />
               </svg>
             </span>
             <span className="brand__name">{PRODUCT_NAME}</span>
@@ -97,14 +107,22 @@ export function Layout() {
             <span className="topbar__tagline-sub">{PRODUCT_DESCRIPTION}</span>
           </span>
         </div>
-        <AssessmentSwitcher selectedId={selectedId} />
+        <div className="topbar__actions">
+          <AssessmentSwitcher selectedId={selectedId} />
+          <ThemeToggle />
+          {IS_HOSTED ? (
+            <a className="button button--small topbar__overview" href={OVERVIEW_URL}>
+              Return to AdminSecOps overview
+            </a>
+          ) : null}
+        </div>
       </header>
       <div className="shell__body">
         <nav className="nav" aria-label="Main">
           <ul className="nav__list">
             <li>
               <NavLink to="/" end className={navClass}>
-                Assessments
+                {IS_HOSTED ? 'Start' : 'Assessments'}
               </NavLink>
             </li>
           </ul>
@@ -142,11 +160,15 @@ export function Layout() {
             </li>
             <li>
               <NavLink to="/about" className={navClass}>
-                About and privacy
+                {IS_HOSTED ? 'Privacy and safety' : 'About and privacy'}
               </NavLink>
             </li>
           </ul>
-          <p className="nav__footnote">Local-only. Evidence never leaves this machine.</p>
+          <p className="nav__footnote">
+            {IS_HOSTED
+              ? 'Processed in this browser. Evidence is not uploaded to palanikumar.net.'
+              : 'Local-only. Evidence never leaves this machine.'}
+          </p>
         </nav>
         <main id="main" className="main" tabIndex={-1}>
           <Outlet />

@@ -136,7 +136,7 @@ export function FrameworksPage() {
         visible.map((group) => (
           <Panel key={group.framework} title={frameworkLabel(group.framework)} id={`fw-${group.framework}`}>
             <p className="muted small">{formatCount(group.ids.length, 'identifier')}.</p>
-            <div className="table-wrap">
+            <div className="table-wrap" tabIndex={0}>
               <table className="table table--compact">
                 <caption className="visually-hidden">{frameworkLabel(group.framework)} identifiers and control results</caption>
                 <thead>

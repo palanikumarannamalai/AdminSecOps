@@ -10,6 +10,7 @@ import { followupListItem, sampleComparison, sampleListItem, sampleResult } from
 /** ApiClient whose methods are vi.fn() mocks returning the sample data. */
 export function createFakeApi(overrides: Partial<ApiClient> = {}): ApiClient {
   return {
+    mode: 'local',
     health: vi.fn(() =>
       Promise.resolve({
         status: 'ok' as const,

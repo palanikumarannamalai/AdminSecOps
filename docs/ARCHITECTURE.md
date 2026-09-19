@@ -67,6 +67,10 @@ controls are typed code co-located with their tests and compiled with the engine
   for every control by `library.test.ts`.
 - **Local first** ([ADR-0005](adr/0005-local-first-processing.md)). Everything runs on the
   administrator's machine; the API refuses non-loopback binding.
+- **Hosted browser mode without an API** ([ADR-0007](adr/0007-hosted-browser-mode.md),
+  [HOSTED-BROWSER-MODE](HOSTED-BROWSER-MODE.md)). A static build of `apps/web` runs the
+  evidence reader, engine and reporting in the visitor's browser through the
+  `@adminsecops/evidence/browser` and `@adminsecops/engine/browser` entry points.
 - **No composite security score** ([ADR-0006](adr/0006-no-composite-security-score.md)).
   The product reports counts, coverage (explicitly labelled as coverage) and a
   documented deterministic priority order.

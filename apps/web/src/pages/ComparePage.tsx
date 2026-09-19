@@ -30,7 +30,7 @@ function StatusOrNone({ status }: { status: ControlStatus | null }) {
 
 function FindingRefTable({ items, caption }: { items: AssessmentComparison['newFindings']; caption: string }) {
   return (
-    <div className="table-wrap">
+    <div className="table-wrap" tabIndex={0}>
       <table className="table table--compact">
         <caption className="visually-hidden">{caption}</caption>
         <thead>
@@ -176,7 +176,7 @@ export function ComparisonView({
         {c.controlStatusChanges.length === 0 ? (
           <p>No control changed status.</p>
         ) : (
-          <div className="table-wrap">
+          <div className="table-wrap" tabIndex={0}>
             <table className="table table--compact">
               <caption className="visually-hidden">Control status changes</caption>
               <thead>

@@ -4,38 +4,11 @@ import type { Readable } from 'node:stream';
 import yauzl from 'yauzl';
 import { AdminSecOpsError } from '@adminsecops/core';
 import { DEFAULT_PACKAGE_LIMITS, type PackageLimits } from './limits.js';
+import { MAX_DEPTH, ONE_MIB, S_IFLNK, S_IFMT, normalizePackagePath, type PackageFiles } from './paths.js';
 
-/** In-memory package contents keyed by normalised relative path (forward slashes). */
-export type PackageFiles = Map<string, Buffer>;
+export { normalizePackagePath, type PackageFiles } from './paths.js';
 
-const SAFE_SEGMENT = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
-const MAX_DEPTH = 6;
-const S_IFMT = 0o170000;
-const S_IFLNK = 0o120000;
-const ONE_MIB = 1024 * 1024;
 
-/**
- * Validate and normalise a path from an archive or directory listing. Rejects absolute
- * paths, drive letters, traversal segments, unusual characters and excessive depth.
- * Returns undefined for directory entries.
- */
-export function normalizePackagePath(raw: string): string | undefined {
-  const unified = raw.replace(/\\/g, '/');
-  if (unified.endsWith('/')) return undefined;
-  if (unified.startsWith('/') || /^[A-Za-z]:/.test(unified) || unified.includes('\0')) {
-    throw new AdminSecOpsError('PACKAGE_UNSAFE_PATH', 'The evidence package contains an unsafe file path.');
-  }
-  const segments = unified.split('/');
-  if (segments.length > MAX_DEPTH) {
-    throw new AdminSecOpsError('PACKAGE_UNSAFE_PATH', 'The evidence package contains an overly deep file path.');
-  }
-  for (const segment of segments) {
-    if (segment === '' || segment === '.' || segment === '..' || !SAFE_SEGMENT.test(segment)) {
-      throw new AdminSecOpsError('PACKAGE_UNSAFE_PATH', 'The evidence package contains an unsafe file path.');
-    }
-  }
-  return segments.join('/');
-}
 
 /**
  * Read a ZIP evidence package entirely in memory. Nothing is extracted to disk, so

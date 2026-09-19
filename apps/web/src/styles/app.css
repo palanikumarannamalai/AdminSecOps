@@ -182,6 +182,13 @@ code {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
+  max-width: 100%;
+  /* WebKit counts a <select>'s longest option in the page scroll width; clip it here, with
+     room inside the clip for the select's focus outline. */
+  overflow: hidden;
+  padding: 6px;
+  margin: -6px;
 }
 
 .switcher__label {
@@ -191,6 +198,8 @@ code {
 }
 
 .switcher .select {
+  flex: 1 1 auto;
+  min-width: 0;
   max-width: 360px;
 }
 
@@ -387,23 +396,23 @@ a.nav__link:hover {
 .button--primary {
   background: var(--color-brand);
   border-color: var(--color-brand);
-  color: #fff;
+  color: var(--color-on-brand);
 }
 
 .button--primary:hover {
   background: var(--color-brand-strong);
-  color: #fff;
+  color: var(--color-on-brand);
 }
 
 .button--danger {
   background: var(--st-fail-text);
   border-color: var(--st-fail-text);
-  color: #fff;
+  color: var(--color-on-danger);
 }
 
 .button--danger:hover {
-  background: #6d0f0f;
-  color: #fff;
+  background: var(--color-danger-strong);
+  color: var(--color-on-danger);
 }
 
 .button--small {
@@ -496,7 +505,7 @@ a.nav__link:hover {
 .chip--active {
   background: var(--color-brand);
   border-color: var(--color-brand);
-  color: #fff;
+  color: var(--color-on-brand);
 }
 
 /* ---------- Badges ---------- */
@@ -851,6 +860,7 @@ a.nav__link:hover {
 /* ---------- Tables and definition lists ---------- */
 
 .table-wrap {
+  position: relative;
   overflow-x: auto;
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
@@ -895,7 +905,7 @@ a.nav__link:hover {
 }
 
 .table tbody tr:hover {
-  background: #fafcff;
+  background: var(--color-row-hover);
 }
 
 .table th.num,
@@ -1041,7 +1051,7 @@ a.nav__link:hover {
   height: 26px;
   border-radius: 50%;
   background: var(--color-brand);
-  color: #fff;
+  color: var(--color-on-brand);
   font-weight: 700;
   font-size: var(--text-sm);
 }
@@ -1402,8 +1412,8 @@ a.nav__link:hover {
 .code {
   margin: 0;
   padding: var(--space-3) var(--space-4);
-  background: #0f1a2b;
-  color: #e6edf6;
+  background: var(--color-code-bg);
+  color: var(--color-code-text);
   border-radius: var(--radius);
   overflow-x: auto;
   line-height: 1.45;
@@ -1663,4 +1673,124 @@ a.nav__link:hover {
   .main {
     padding: 0;
   }
+}
+
+/* ---------------------------------------------------------------------------
+ * Theme toggle, hosted-mode start screen, notices and assessment actions
+ * ------------------------------------------------------------------------- */
+.brand__check {
+  stroke: var(--color-surface);
+}
+
+.topbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.start__options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.start__option {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.start__option .button {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.start__title {
+  margin: 0;
+  font-size: var(--text-md);
+  color: var(--color-heading);
+}
+
+.notice {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-notice-bg);
+  border: 1px solid var(--color-notice-border);
+  border-left-width: 4px;
+  border-radius: var(--radius);
+  color: var(--color-text);
+}
+
+.assessment-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.assessment-bar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.assessment-bar .notice {
+  margin: 0;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 var(--space-2);
+  font-weight: 600;
+}
+
+.checkbox-row input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--color-brand);
+}
+
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-link);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link-button:disabled {
+  color: var(--color-text-muted);
+  cursor: default;
+}
+
+.disclaimer {
+  margin-top: var(--space-5);
+}
+
+@media (max-width: 720px) {
+  .topbar__actions {
+    width: 100%;
+  }
+
+  .topbar__overview {
+    white-space: normal;
+  }
+}
+
+.table-wrap:focus-visible {
+  outline: 3px solid var(--color-focus, var(--color-brand));
+  outline-offset: 2px;
 }

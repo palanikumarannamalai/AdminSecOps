@@ -48,13 +48,13 @@ describe.each(DIRECTORIES)('fixture %s', (directory) => {
     const committed = get(onDisk, directory);
     expect([...committed.keys()].sort()).toEqual([...(pkg?.files.keys() ?? [])].sort());
     for (const [file, bytes] of pkg?.files ?? []) {
-      expect(committed.get(file)?.equals(bytes), `${file} matches the generator (run npm run fixtures)`).toBe(true);
+      expect(Buffer.from(committed.get(file) ?? new Uint8Array(0)).equals(bytes), `${file} matches the generator (run npm run fixtures)`).toBe(true);
     }
   });
 
   it('uses LF line endings and a trailing newline', () => {
     for (const [file, bytes] of get(onDisk, directory)) {
-      const text = bytes.toString('utf8');
+      const text = Buffer.from(bytes).toString('utf8');
       expect(text.includes('\r'), `${file} has no CR`).toBe(false);
       expect(text.endsWith('}\n'), `${file} ends with a newline`).toBe(true);
     }

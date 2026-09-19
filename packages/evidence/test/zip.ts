@@ -2,7 +2,7 @@ import yazl from 'yazl';
 
 export interface ZipEntryInput {
   name: string;
-  data: Buffer | string;
+  data: Uint8Array | string;
   /** Unix mode, e.g. 0o120777 for a symbolic link. */
   mode?: number;
   compress?: boolean;
@@ -12,7 +12,7 @@ export interface ZipEntryInput {
 export function makeZip(entries: readonly ZipEntryInput[]): Promise<Buffer> {
   const zip = new yazl.ZipFile();
   for (const entry of entries) {
-    const data = typeof entry.data === 'string' ? Buffer.from(entry.data, 'utf8') : entry.data;
+    const data = typeof entry.data === 'string' ? Buffer.from(entry.data, 'utf8') : Buffer.from(entry.data);
     zip.addBuffer(data, entry.name, {
       ...(entry.mode !== undefined ? { mode: entry.mode } : {}),
       compress: entry.compress ?? true,

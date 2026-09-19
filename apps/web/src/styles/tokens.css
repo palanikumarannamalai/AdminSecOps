@@ -99,4 +99,175 @@
 
   --nav-width: 232px;
   --topbar-height: 60px;
+
+  /* Text on solid fills, surfaces introduced for theming */
+  --color-on-brand: #ffffff;
+  --color-on-danger: #ffffff;
+  --color-danger-strong: #6d0f0f;
+  --color-row-hover: #fafcff;
+  --color-code-bg: #0f1a2b;
+  --color-code-text: #e6edf6;
+  --color-notice-bg: #fff8e6;
+  --color-notice-border: #e3b341;
+  color-scheme: light;
+}
+
+/*
+ * Dark theme. Applied when the visitor chose dark on palanikumar.net (data-theme="dark", shared
+ * localStorage key 'theme') or, without a saved choice, when the operating system prefers dark.
+ * Every text/background pair keeps WCAG 2.1 AA contrast (4.5:1 for normal text).
+ */
+:root[data-theme='dark'] {
+  --color-bg: #0d1117;
+  --color-surface: #161b22;
+  --color-surface-muted: #1c232d;
+  --color-border: #30363d;
+  --color-border-strong: #4a5563;
+  --color-text: #e6edf3;
+  --color-text-muted: #aab6c4;
+  --color-heading: #f5f8fb;
+
+  --color-brand: #7cb3ff;
+  --color-brand-strong: #a7ccff;
+  --color-brand-soft: #1b2b44;
+  --color-link: #8ec1ff;
+  --color-focus: #fbbf24;
+  --color-nav-bg: #0a0f16;
+  --color-nav-text: #d7e0ec;
+  --color-nav-muted: #9aabc0;
+  --color-nav-active: #ffffff;
+  --color-nav-active-bg: #1f2f47;
+
+  --sev-critical-text: #ffb3b3;
+  --sev-critical-bg: #3d1414;
+  --sev-critical-solid: #e05252;
+  --sev-high-text: #ffc59a;
+  --sev-high-bg: #3d2211;
+  --sev-high-solid: #f07b3f;
+  --sev-medium-text: #f5d58a;
+  --sev-medium-bg: #3a2e0f;
+  --sev-medium-solid: #e0b23a;
+  --sev-low-text: #a9c4ff;
+  --sev-low-bg: #16264a;
+  --sev-low-solid: #5b8cf0;
+  --sev-info-text: #c6ced9;
+  --sev-info-bg: #252c36;
+  --sev-info-solid: #8a96a8;
+
+  --st-pass-text: #9be3b4;
+  --st-pass-bg: #12301e;
+  --st-pass-solid: #34c172;
+  --st-fail-text: #ffb3b3;
+  --st-fail-bg: #3d1414;
+  --st-fail-solid: #e5484d;
+  --st-review-text: #f5d58a;
+  --st-review-bg: #3a2e0f;
+  --st-review-solid: #d9a620;
+  --st-na-text: #c6ced9;
+  --st-na-bg: #252c36;
+  --st-na-solid: #6b7686;
+  --st-notassessed-text: #cdbaff;
+  --st-notassessed-bg: #2a1f4a;
+  --st-notassessed-solid: #9d80ee;
+  --st-error-text: #ffb3d4;
+  --st-error-bg: #3d1428;
+  --st-error-solid: #e0508e;
+
+  --tone-ok-text: #9be3b4;
+  --tone-ok-bg: #12301e;
+  --tone-warn-text: #f5d58a;
+  --tone-warn-bg: #3a2e0f;
+  --tone-bad-text: #ffb3b3;
+  --tone-bad-bg: #3d1414;
+  --tone-info-text: #a9c4ff;
+  --tone-info-bg: #16264a;
+  --tone-muted-text: #c6ced9;
+  --tone-muted-bg: #252c36;
+
+  --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 1px 3px rgb(0 0 0 / 50%);
+  --color-on-brand: #0b1320;
+  --color-on-danger: #1a0606;
+  --color-danger-strong: #ffd0d0;
+  --color-row-hover: #1c2530;
+  --color-code-bg: #0a0f16;
+  --color-code-text: #e6edf6;
+  --color-notice-bg: #33280f;
+  --color-notice-border: #b8892a;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-bg: #0d1117;
+    --color-surface: #161b22;
+    --color-surface-muted: #1c232d;
+    --color-border: #30363d;
+    --color-border-strong: #4a5563;
+    --color-text: #e6edf3;
+    --color-text-muted: #aab6c4;
+    --color-heading: #f5f8fb;
+    --color-brand: #7cb3ff;
+    --color-brand-strong: #a7ccff;
+    --color-brand-soft: #1b2b44;
+    --color-link: #8ec1ff;
+    --color-focus: #fbbf24;
+    --color-nav-bg: #0a0f16;
+    --color-nav-text: #d7e0ec;
+    --color-nav-muted: #9aabc0;
+    --color-nav-active: #ffffff;
+    --color-nav-active-bg: #1f2f47;
+    --sev-critical-text: #ffb3b3;
+    --sev-critical-bg: #3d1414;
+    --sev-critical-solid: #e05252;
+    --sev-high-text: #ffc59a;
+    --sev-high-bg: #3d2211;
+    --sev-high-solid: #f07b3f;
+    --sev-medium-text: #f5d58a;
+    --sev-medium-bg: #3a2e0f;
+    --sev-medium-solid: #e0b23a;
+    --sev-low-text: #a9c4ff;
+    --sev-low-bg: #16264a;
+    --sev-low-solid: #5b8cf0;
+    --sev-info-text: #c6ced9;
+    --sev-info-bg: #252c36;
+    --sev-info-solid: #8a96a8;
+    --st-pass-text: #9be3b4;
+    --st-pass-bg: #12301e;
+    --st-pass-solid: #34c172;
+    --st-fail-text: #ffb3b3;
+    --st-fail-bg: #3d1414;
+    --st-fail-solid: #e5484d;
+    --st-review-text: #f5d58a;
+    --st-review-bg: #3a2e0f;
+    --st-review-solid: #d9a620;
+    --st-na-text: #c6ced9;
+    --st-na-bg: #252c36;
+    --st-na-solid: #6b7686;
+    --st-notassessed-text: #cdbaff;
+    --st-notassessed-bg: #2a1f4a;
+    --st-notassessed-solid: #9d80ee;
+    --st-error-text: #ffb3d4;
+    --st-error-bg: #3d1428;
+    --st-error-solid: #e0508e;
+    --tone-ok-text: #9be3b4;
+    --tone-ok-bg: #12301e;
+    --tone-warn-text: #f5d58a;
+    --tone-warn-bg: #3a2e0f;
+    --tone-bad-text: #ffb3b3;
+    --tone-bad-bg: #3d1414;
+    --tone-info-text: #a9c4ff;
+    --tone-info-bg: #16264a;
+    --tone-muted-text: #c6ced9;
+    --tone-muted-bg: #252c36;
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 1px 3px rgb(0 0 0 / 50%);
+    --color-on-brand: #0b1320;
+    --color-on-danger: #1a0606;
+    --color-danger-strong: #ffd0d0;
+    --color-row-hover: #1c2530;
+    --color-code-bg: #0a0f16;
+    --color-code-text: #e6edf6;
+    --color-notice-bg: #33280f;
+    --color-notice-border: #b8892a;
+    color-scheme: dark;
+  }
 }

@@ -25,7 +25,13 @@ export interface LoggerOptions {
  */
 export function createLogger(options: LoggerOptions = {}): Logger {
   const minLevel = options.level ?? 'info';
-  const write = options.write ?? ((line: string) => process.stderr.write(`${line}\n`));
+  const write =
+    options.write ??
+    ((line: string) => {
+      // Node.js: stderr keeps stdout clean for CLI output. Browsers have no process object.
+      if (typeof process !== 'undefined' && typeof process.stderr?.write === 'function') process.stderr.write(`${line}\n`);
+      else console.error(line);
+    });
   const bindings = options.bindings ?? {};
 
   const log = (level: LogLevel, message: string, fields?: Record<string, unknown>): void => {

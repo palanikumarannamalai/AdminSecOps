@@ -10,6 +10,10 @@ export default tseslint.config(
       '**/node_modules/**',
       '.claude/**',
       '**/dist/**',
+      '**/dist-hosted/**',
+      '**/.e2e-site/**',
+      '**/test-results/**',
+      '**/playwright-report/**',
       '**/coverage/**',
       'collectors/**',
       'fixtures/**',
@@ -25,7 +29,7 @@ export default tseslint.config(
       globals: { ...globals.node },
       parserOptions: {
         projectService: {
-          // apps/web/vite.config.ts and vitest.config.ts are covered by apps/web/tsconfig.json.
+          // apps/web/vite.config.ts, vitest.config.ts, playwright.config.ts and e2e/*.ts are covered by apps/web/tsconfig.json.
           allowDefaultProject: ['eslint.config.js'],
         },
         tsconfigRootDir: import.meta.dirname,

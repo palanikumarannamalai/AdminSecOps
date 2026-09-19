@@ -87,7 +87,7 @@ export function EvidencePage() {
           </div>
         </dl>
         {collection.modules.length > 0 ? (
-          <div className="table-wrap">
+          <div className="table-wrap" tabIndex={0}>
             <table className="table table--compact">
               <caption>Collector modules</caption>
               <thead>
@@ -131,7 +131,7 @@ export function EvidencePage() {
         {evidence.files.length === 0 ? (
           <EmptyState title="No evidence files" />
         ) : (
-          <div className="table-wrap">
+          <div className="table-wrap" tabIndex={0}>
             <table className="table table--compact">
               <caption className="visually-hidden">Evidence files and integrity checks</caption>
               <thead>
@@ -214,7 +214,7 @@ export function EvidencePage() {
         {evidence.datasets.length === 0 ? (
           <EmptyState title="No datasets recorded" />
         ) : (
-          <div className="table-wrap">
+          <div className="table-wrap" tabIndex={0}>
             <table className="table table--compact">
               <caption className="visually-hidden">Dataset availability</caption>
               <thead>
@@ -261,7 +261,7 @@ export function EvidencePage() {
         {evidence.issues.length === 0 ? (
           <p>No errors or warnings were reported.</p>
         ) : (
-          <div className="table-wrap">
+          <div className="table-wrap" tabIndex={0}>
             <table className="table table--compact">
               <caption className="visually-hidden">Collection errors and warnings</caption>
               <thead>

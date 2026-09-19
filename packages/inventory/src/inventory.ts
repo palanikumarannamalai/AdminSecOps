@@ -1,5 +1,5 @@
 import type { CollectionStatus } from '@adminsecops/core';
-import type { EvidenceBundle, LoadedDataset } from '@adminsecops/evidence';
+import type { EvidenceBundle, LoadedDataset } from '@adminsecops/evidence/browser';
 import {
   getDatasetDefinition,
   type DatasetData,

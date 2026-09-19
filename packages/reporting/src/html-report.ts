@@ -1,10 +1,10 @@
-import { createHash } from 'node:crypto';
 import {
   PRODUCT_DESCRIPTION,
   PRODUCT_NAME,
   PRODUCT_TAGLINE,
   SEVERITIES,
   TECHNOLOGY_LABELS,
+  sha256Base64,
   type ControlStatus,
 } from '@adminsecops/core';
 import { FRAMEWORKS, type AssessmentResult, type ControlResult, type Finding, type PriorityTier } from '@adminsecops/schemas';
@@ -265,7 +265,7 @@ function frameworkSection(findings: readonly Finding[]): SafeHtml {
 }
 
 function styleHash(css: string): string {
-  return `'sha256-${createHash('sha256').update(css, 'utf8').digest('base64')}'`;
+  return `'sha256-${sha256Base64(css)}'`;
 }
 
 /**

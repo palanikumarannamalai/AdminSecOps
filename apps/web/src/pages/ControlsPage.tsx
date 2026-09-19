@@ -133,7 +133,7 @@ export function ControlsPage() {
         {visible.length === 0 ? (
           <EmptyState title="No control results match these filters" />
         ) : (
-          <div className="table-wrap">
+          <div className="table-wrap" tabIndex={0}>
             <table className="table">
               <caption className="visually-hidden">Control results</caption>
               <thead>

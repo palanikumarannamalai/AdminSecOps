@@ -21,7 +21,7 @@ import {
   type ManifestFile,
 } from '@adminsecops/schemas';
 import type { z } from 'zod';
-import type { PackageFiles } from './package-reader.js';
+import type { PackageFiles } from './paths.js';
 
 export type DatasetState = 'available' | 'partial' | 'unavailable';
 
@@ -113,7 +113,7 @@ export function loadEvidenceBundle(files: PackageFiles): EvidenceBundle {
       schema: 'not-checked',
       sensitiveContent: false,
       collectionStatus: null,
-      sha256: sha256Hex(files.get(filePath) ?? Buffer.alloc(0)),
+      sha256: sha256Hex(files.get(filePath) ?? new Uint8Array(0)),
       expectedSha256: null,
       sizeBytes: files.get(filePath)?.byteLength ?? null,
       messages: ['File is not listed in the manifest and was ignored.'],
@@ -127,7 +127,7 @@ export function loadEvidenceBundle(files: PackageFiles): EvidenceBundle {
 
 function loadManifestEntry(
   entry: ManifestFile,
-  content: Buffer | undefined,
+  content: Uint8Array | undefined,
   manifest: EvidenceManifest,
   issues: CollectionIssue[],
 ): { check: EvidenceFileCheck; dataset?: LoadedDataset } {

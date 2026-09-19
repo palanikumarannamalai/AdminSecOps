@@ -1,7 +1,7 @@
 # Threat model
 
 Scope: the collectors, the evidence package, the local application (API, dashboard, CLI)
-and the planned hosted service. Method: STRIDE per component, with the assets and trust
+the static hosted browser build and the planned hosted service. Method: STRIDE per component, with the assets and trust
 boundaries below. Status column: **Mitigated** (implemented and tested), **Partial**,
 **Planned**, **Accepted** (documented residual risk).
 
@@ -20,7 +20,9 @@ boundaries below. Status column: **Mitigated** (implemented and tested), **Parti
 2. Collector output  <->  engine ingestion (package may be modified in transit or crafted).
 3. Browser  <->  local API (other websites in the same browser are untrusted).
 4. Local machine  <->  network (nothing should be exposed).
-5. (Future) customer  <->  hosted service.
+5. Static hosted browser build: palanikumar.net (delivers code only)  <->  visitor's browser
+   tab (holds evidence). No evidence crosses this boundary.
+6. (Future) customer  <->  hosted service.
 
 ## Collectors
 
@@ -66,6 +68,20 @@ boundaries below. Status column: **Mitigated** (implemented and tested), **Parti
 
 Reads only the paths given; writes reports with owner-only mode and refuses to
 overwrite without `--force`; shares the ingestion protections above.
+
+## Static hosted browser build (palanikumar.net)
+
+Full details: [HOSTED-BROWSER-MODE.md](HOSTED-BROWSER-MODE.md#threat-model-hosted-browser-mode).
+
+| Threat | Mitigation | Status |
+|---|---|---|
+| Evidence, reports or tenant identifiers sent to the website or a third party | No API exists; CSP `connect-src 'none'`, `form-action 'none'`, no third-party resources; browser tests assert zero requests during import and that `fetch` is blocked | Mitigated |
+| Hostile ZIP processed in the browser | Browser ZIP reader applies the same limits and rejections as local mode (parity test with yauzl); bounded inflate; CRC checks | Mitigated |
+| Integrity, secret-content and schema checks weakened in the browser | Same `@adminsecops/evidence` and schema code; browser entry points tested for Node-free imports | Mitigated |
+| Evidence left on a shared device | Memory-only by default; opt-in IndexedDB of processed results only; "Delete local data"; on-page warning | Mitigated |
+| Script injection via evidence | React text rendering; `script-src 'self'` with no inline scripts or eval; Zod runs jitless | Mitigated |
+| Modified JavaScript served after a hosting-account compromise | Deployment only through the site's GitHub Actions workflow; build output reviewed in the commit; use local mode for sensitive work if unacceptable | Accepted |
+| Very large package exhausts browser memory | Package limits (100 MB / 256 MB uncompressed); documented; local mode for large tenants | Accepted |
 
 ## Future hosted service (Azure) - required before launch
 

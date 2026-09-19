@@ -10,6 +10,9 @@ import { FindingDetailPage } from './pages/FindingDetailPage';
 import { FindingsPage } from './pages/FindingsPage';
 import { FrameworksPage } from './pages/FrameworksPage';
 import { HomePage } from './pages/HomePage';
+import { HostedGuidancePage } from './pages/HostedGuidancePage';
+import { HostedHomePage } from './pages/HostedHomePage';
+import { IS_HOSTED } from './mode';
 import { InventoryPage } from './pages/InventoryPage';
 import { LibraryPage } from './pages/LibraryPage';
 import { OverviewPage } from './pages/OverviewPage';
@@ -29,7 +32,7 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route index element={<HomePage />} />
+        <Route index element={IS_HOSTED ? <HostedHomePage /> : <HomePage />} />
         <Route path="assessments/:assessmentId" element={<AssessmentLayout />}>
           <Route index element={<OverviewPage />} />
           <Route path="findings" element={<FindingsPage />} />
@@ -42,7 +45,7 @@ export function AppRoutes() {
         </Route>
         <Route path="compare" element={<ComparePage />} />
         <Route path="library" element={<LibraryPage />} />
-        <Route path="about" element={<AboutPage />} />
+        <Route path="about" element={IS_HOSTED ? <HostedGuidancePage /> : <AboutPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

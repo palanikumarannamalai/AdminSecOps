@@ -180,7 +180,7 @@ export function FindingsPage() {
             <p>Change or reset the filters to see more findings.</p>
           </EmptyState>
         ) : (
-          <div className="table-wrap">
+          <div className="table-wrap" tabIndex={0}>
             <table className="table table--findings">
               <caption className="visually-hidden">Findings, sortable by column</caption>
               <thead>

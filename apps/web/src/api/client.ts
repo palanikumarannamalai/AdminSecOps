@@ -138,8 +138,24 @@ export interface ApiClientOptions {
 
 export type ReportFormat = 'html' | 'json';
 
-/** Methods are plain functions (no `this`), so they can be passed around unbound. */
+/** On-device data controls (hosted mode only). */
+export interface LocalDataControls {
+  /** Whether this browser offers on-device storage (IndexedDB). */
+  persistenceAvailable: boolean;
+  isPersistenceEnabled: () => boolean;
+  /** Turning persistence off deletes anything already stored on this device. */
+  setPersistenceEnabled: (enabled: boolean) => Promise<void>;
+  /** Clear every assessment from memory and delete all on-device data. */
+  deleteAllLocalData: () => Promise<void>;
+}
+
+/**
+ * Methods are plain functions (no `this`), so they can be passed around unbound.
+ * `mode` is 'local' for the local API client and 'hosted' for the in-browser client.
+ */
 export interface ApiClient {
+  mode: 'local' | 'hosted';
+  localData?: LocalDataControls;
   health: (signal?: AbortSignal) => Promise<HealthResponse>;
   listAssessments: (signal?: AbortSignal) => Promise<AssessmentListItem[]>;
   getAssessment: (id: string, signal?: AbortSignal) => Promise<AssessmentResult>;
@@ -184,6 +200,7 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
   const id = (value: string) => encodeURIComponent(value);
 
   return {
+    mode: 'local',
     health: (signal) => request('GET', '/health', guards.health, signal),
     listAssessments: async (signal) => (await request('GET', '/assessments', guards.assessmentList, signal)).assessments,
     getAssessment: (assessmentId, signal) => request('GET', `/assessments/${id(assessmentId)}`, guards.assessment, signal),

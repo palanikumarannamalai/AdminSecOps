@@ -5,6 +5,8 @@ const pkg = (name: string) => fileURLToPath(new URL(`./packages/${name}/src/inde
 
 /** Resolve workspace packages to their TypeScript sources so tests never need a build. */
 export const workspaceAliases = {
+  '@adminsecops/evidence/browser': fileURLToPath(new URL('./packages/evidence/src/browser.ts', import.meta.url)),
+  '@adminsecops/engine/browser': fileURLToPath(new URL('./packages/engine/src/browser.ts', import.meta.url)),
   '@adminsecops/core': pkg('core'),
   '@adminsecops/schemas': pkg('schemas'),
   '@adminsecops/evidence': pkg('evidence'),

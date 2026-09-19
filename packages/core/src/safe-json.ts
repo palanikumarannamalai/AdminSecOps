@@ -27,7 +27,7 @@ export function safeJsonParse(input: string | Uint8Array, options: SafeJsonOptio
   const label = options.label ?? 'input';
 
   const byteLength =
-    typeof input === 'string' ? Buffer.byteLength(input, 'utf8') : input.byteLength;
+    typeof input === 'string' ? new TextEncoder().encode(input).byteLength : input.byteLength;
   if (byteLength > maxBytes) {
     throw new AdminSecOpsError(
       'JSON_TOO_LARGE',

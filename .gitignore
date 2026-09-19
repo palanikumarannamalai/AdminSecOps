@@ -59,3 +59,9 @@ testResults.xml
 
 # Local agent/tooling state
 .claude/
+
+# Browser test output
+.e2e-site/
+dist-hosted/
+test-results/
+playwright-report/

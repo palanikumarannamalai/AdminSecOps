@@ -2,6 +2,7 @@ import { useId, useRef, useState, type ChangeEvent, type DragEvent } from 'react
 import { errorMessage, type ApiClient } from '../api/client';
 import { formatBytes } from '../lib/format';
 import { MAX_UPLOAD_BYTES, validatePackageFile } from '../lib/upload';
+import { IS_HOSTED } from '../mode';
 
 type UploadState =
   | { phase: 'idle' }
@@ -18,9 +19,11 @@ function statusText(state: UploadState): string {
     case 'invalid':
       return state.message;
     case 'uploading':
-      return `Uploading ${state.fileName}: ${Math.round(state.fraction * 100)}%`;
+      return IS_HOSTED ? `Reading ${state.fileName} in this browser...` : `Uploading ${state.fileName}: ${Math.round(state.fraction * 100)}%`;
     case 'processing':
-      return `Upload complete. Verifying and assessing ${state.fileName}...`;
+      return IS_HOSTED
+        ? `Verifying and assessing ${state.fileName} in this browser...`
+        : `Upload complete. Verifying and assessing ${state.fileName}...`;
     case 'done':
       return `${state.fileName} was processed.`;
     case 'failed':
@@ -92,10 +95,12 @@ export function UploadPanel({
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
       >
-        <p className="dropzone__title">Drop an evidence package here</p>
+        <p className="dropzone__title">{IS_HOSTED ? 'Drop an evidence package here to import it' : 'Drop an evidence package here'}</p>
         <p className="dropzone__hint" id={hintId}>
-          A .zip file produced by the AdminSecOps Collector, up to {formatBytes(MAX_UPLOAD_BYTES)}. It is processed on this
-          machine only.
+          A .zip file produced by the AdminSecOps Collector, up to {formatBytes(MAX_UPLOAD_BYTES)}.{' '}
+          {IS_HOSTED
+            ? 'It is processed in this browser and is not uploaded to any server.'
+            : 'It is processed on this machine only.'}
         </p>
         <input
           ref={inputRef}
@@ -108,11 +113,11 @@ export function UploadPanel({
           onChange={onInputChange}
         />
         <label htmlFor={inputId} className={`button button--primary${busy ? ' button--disabled' : ''}`}>
-          Choose evidence package
+          {IS_HOSTED ? 'Import evidence' : 'Choose evidence package'}
         </label>
       </div>
       {state.phase === 'uploading' ? (
-        <progress className="upload__progress" max={100} value={Math.round(state.fraction * 100)} aria-label="Upload progress" />
+        <progress className="upload__progress" max={100} value={Math.round(state.fraction * 100)} aria-label={IS_HOSTED ? 'Reading the evidence package' : 'Upload progress'} />
       ) : null}
       {state.phase === 'processing' ? <progress className="upload__progress" aria-label="Processing evidence" /> : null}
       <p className={`upload__status upload__status--${tone}`} role="status" aria-live="polite">

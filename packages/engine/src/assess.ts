@@ -10,7 +10,7 @@ import {
   type Technology,
 } from '@adminsecops/core';
 import { CONTROL_LIBRARY_VERSION, type ControlDefinition } from '@adminsecops/controls';
-import type { EvidenceBundle } from '@adminsecops/evidence';
+import type { EvidenceBundle } from '@adminsecops/evidence/browser';
 import { Inventory, datasetAvailability, summarizeInventory } from '@adminsecops/inventory';
 import type {
   AssessmentResult,

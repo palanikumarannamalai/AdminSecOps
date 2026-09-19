@@ -11,13 +11,33 @@
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": false,
     "paths": {
-      "@adminsecops/core": ["./packages/core/src/index.ts"],
-      "@adminsecops/schemas": ["./packages/schemas/src/index.ts"],
-      "@adminsecops/evidence": ["./packages/evidence/src/index.ts"],
-      "@adminsecops/inventory": ["./packages/inventory/src/index.ts"],
-      "@adminsecops/controls": ["./packages/controls/src/index.ts"],
-      "@adminsecops/engine": ["./packages/engine/src/index.ts"],
-      "@adminsecops/reporting": ["./packages/reporting/src/index.ts"]
+      "@adminsecops/core": [
+        "./packages/core/src/index.ts"
+      ],
+      "@adminsecops/schemas": [
+        "./packages/schemas/src/index.ts"
+      ],
+      "@adminsecops/evidence": [
+        "./packages/evidence/src/index.ts"
+      ],
+      "@adminsecops/inventory": [
+        "./packages/inventory/src/index.ts"
+      ],
+      "@adminsecops/controls": [
+        "./packages/controls/src/index.ts"
+      ],
+      "@adminsecops/engine": [
+        "./packages/engine/src/index.ts"
+      ],
+      "@adminsecops/reporting": [
+        "./packages/reporting/src/index.ts"
+      ],
+      "@adminsecops/evidence/browser": [
+        "./packages/evidence/src/browser.ts"
+      ],
+      "@adminsecops/engine/browser": [
+        "./packages/engine/src/browser.ts"
+      ]
     }
   },
   "include": [

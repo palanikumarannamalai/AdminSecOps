@@ -10,6 +10,7 @@ import { EmptyState, ErrorState, LoadingState } from '../components/States';
 import { UploadPanel } from '../components/UploadPanel';
 import { useAsync } from '../hooks/useAsync';
 import { environmentName, formatDateTime } from '../lib/format';
+import { IS_HOSTED } from '../mode';
 
 const STEPS = [
   {
@@ -109,7 +110,7 @@ function AssessmentRow({ item, onDeleted }: { item: AssessmentListItem; onDelete
         <div className="muted small">
           {[item.primaryDomain, item.adForestName].filter((v): v is string => v !== null && v !== name).join(' / ')}
         </div>
-        {item.source === 'sample' ? <ToneBadge tone="info">Sample</ToneBadge> : null}
+        {item.source === 'sample' ? <ToneBadge tone="info">Fictional sample</ToneBadge> : null}
       </th>
       <td>{formatDateTime(item.assessedAt)}</td>
       <td>
@@ -124,7 +125,7 @@ function AssessmentRow({ item, onDeleted }: { item: AssessmentListItem; onDelete
         {confirming ? (
           <span className="inline-actions">
             <button type="button" className="button button--danger button--small" disabled={deleting} onClick={() => void remove()}>
-              {deleting ? 'Deleting...' : 'Confirm delete'}
+              {deleting ? 'Clearing...' : IS_HOSTED ? 'Confirm clear' : 'Confirm delete'}
             </button>
             <button type="button" className="button button--small" disabled={deleting} onClick={() => setConfirming(false)}>
               Cancel
@@ -134,10 +135,10 @@ function AssessmentRow({ item, onDeleted }: { item: AssessmentListItem; onDelete
           <button
             type="button"
             className="button button--small"
-            aria-label={`Delete assessment ${name} from ${formatDateTime(item.assessedAt)}`}
+            aria-label={`${IS_HOSTED ? 'Clear' : 'Delete'} assessment ${name} from ${formatDateTime(item.assessedAt)}`}
             onClick={() => setConfirming(true)}
           >
-            Delete
+            {IS_HOSTED ? 'Clear assessment' : 'Delete'}
           </button>
         )}
         {error !== null ? (
@@ -150,23 +151,23 @@ function AssessmentRow({ item, onDeleted }: { item: AssessmentListItem; onDelete
   );
 }
 
-function AssessmentsPanel() {
+export function AssessmentsPanel() {
   const list = useAssessmentList();
   return (
-    <Panel title="Processed assessments" id="assessments">
+    <Panel title={IS_HOSTED ? 'Assessments in this browser' : 'Processed assessments'} id="assessments">
       {list.status === 'loading' ? <LoadingState label="Loading assessments" /> : null}
       {list.status === 'error' ? (
         <ErrorState title="Assessments could not be loaded" error={list.error} onRetry={list.reload} />
       ) : null}
       {list.status === 'success' && list.data.length === 0 ? (
         <EmptyState title="No assessments yet">
-          <p>Upload an evidence package or load a sample to create the first assessment.</p>
+          <p>{IS_HOSTED ? 'Load a sample or import an evidence package to create an assessment.' : 'Upload an evidence package or load a sample to create the first assessment.'}</p>
         </EmptyState>
       ) : null}
       {list.status === 'success' && list.data.length > 0 ? (
-        <div className="table-wrap">
+        <div className="table-wrap" tabIndex={0}>
           <table className="table">
-            <caption className="visually-hidden">Processed assessments stored on this machine</caption>
+            <caption className="visually-hidden">{IS_HOSTED ? 'Assessments held in this browser' : 'Processed assessments stored on this machine'}</caption>
             <thead>
               <tr>
                 <th scope="col">Environment</th>
