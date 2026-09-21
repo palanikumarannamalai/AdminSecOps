@@ -5,7 +5,7 @@ import { errorMessage, isApiError } from '../api/client';
 import type { AssessmentResult } from '../api/types';
 import { EmptyState, ErrorState, LoadingState } from '../components/States';
 import { useAsync } from '../hooks/useAsync';
-import { IS_HOSTED } from '../mode';
+import { IS_HOSTED, IS_ONLINE } from '../mode';
 import { useApi, useAssessmentList } from './context';
 
 /** Hosted mode: export, clear and sample-data notice for the open assessment. */
@@ -79,7 +79,7 @@ export function AssessmentLayout() {
       return (
         <EmptyState title="Assessment not found">
           <p>
-            {IS_HOSTED
+            {IS_ONLINE ? 'This assessment is unavailable in your workspace. It may have been deleted.' : IS_HOSTED
               ? 'This assessment is not held in this browser. Assessments are kept in memory unless you chose to keep them on this device, so they disappear when the page is refreshed.'
               : 'This assessment does not exist on this machine. It may have been deleted.'}
           </p>

@@ -25,7 +25,7 @@ export default defineConfig({
         test: {
           name: 'node',
           environment: 'node',
-          include: ['packages/**/*.test.ts', 'apps/api/**/*.test.ts', 'apps/cli/**/*.test.ts', 'tests/**/*.test.ts'],
+          include: ['packages/**/*.test.ts', 'apps/control-plane/**/*.test.ts', 'apps/api/**/*.test.ts', 'apps/cli/**/*.test.ts', 'tests/**/*.test.ts'],
           exclude: ['**/node_modules/**', '**/dist/**'],
           testTimeout: 30000,
         },

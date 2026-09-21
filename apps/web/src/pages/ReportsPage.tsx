@@ -3,7 +3,7 @@ import { useApi } from '../app/context';
 import { PageHeader, Panel } from '../components/PageHeader';
 import { reportFileName } from '@adminsecops/reporting';
 import { environmentName, formatDateTime } from '../lib/format';
-import { IS_HOSTED } from '../mode';
+import { IS_HOSTED, IS_ONLINE } from '../mode';
 
 export function ReportsPage() {
   const result = useAssessment();
@@ -18,7 +18,7 @@ export function ReportsPage() {
         description={
           <p>
             Reports for {name}, evidence collected {formatDateTime(result.assessedAt)}. Reports are generated{' '}
-            {IS_HOSTED ? 'in this browser' : 'on this machine'} and contain identifiers from your environment (object names, IDs, domains). Store and share them as
+            {IS_ONLINE ? 'by the hosted service' : IS_HOSTED ? 'in this browser' : 'on this machine'} and contain identifiers from your environment (object names, IDs, domains). Store and share them as
             you would other sensitive administrative documents.
           </p>
         }

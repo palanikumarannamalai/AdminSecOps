@@ -6,7 +6,8 @@ import { AppRoutes } from './App';
 import { api as localApi, type ApiClient } from './api/client';
 import { AppProvider } from './app/context';
 import { applySavedTheme } from './lib/theme';
-import { IS_HOSTED } from './mode';
+import { IS_HOSTED, IS_ONLINE } from './mode';
+import { OnlineSession } from './app/OnlineSession';
 import './styles/tokens.css';
 import './styles/app.css';
 
@@ -20,13 +21,12 @@ function render(client: ApiClient): void {
   // Hosted mode uses hash routing: every view is served by the same static index.html, so a
   // direct refresh always works, and assessment identifiers in the URL fragment are never
   // sent to the web server.
-  const Router = IS_HOSTED ? HashRouter : BrowserRouter;
+  const Router = IS_HOSTED || IS_ONLINE ? HashRouter : BrowserRouter;
+  const app = <AppProvider api={client}><AppRoutes /></AppProvider>;
   const tree: ReactNode = (
     <StrictMode>
       <Router>
-        <AppProvider api={client}>
-          <AppRoutes />
-        </AppProvider>
+        {IS_ONLINE ? <OnlineSession>{app}</OnlineSession> : app}
       </Router>
     </StrictMode>
   );

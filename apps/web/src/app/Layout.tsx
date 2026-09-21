@@ -2,7 +2,7 @@ import { PRODUCT_DESCRIPTION, PRODUCT_NAME, PRODUCT_TAGLINE } from '@adminsecops
 import { type ChangeEvent } from 'react';
 import { NavLink, Outlet, useLocation, useMatch, useNavigate } from 'react-router';
 import { environmentName, formatDate } from '../lib/format';
-import { IS_HOSTED, OVERVIEW_URL } from '../mode';
+import { IS_HOSTED, IS_ONLINE, OVERVIEW_URL } from '../mode';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useAssessmentList } from './context';
 
@@ -165,7 +165,7 @@ export function Layout() {
             </li>
           </ul>
           <p className="nav__footnote">
-            {IS_HOSTED
+            {IS_ONLINE ? 'Read-only cloud collection. Evidence and results are stored in the hosted service.' : IS_HOSTED
               ? 'Processed in this browser. Evidence is not uploaded to palanikumar.net.'
               : 'Local-only. Evidence never leaves this machine.'}
           </p>

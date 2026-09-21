@@ -256,7 +256,7 @@ export function EvidencePage() {
       <Panel title="Collection issues" id="issues">
         <p className="muted small">
           {formatCount(errors.length, 'error')} and {formatCount(warnings.length, 'warning')}, reported by the collector
-          or by the ingestion checks on this machine.
+          or by the ingestion checks during assessment processing.
         </p>
         {evidence.issues.length === 0 ? (
           <p>No errors or warnings were reported.</p>

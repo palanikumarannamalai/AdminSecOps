@@ -1,3 +1,4 @@
+import { IS_ONLINE } from '../mode';
 import type {
   AssessmentComparison,
   AssessmentListItem,
@@ -84,6 +85,11 @@ function truncate(text: string): string {
 }
 
 function defaultMessageFor(status: number): string {
+  if (IS_ONLINE) {
+    if (status === 401) return 'Your session has expired. Sign in again.';
+    if (status === 403) return 'You do not have access to this action.';
+    return `The AdminSecOps service returned HTTP ${status}. Please try again.`;
+  }
   if (status === 400) return 'The request was not accepted by the local AdminSecOps service.';
   if (status === 403) return 'The local AdminSecOps service refused the request.';
   if (status === 404) return 'The requested item was not found. It may have been deleted.';
@@ -189,11 +195,12 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
       }
       throw new ApiError(
         'network_error',
-        'Cannot reach the local AdminSecOps service. Check that it is running on this machine.',
+        IS_ONLINE ? 'Cannot reach the AdminSecOps service. Check your connection and try again.' : 'Cannot reach the local AdminSecOps service. Check that it is running on this machine.',
         0,
       );
     }
     const text = await response.text();
+    if (IS_ONLINE && response.status === 401) window.dispatchEvent(new Event('adminsecops-session-expired'));
     return interpret(response.status, text, guard);
   }
 
