@@ -56,6 +56,11 @@ describe('HTML report', () => {
   const result = sampleResult();
   const report = renderHtmlReport(result, { generatedAt: new Date('2026-09-02T00:00:00Z') });
 
+  it('labels review findings as requiring verification', () => {
+    expect(report).toContain('Potential impact if confirmed:');
+    expect(report).toContain('This does not establish a confirmed security gap.');
+  });
+
   it('never emits evidence-supplied markup', () => {
     expect(report).not.toContain('<script');
     expect(report).not.toContain('<img src=x');

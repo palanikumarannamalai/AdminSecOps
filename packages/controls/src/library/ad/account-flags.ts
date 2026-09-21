@@ -91,16 +91,16 @@ export const adPasswordNotRequired = defineControl({
 
 export const adAccountReversibleEncryption = defineControl({
   id: 'AD-ACC-002',
-  version: '1.0.0',
+  version: '1.1.0',
   lifecycle: 'stable',
-  title: 'No accounts store their password using reversible encryption',
+  title: 'No accounts are configured to allow reversible password encryption',
   technology: 'ad',
   category: 'Account security',
   subcategory: 'Account flags',
   description:
     'Finds user accounts (enabled or disabled) with the per-account option "Store password using reversible encryption" (ENCRYPTED_TEXT_PWD_ALLOWED) set.',
   rationale:
-    'For these accounts, domain controllers keep a copy of the password that can be decrypted back to clear text. Anyone who obtains the directory database, a domain controller backup or replication rights can read the real password, which is frequently reused elsewhere. Disabled accounts are included because the stored copy remains in the directory whether or not the account can sign in.',
+    'This flag permits future password changes to store a recoverable password copy; directory flags alone cannot prove that such a copy currently exists. Anyone who obtains the directory database, a domain controller backup or replication rights can read the real password, which is frequently reused elsewhere. Disabled accounts are included because disabling an account does not remove any previously stored copy.',
   severity: 'high',
   confidence: 'high',
   applicability: { description: 'Every Active Directory domain in the collected forest.' },
@@ -108,7 +108,7 @@ export const adAccountReversibleEncryption = defineControl({
   optionalEvidence: ['ad.privilegedGroups'],
   evaluation: {
     logic:
-      'FAIL when any user account has allowReversiblePasswordEncryption = true, whether enabled or disabled (disabled accounts are included because the reversible password copy is still stored). Privileged accounts are highlighted when privileged group evidence is available. PASS otherwise. The domain-wide policy setting is evaluated separately by AD-PWD-002.',
+      'FAIL when any user account has allowReversiblePasswordEncryption = true, whether enabled or disabled (disabled accounts retain the risky configuration and may retain previous password copies). Privileged accounts are highlighted when privileged group evidence is available. PASS otherwise. The domain-wide policy setting is evaluated separately by AD-PWD-002.',
     parameters: {},
   },
   expectedState: 'No account has "Store password using reversible encryption" enabled.',
@@ -151,24 +151,24 @@ export const adAccountReversibleEncryption = defineControl({
     const enabledCount = flagged.filter((u) => u.enabled).length;
     const facts = [
       fact('Accounts evaluated', users.length),
-      fact('Accounts storing reversible passwords', flagged.length),
+      fact('Accounts configured to allow reversible passwords', flagged.length),
       fact('Of which enabled', enabledCount),
       fact('Of which privileged', privileged === null ? null : flagged.filter((u) => privileged.has(u.sid.toUpperCase())).length),
     ];
     const notes = privileged === null ? [PRIVILEGED_UNAVAILABLE_NOTE] : [];
     if (flagged.length > 0) {
       return fail({
-        reason: `${plural(flagged.length, 'account')} (${enabledCount} enabled) store their password using reversible encryption.`,
-        summary: `Reversibly stored passwords found in ${[...new Set(flagged.map((u) => u.domain))].join(', ')}.`,
+        reason: `${plural(flagged.length, 'account')} (${enabledCount} enabled) are configured to allow reversible password encryption.`,
+        summary: `Reversible-encryption flags found in ${[...new Set(flagged.map((u) => u.domain))].join(', ')}.`,
         facts,
         affectedObjects: flagged.map((u) =>
-          userObject(u, `${u.enabled ? 'Enabled' : 'Disabled'} account${privileged?.has(u.sid.toUpperCase()) ? '; PRIVILEGED' : ''}; reversible password copy stored`),
+          userObject(u, `${u.enabled ? 'Enabled' : 'Disabled'} account${privileged?.has(u.sid.toUpperCase()) ? '; PRIVILEGED' : ''}; reversible encryption permitted by account flag`),
         ),
         notes,
       });
     }
     return pass({
-      reason: 'No account stores its password using reversible encryption.',
+      reason: 'No collected account has its reversible-encryption flag enabled; previously stored material was not inspected.',
       summary: `${plural(users.length, 'collected account')} checked.`,
       facts,
       notes,

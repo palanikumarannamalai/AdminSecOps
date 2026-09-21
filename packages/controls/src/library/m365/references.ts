@@ -13,6 +13,7 @@ const mitre = (title: string, url: string): Reference => ({ title, url, publishe
 const LEARN = 'https://learn.microsoft.com/en-us';
 
 export const M365_REF = {
+  dmarcCurrent: { title: 'IETF RFC 9989: DMARC (May 2026)', url: 'https://datatracker.ietf.org/doc/html/rfc9989', publisher: 'Other' },
   // --- Auditing ------------------------------------------------------------------
   auditLogEnableDisable: ms(
     'Turn auditing on or off (Microsoft Purview)',

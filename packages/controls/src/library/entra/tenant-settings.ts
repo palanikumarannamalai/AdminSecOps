@@ -185,7 +185,7 @@ export const entraGuestAccessRestricted = defineControl({
 
 export const entraGuestInvitesRestricted = defineControl({
   id: 'ENTRA-EXT-002',
-  version: '1.0.0',
+  version: '1.0.2',
   lifecycle: 'stable',
   title: 'Guest invitations are restricted',
   technology: 'entra',
@@ -220,7 +220,7 @@ export const entraGuestInvitesRestricted = defineControl({
   references: [REF.externalCollaborationSettings],
   frameworkMappings: [
     { framework: 'NIST-800-53r5', id: 'AC-2' },
-    { framework: 'CISA-SCuBA', id: 'MS.AAD.8.2v1' },
+    { framework: 'CISA-SCuBA', id: 'MS.AAD.8.2v1', note: 'This control also accepts all-member invitations with a note; that is weaker than SCuBA and is not equivalent conformance.' },
   ],
   tags: ['external-identities', 'identity'],
   evaluate: (ctx) => {
@@ -243,9 +243,9 @@ export const entraGuestInvitesRestricted = defineControl({
 
 export const entraStaleGuests = defineControl({
   id: 'ENTRA-EXT-003',
-  version: '1.0.0',
+  version: '1.0.2',
   lifecycle: 'stable',
-  title: 'Inactive guest accounts are removed',
+  title: 'Guest inactivity and continued access are reviewed',
   technology: 'entra',
   category: 'External identities',
   subcategory: 'Guest lifecycle',
@@ -258,7 +258,7 @@ export const entraStaleGuests = defineControl({
   requiredEvidence: ['entra.guestUsers'],
   evaluation: {
     logic:
-      'For enabled guests, take the most recent of lastSignInDateTime and lastNonInteractiveSignInDateTime. Inactive when that date is more than inactiveDays before the assessment date, or when there is no sign-in and the account was created more than inactiveDays before the assessment date. FAIL when any inactive guest exists.',
+      'Identify enabled guests with old or absent sign-in attempt timestamps for REVIEW. These timestamps include failed attempts and do not establish successful use. Any enabled guest population needs successful-sign-in and business-owner evidence; PASS only when no enabled guests exist.',
     parameters: { inactiveDays: 90 },
   },
   expectedState: 'No enabled guest account has been inactive for more than 90 days.',
@@ -293,14 +293,15 @@ export const entraStaleGuests = defineControl({
       }
       const created = parseTimestamp(g.createdDateTime);
       if (created !== undefined && daysBetween(created, ctx.assessedAt) > threshold) {
-        return [affected('guestUser', g.id, g.userPrincipalName, `Never signed in; created ${daysBetween(created, ctx.assessedAt)} days ago`)];
+        return [affected('guestUser', g.id, g.userPrincipalName, `No recorded sign-in attempt; created ${daysBetween(created, ctx.assessedAt)} days ago`)];
       }
       return [];
     });
     const facts = [fact('Enabled guests', guests.length), fact('Inactive guests', inactive.length), fact('Inactivity threshold (days)', threshold)];
     if (inactive.length > 0) {
-      return fail({ reason: `${plural(inactive.length, 'enabled guest')} inactive for more than ${threshold} days.`, summary: 'Inactive guest accounts retain access.', facts, affectedObjects: inactive });
+      return review({ reason: `${plural(inactive.length, 'enabled guest')} have old or absent sign-in attempt timestamps; confirm successful access and business need before removal.`, summary: 'Potentially inactive guest accounts need an access review.', confidence: 'medium', facts, affectedObjects: inactive, notes: ['Collected lastSignInDateTime and lastNonInteractiveSignInDateTime include failed attempts. lastSuccessfulSignInDateTime and retained access evidence are needed to confirm actual use. Null activity is not proof the user never signed in.'] });
     }
+    if (guests.length > 0) return review({ reason: 'Sign-in attempt timestamps do not establish successful guest account usage.', summary: 'Validate last successful sign-in and business ownership before confirming guest lifecycle hygiene.', confidence: 'medium', facts });
     return pass({ reason: `No enabled guest has been inactive for more than ${threshold} days.`, summary: 'Guest accounts are active.', facts });
   },
 });

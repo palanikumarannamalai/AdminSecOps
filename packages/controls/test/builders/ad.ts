@@ -110,7 +110,7 @@ export interface PolicyInput {
 
 function policyFields(input: PolicyInput) {
   return {
-    minPasswordLength: input.minPasswordLength ?? 14,
+    minPasswordLength: input.minPasswordLength ?? 15,
     passwordHistoryCount: 24,
     maxPasswordAgeDays: null,
     complexityEnabled: true,

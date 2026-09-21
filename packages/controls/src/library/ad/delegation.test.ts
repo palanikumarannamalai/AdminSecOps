@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { adComputer, adUser, adUsers, CHILD, CHILD_SID, CONTOSO, domainAdmins, nextSid, privilegedGroup } from '../../../test/builders/ad.js';
+import { adComputer, adDomain, adUser, adUsers, CHILD, CHILD_SID, CONTOSO, domainAdmins, nextSid, privilegedGroup } from '../../../test/builders/ad.js';
 import { run } from '../../../test/run.js';
 import { adPrivilegedNotDelegated, adUnconstrainedDelegation } from './delegation.js';
 
@@ -50,8 +50,18 @@ describe('AD-PRIV-001 privileged accounts protected from delegation', () => {
   it('passes when admins are sensitive or in Protected Users', () => {
     const a = adUser({ accountNotDelegated: true });
     const b = adUser({ memberOfProtectedUsers: true });
-    const result = run(adPrivilegedNotDelegated, { 'ad.users': adUsers([a, b]), 'ad.privilegedGroups': [domainAdmins([a, b])] });
+    const result = run(adPrivilegedNotDelegated, { 'ad.users': adUsers([a, b]), 'ad.privilegedGroups': [domainAdmins([a, b])], 'ad.domains': [adDomain(CONTOSO)] });
     expect(result.status).toBe('PASS');
+  });
+
+  it.each([undefined, 'Windows2012Domain', 'unrecognized'])('requires review for Protected Users without a confirmed supported DFL: %s', (mode) => {
+    const user = adUser({ memberOfProtectedUsers: true });
+    const result = run(adPrivilegedNotDelegated, {
+      'ad.users': adUsers([user]), 'ad.privilegedGroups': [domainAdmins([user])],
+      ...(mode === undefined ? {} : { 'ad.domains': [adDomain(CONTOSO, { domainMode: mode })] }),
+    });
+    expect(result.status).toBe('REVIEW');
+    expect(result.affectedObjects[0]?.detail).toContain('functional level');
   });
 
   it('fails for an unprotected enabled admin in a child domain', () => {

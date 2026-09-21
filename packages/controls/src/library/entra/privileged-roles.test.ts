@@ -15,7 +15,7 @@ const gas = (n: number) => Array.from({ length: n }, () => roleAssignment(GA));
 
 describe('ENTRA-PRIV-001 / ENTRA-PRIV-002 Global Administrator count', () => {
   it('passes with between two and four Global Administrators', () => {
-    expect(run(entraGlobalAdminMaximum, { 'entra.roleAssignments': gas(4) }).status).toBe('PASS');
+    expect(run(entraGlobalAdminMaximum, { 'entra.roleAssignments': gas(4), 'entra.roleEligibilitySchedules': [] }).status).toBe('PASS');
     expect(run(entraGlobalAdminMinimum, { 'entra.roleAssignments': gas(2) }).status).toBe('PASS');
   });
 

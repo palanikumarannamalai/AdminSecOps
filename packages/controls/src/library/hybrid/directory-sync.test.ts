@@ -38,7 +38,7 @@ describe('HYB-SYNC-003 recent synchronization', () => {
   });
   it('fails for a stale or missing sync', () => {
     expect(run(hybridSyncRecent, { 'entra.organization': org(true, '2026-08-25T00:00:00Z') }, at).status).toBe('FAIL');
-    expect(run(hybridSyncRecent, { 'entra.organization': org(true, null) }, at).status).toBe('FAIL');
+    expect(run(hybridSyncRecent, { 'entra.organization': org(true, null) }, at).status).toBe('REVIEW');
   });
   it('is NOT_APPLICABLE without sync', () => {
     expect(run(hybridSyncRecent, { 'entra.organization': org(false) }, at).status).toBe('NOT_APPLICABLE');

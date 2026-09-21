@@ -244,7 +244,7 @@ export class GraphClient {
     try {
       const response = await this.fetchImpl(url, {
         method: 'GET',
-        headers: { Authorization: `Bearer ${this.accessToken}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${this.accessToken}`, Accept: 'application/json', Prefer: 'include-unknown-enum-members' },
         redirect: 'error',
         signal: controller.signal,
       });

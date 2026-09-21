@@ -398,6 +398,7 @@ describe('collectEntra happy path', () => {
       expect(call.url.startsWith(`${GRAPH_BASE}/`)).toBe(true);
       expect(call.init?.method).toBe('GET');
       expect(call.init?.redirect).toBe('error');
+      expect((call.init?.headers as Record<string, string>)['Prefer']).toBe('include-unknown-enum-members');
       expect((call.init?.headers as Record<string, string>)['Authorization']).toBe(
         `Bearer ${TOKEN}`,
       );

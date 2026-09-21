@@ -2,7 +2,7 @@ import { allowsInternetInboundToPort, isInternetSource, portExpressionIncludes, 
 import type { DatasetData, NsgRule } from '@adminsecops/schemas';
 import { defineControl, type ControlDefinition } from '../../define.js';
 import { fact } from '../../helpers.js';
-import { aggregateVerdicts, fail_, pass_ } from '../shared/verdicts.js';
+import { aggregateVerdicts, fail_, pass_, review_ } from '../shared/verdicts.js';
 import { resourceSubject } from './common.js';
 import { AZ_REF } from './references.js';
 
@@ -59,7 +59,7 @@ function managementPortControl(input: ExposureControlInput): ControlDefinition {
   const { service, port } = input;
   return defineControl({
     id: input.id,
-    version: '1.0.0',
+    version: '1.0.1',
     lifecycle: 'stable',
     title: `Network security groups do not allow ${service} (port ${port}) from the internet`,
     technology: 'azure',
@@ -73,7 +73,7 @@ function managementPortControl(input: ExposureControlInput): ControlDefinition {
     requiredEvidence: ['azure.networkSecurityGroups'],
     optionalEvidence: [],
     evaluation: {
-      logic: `For each NSG the control finds inbound Allow rules with protocol TCP, "*" or Any, a source prefix that means the whole internet ("*", "Internet", "Any", 0.0.0.0/0, 0.0.0.0 or ::/0 in sourceAddressPrefix or sourceAddressPrefixes) and a destination port expression that includes ${port} ("${port}", "*" or a range such as "3000-4000"). A rule is ignored when an inbound Deny rule with a higher priority (lower number) from an internet source covers the same port. FAIL when any NSG has an effective rule. PASS otherwise. NSG association (subnet/NIC) and public IP presence are not evaluated, so an affected NSG may currently be unattached - it is still reported because attaching it would expose ${service}.`,
+      logic: `For each NSG the control finds inbound Allow rules with protocol TCP, "*" or Any, a source prefix that means the whole internet ("*", "Internet", "Any", 0.0.0.0/0, 0.0.0.0 or ::/0 in sourceAddressPrefix or sourceAddressPrefixes) and a destination port expression that includes ${port} ("${port}", "*" or a range such as "3000-4000"). An apparent higher-priority Deny yields REVIEW because destination and source-port conditions are missing. FAIL when an Allow has no such potential Deny. PASS only when no matching whole-internet Allow is collected. NSG association (subnet/NIC) and public IP presence are not evaluated, so an affected NSG may currently be unattached - it is still reported because attaching it would expose ${service}.`,
       parameters: { port },
     },
     expectedState: `No NSG allows inbound ${service} from the internet; ${service} is reachable only through Azure Bastion, just-in-time access, VPN or from specific trusted address ranges.`,
@@ -120,7 +120,7 @@ function managementPortControl(input: ExposureControlInput): ControlDefinition {
         for (const f of findings.get(nsg.id) ?? []) {
           if (f.shadowedBy !== undefined) {
             shadowNotes.push(
-              `NSG "${nsg.name}": rule ${describeRule(f.rule)} would allow ${service} from the internet but is overridden by higher-priority Deny rule "${f.shadowedBy.name}". Remove the redundant Allow rule so a future change to the Deny rule does not expose ${service}.`,
+              `NSG "${nsg.name}": rule ${describeRule(f.rule)} may be limited by higher-priority Deny rule "${f.shadowedBy.name}". Destination addresses and source ports are not collected, so complete shadowing cannot be confirmed; inspect the full rules and effective security rules.`,
             );
           }
         }
@@ -135,7 +135,8 @@ function managementPortControl(input: ExposureControlInput): ControlDefinition {
         notes: shadowNotes,
         classify: (nsg) => {
           const effective = (findings.get(nsg.id) ?? []).filter((f) => f.shadowedBy === undefined);
-          if (effective.length === 0) return pass_(`No effective rule allows ${service} from the internet.`);
+          if (effective.length === 0 && (findings.get(nsg.id) ?? []).length > 0) return review_(`Internet ${service} Allow rules have a potential higher-priority Deny, but missing destination and source-port conditions prevent confirming that all allowed traffic is blocked.`);
+          if (effective.length === 0) return pass_(`No collected rule allows ${service} from the whole internet.`);
           return fail_(`Allows ${service} from the internet via ${effective.map((f) => describeRule(f.rule)).join('; ')} (subscription ${nsg.subscriptionId}, resource group ${nsg.resourceGroup}).`);
         },
       });

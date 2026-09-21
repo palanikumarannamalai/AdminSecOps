@@ -5,7 +5,7 @@ import { M365_REF } from './references.js';
 
 export const m365UnifiedAuditLog = defineControl({
   id: 'M365-AUD-001',
-  version: '1.0.0',
+  version: '1.0.1',
   lifecycle: 'stable',
   title: 'Unified audit log ingestion is enabled',
   technology: 'm365',
@@ -41,7 +41,7 @@ export const m365UnifiedAuditLog = defineControl({
     effort: 'low',
   },
   implementationConsiderations: [
-    'Auditing is on by default for most tenants; if it is off, find out who turned it off and when, because disabling auditing is a common attacker technique.',
+    'Verify auditing explicitly. Microsoft documents exceptions to default enablement for SMB licences and unmanaged enterprise trial tenants; a disabled value alone does not establish that an attacker turned it off.',
     'Audit record retention depends on licensing (Audit Standard versus Audit Premium). Enabling ingestion does not extend retention; consider exporting audit data to a SIEM for longer retention.',
     'Get-AdminAuditLogConfig reports the correct value only in Exchange Online PowerShell. In Security & Compliance PowerShell the property always shows False, so validate with the correct module.',
   ],
@@ -64,7 +64,7 @@ export const m365UnifiedAuditLog = defineControl({
     { framework: 'NIST-800-53r5', id: 'AU-2' },
     { framework: 'NIST-800-53r5', id: 'AU-12' },
     { framework: 'MCSB', id: 'LT-3' },
-    { framework: 'CISA-SCuBA', id: 'MS.DEFENDER.6.1v1' },
+    { framework: 'CISA-SCuBA', id: 'MS.DEFENDER.6.1v1', note: 'Historical Defender mapping; current Security Suite crosswalk not verified. This setting check does not establish full baseline compliance.' },
     { framework: 'MITRE-ATTACK', id: 'T1562.008' },
   ],
   tags: ['audit', 'logging', 'exchange-online'],

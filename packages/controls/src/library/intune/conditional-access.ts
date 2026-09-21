@@ -22,7 +22,8 @@ export function deviceRequirement(policy: Policy): 'required' | 'alternative' | 
   if (grant === null) return 'none';
   const controls = grant.builtInControls.map((c) => c.toLowerCase());
   if (!controls.some((c) => DEVICE_CONTROLS.includes(c))) return 'none';
-  if (grant.operator.toUpperCase() !== 'OR') return 'required';
+  if (grant.operator.toUpperCase() === 'AND') return 'required';
+  if (grant.operator.toUpperCase() !== 'OR') return 'alternative';
   const others =
     controls.filter((c) => !DEVICE_CONTROLS.includes(c)).length +
     grant.customAuthenticationFactors.length +
@@ -33,13 +34,13 @@ export function deviceRequirement(policy: Policy): 'required' | 'alternative' | 
 function targetsAllOrOffice365(policy: Policy): boolean {
   return (
     ca.includesAllApps(policy) ||
-    policy.conditions.applications.includeApplications.some((a) => a.toLowerCase() === 'office365')
+    (policy.conditions.applications.excludeApplications.length === 0 && policy.conditions.applications.includeApplications.some((a) => a.toLowerCase() === 'office365'))
   );
 }
 
 export const intuneCaRequireCompliantDevice = defineControl({
   id: 'INTUNE-CA-001',
-  version: '1.0.0',
+  version: '1.0.1',
   lifecycle: 'stable',
   title: 'Conditional Access requires a compliant or hybrid joined device',
   technology: 'intune',
@@ -154,10 +155,10 @@ export const intuneCaRequireCompliantDevice = defineControl({
         }
       }
       return pass({
-        reason: `An enabled Conditional Access policy requires a compliant or hybrid joined device for all users (${enforcing.map((p) => `"${p.displayName}"`).join(', ')}).`,
-        summary: 'Device compliance is enforced at sign-in for all users.',
+        reason: `An enabled Conditional Access policy requires a compliant or hybrid joined device for included users (${enforcing.map((p) => `"${p.displayName}"`).join(', ')}).`,
+        summary: 'A compliant or hybrid joined device is required for the policy targets, subject to its exclusions.',
         facts,
-        notes,
+        notes: [...notes, 'Hybrid joined status does not prove Intune compliance. A hybrid-joined alternative can admit a noncompliant device; Office 365 scope does not cover every resource.'],
       });
     }
     if (candidates.length > 0) {

@@ -60,7 +60,7 @@ function targetKind(targetType: string): string {
 
 /** True when the policy has at least one include assignment (exclusion-only assignments do not count). */
 export function isAssigned(policy: CompliancePolicy): boolean {
-  return policy.assignments.some((a) => !targetKind(a.targetType).startsWith('exclusion'));
+  return policy.assignments.some((a) => ['groupassignmenttarget', 'alldevicesassignmenttarget', 'alllicensedusersassignmenttarget'].includes(targetKind(a.targetType)));
 }
 
 /** True when the policy targets all devices or all licensed users (not only specific groups). */

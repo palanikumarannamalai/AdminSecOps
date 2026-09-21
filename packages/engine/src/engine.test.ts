@@ -73,6 +73,7 @@ describe('evaluateControl semantics', () => {
     const on = createInventoryFromData({ 'entra.securityDefaults': { isEnabled: true } }, { partial: ['entra.securityDefaults'] });
     const off = createInventoryFromData({ 'entra.securityDefaults': { isEnabled: false } }, { partial: ['entra.securityDefaults'] });
     expect(evaluateControl(sdControl, on).status).toBe('REVIEW');
+    expect(evaluateControl(sdControl, on).confidence).toBe('medium');
     const failed = evaluateControl(sdControl, off);
     expect(failed.status).toBe('FAIL');
     expect(failed.notes.join(' ')).toContain('partially collected');
@@ -147,8 +148,8 @@ describe('evaluateControl semantics', () => {
 describe('prioritization', () => {
   const base = { status: 'FAIL' as const, severity: 'high' as const, confidence: 'high' as const, tags: [], effort: 'medium' as const };
 
-  it('orders by severity, then status, confidence, exposure and effort', () => {
-    expect(sortKeyFor({ ...base, key: 'a', severity: 'critical', status: 'REVIEW' })).toBeGreaterThan(sortKeyFor({ ...base, key: 'b' }));
+  it('orders confirmed findings before review, then severity, confidence, exposure and effort', () => {
+    expect(sortKeyFor({ ...base, key: 'a', severity: 'critical', status: 'REVIEW' })).toBeLessThan(sortKeyFor({ ...base, key: 'b' }));
     expect(sortKeyFor({ ...base, key: 'a' })).toBeGreaterThan(sortKeyFor({ ...base, key: 'b', status: 'REVIEW' }));
     expect(sortKeyFor({ ...base, key: 'a' })).toBeGreaterThan(sortKeyFor({ ...base, key: 'b', confidence: 'medium' }));
     expect(sortKeyFor({ ...base, key: 'a', tags: ['privileged-access'] })).toBeGreaterThan(sortKeyFor({ ...base, key: 'b' }));

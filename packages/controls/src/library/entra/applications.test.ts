@@ -81,7 +81,7 @@ describe('ENTRA-APP-003 client secret lifetime', () => {
       {
         'entra.applications': [
           app([
-            { start: '2026-06-01T00:00:00Z', end: '2026-12-01T00:00:00Z' },
+            { start: '2026-06-01T00:00:00Z', end: '2026-11-01T00:00:00Z' },
             { start: '2020-01-01T00:00:00Z', end: '2025-01-01T00:00:00Z' },
           ]),
         ],
@@ -93,7 +93,7 @@ describe('ENTRA-APP-003 client secret lifetime', () => {
 
   it('notes secrets without dates', () => {
     const result = run(entraAppSecretLifetime, { 'entra.applications': [app([{ start: null, end: null }])] }, at);
-    expect(result.status).toBe('PASS');
+    expect(result.status).toBe('REVIEW');
     expect(result.notes[0]).toContain('no validity dates');
   });
 });

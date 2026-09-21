@@ -98,9 +98,9 @@ describe('GPO-SEC-001 LAN Manager authentication level', () => {
     expect(result.affectedObjects[0]?.detail).toContain('Send NTLM response only');
   });
 
-  it('fails when no linked GPO configures the setting (Windows default 3)', () => {
+  it('requires review when no linked GPO configures the setting because local or MDM policy is unknown', () => {
     const result = run(gpoLanManagerAuthLevel, { 'gpo.groupPolicyObjects': [gpo()] });
-    expect(result.status).toBe('FAIL');
+    expect(result.status).toBe('REVIEW');
     expect(result.statusReason).toContain('level 3');
   });
 
@@ -130,12 +130,19 @@ describe('GPO-SEC-001 LAN Manager authentication level', () => {
     expect(result.status).toBe('REVIEW');
   });
 
+  it.each([-1, 6, 2.5])('requires review for an invalid LM level %s even beside a valid baseline', (value) => {
+    expect(run(gpoLanManagerAuthLevel, { 'gpo.groupPolicyObjects': [gpo({ settings: [lm(value)] }), gpo({ settings: [lm(5)] })] }).status).toBe('REVIEW');
+  });
+
   it('is NOT_ASSESSED for an empty GPO list', () => {
     expect(run(gpoLanManagerAuthLevel, { 'gpo.groupPolicyObjects': [] }).status).toBe('NOT_ASSESSED');
   });
 });
 
 describe('GPO-SEC-002 WDigest', () => {
+  it('requires review for an unrecognized WDigest value', () => {
+    expect(run(gpoNoWdigest, { 'gpo.groupPolicyObjects': [gpo({ settings: [setting('RegistryValue', WDIGEST_KEY, 'unknown')] })] }).status).toBe('REVIEW');
+  });
   it('passes when no GPO configures WDigest, noting the OS default', () => {
     const result = run(gpoNoWdigest, { 'gpo.groupPolicyObjects': [gpo()] });
     expect(result.status).toBe('PASS');

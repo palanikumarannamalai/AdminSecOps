@@ -42,11 +42,12 @@ const COMMON_CONSIDERATIONS = [
   'Before removing enrollment permissions, identify who legitimately uses the template (application owners, auto-enrollment for specific computers) and grant enrollment to a dedicated group instead.',
   'Duplicate a template and test changes on the copy when you are unsure of the impact; you can switch the CA to publish the new version afterwards.',
   'Ensure domain controllers enforce strong certificate mapping (KB5014754) so that certificates are bound to the requesting account.',
+  'These checks identify risky template configuration, not proven impersonation. CA enrollment permissions, relying-party trust, certificate mapping enforcement and request-time policy can change exploitability and are not fully collected.',
 ];
 
 export const adcsEsc1EnrolleeSuppliesSubject = defineControl({
   id: 'ADCS-TPL-001',
-  version: '1.0.0',
+  version: '1.1.0',
   lifecycle: 'stable',
   title: 'No published template lets low-privileged users request authentication certificates for any identity',
   technology: 'adcs',
@@ -146,7 +147,7 @@ export const adcsEsc1EnrolleeSuppliesSubject = defineControl({
 
 export const adcsEsc2AnyPurpose = defineControl({
   id: 'ADCS-TPL-002',
-  version: '1.0.0',
+  version: '1.1.0',
   lifecycle: 'stable',
   title: 'No published Any Purpose or no-EKU template is enrollable by low-privileged users without approval',
   technology: 'adcs',

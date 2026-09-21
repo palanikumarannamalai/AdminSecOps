@@ -60,22 +60,22 @@ describe('ENTRA-CA-005 device code flow blocked', () => {
   const block = (overrides = {}) => caPolicy({ transferMethods: 'deviceCodeFlow,authenticationTransfer', builtInControls: ['block'], ...overrides });
 
   it('passes with an enabled tenant-wide block', () => {
-    expect(run(entraCaBlockDeviceCode, { 'entra.conditionalAccessPolicies': [block()] }).status).toBe('PASS');
+    expect(run(entraCaBlockDeviceCode, { 'entra.securityDefaults': { isEnabled: false }, 'entra.conditionalAccessPolicies': [block()] }).status).toBe('PASS');
   });
 
   it('requires review for a report-only or partial block', () => {
-    expect(run(entraCaBlockDeviceCode, { 'entra.conditionalAccessPolicies': [block({ state: 'enabledForReportingButNotEnforced' })] }).status).toBe('REVIEW');
-    expect(run(entraCaBlockDeviceCode, { 'entra.conditionalAccessPolicies': [block({ includeUsers: ['someone'] })] }).status).toBe('REVIEW');
+    expect(run(entraCaBlockDeviceCode, { 'entra.securityDefaults': { isEnabled: false }, 'entra.conditionalAccessPolicies': [block({ state: 'enabledForReportingButNotEnforced' })] }).status).toBe('REVIEW');
+    expect(run(entraCaBlockDeviceCode, { 'entra.securityDefaults': { isEnabled: false }, 'entra.conditionalAccessPolicies': [block({ includeUsers: ['someone'] })] }).status).toBe('REVIEW');
   });
 
   it('fails when only authentication transfer is blocked', () => {
     expect(
-      run(entraCaBlockDeviceCode, { 'entra.conditionalAccessPolicies': [caPolicy({ transferMethods: 'authenticationTransfer', builtInControls: ['block'] })] }).status,
+      run(entraCaBlockDeviceCode, { 'entra.securityDefaults': { isEnabled: false }, 'entra.conditionalAccessPolicies': [caPolicy({ transferMethods: 'authenticationTransfer', builtInControls: ['block'] })] }).status,
     ).toBe('FAIL');
   });
 
   it('fails with no policies', () => {
-    expect(run(entraCaBlockDeviceCode, { 'entra.conditionalAccessPolicies': [] }).status).toBe('FAIL');
+    expect(run(entraCaBlockDeviceCode, { 'entra.securityDefaults': { isEnabled: false }, 'entra.conditionalAccessPolicies': [] }).status).toBe('FAIL');
   });
 });
 
@@ -96,7 +96,7 @@ describe('ENTRA-CA-006 / ENTRA-CA-007 risk-based policies', () => {
 
   it('ENTRA-CA-006 passes with an enabled high sign-in risk MFA policy', () => {
     const result = run(entraCaSignInRisk, {
-      'entra.conditionalAccessPolicies': [caPolicy({ signInRiskLevels: ['high', 'medium'] })],
+      'entra.conditionalAccessPolicies': [{ ...caPolicy({ signInRiskLevels: ['high', 'medium'] }), sessionControls: { signInFrequency: { isEnabled: true, frequencyInterval: 'everyTime' } } }],
       'entra.subscribedSkus': p2,
     });
     expect(result.status).toBe('PASS');
@@ -156,7 +156,7 @@ describe('Conditional Access advanced coverage regressions', () => {
     expect(run(entraCaPhishingResistantAdmins, { 'entra.conditionalAccessPolicies': [caPolicy({ authenticationStrengthId: PHISH, operator: 'AND', builtInControls: ['compliantDevice'] })] }).status).toBe('PASS');
   });
   it('reviews device flow restrictions beyond the intended flow condition', () => {
-    expect(run(entraCaBlockDeviceCode, { 'entra.conditionalAccessPolicies': [caPolicy({ transferMethods: 'deviceCodeFlow', builtInControls: ['block'], excludePlatforms: ['iOS'] })] }).status).toBe('REVIEW');
+    expect(run(entraCaBlockDeviceCode, { 'entra.securityDefaults': { isEnabled: false }, 'entra.conditionalAccessPolicies': [caPolicy({ transferMethods: 'deviceCodeFlow', builtInControls: ['block'], excludePlatforms: ['iOS'] })] }).status).toBe('REVIEW');
   });
   it('reviews a risk policy restricted by the other risk dimension', () => {
     expect(run(entraCaSignInRisk, { 'entra.subscribedSkus': [sku(['AAD_PREMIUM_P2'])], 'entra.conditionalAccessPolicies': [caPolicy({ signInRiskLevels: ['high'], userRiskLevels: ['high'] })] }).status).toBe('REVIEW');

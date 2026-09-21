@@ -42,13 +42,14 @@ describe('AZ-NET-001 RDP from the internet', () => {
     expect(result.status).toBe('PASS');
   });
 
-  it('treats an Allow rule shadowed by a higher-priority internet Deny as not effective, with a note', () => {
+  it('does not pass an apparent Deny shadow without destination and source-port evidence', () => {
     const result = run(
       azNsgNoInternetRdp,
       data(nsg('nsg', [nsgRule({ name: 'deny-all', access: 'Deny', priority: 100, port: '*' }), nsgRule({ name: 'old-rdp', priority: 200 })])),
     );
-    expect(result.status).toBe('PASS');
+    expect(result.status).toBe('REVIEW');
     expect(result.notes.join(' ')).toContain('old-rdp');
+    expect(result.notes.join(' ')).toContain('Destination addresses and source ports are not collected');
   });
 
   it('still fails when the Deny rule has lower priority than the Allow rule', () => {

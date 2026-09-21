@@ -72,21 +72,21 @@ describe('ENTRA-CA-001 MFA for all users', () => {
     expect(result.status).toBe('REVIEW');
   });
 
-  it('fails when no policy requires MFA', () => {
+  it('reviews unresolved individual-user targeting', () => {
     const result = run(entraCaMfaAllUsers, {
       'entra.securityDefaults': sdOff,
       'entra.conditionalAccessPolicies': [caPolicy({ includeUsers: ['someone'] }), caPolicy({ builtInControls: ['compliantDevice'] })],
     });
-    expect(result.status).toBe('FAIL');
+    expect(result.status).toBe('REVIEW');
   });
 
-  it('fails when security defaults are off and Conditional Access is not licensed', () => {
+  it('reviews unlicensed CA without claiming no other MFA mechanism exists', () => {
     const result = run(
       entraCaMfaAllUsers,
       { 'entra.securityDefaults': sdOff },
       { unavailable: { 'entra.conditionalAccessPolicies': 'NotApplicable' } },
     );
-    expect(result.status).toBe('FAIL');
+    expect(result.status).toBe('REVIEW');
   });
 
   it('is NOT_ASSESSED when security defaults are off and CA policies were not collected', () => {
@@ -157,7 +157,7 @@ describe('ENTRA-CA-002 MFA for administrators', () => {
       'entra.securityDefaults': sdOff,
       'entra.conditionalAccessPolicies': [caPolicy({ state: 'enabledForReportingButNotEnforced' })],
     });
-    expect(result.status).toBe('FAIL');
+    expect(result.status).toBe('REVIEW');
   });
 });
 

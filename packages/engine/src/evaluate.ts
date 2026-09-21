@@ -115,7 +115,7 @@ function baseResult(
     category: meta.category,
     subcategory: meta.subcategory,
     severity: meta.severity,
-    confidence: lowerConfidence(meta.confidence, outcome.confidence),
+    confidence: lowerConfidence(lowerConfidence(meta.confidence, outcome.confidence), outcome.status === 'REVIEW' ? 'medium' : undefined),
     status: outcome.status,
     statusReason: outcome.reason,
     observed: { summary: outcome.observed.summary, facts: (outcome.observed.facts ?? []).slice(0, 50) },

@@ -117,7 +117,7 @@ const NO_CUSTOM_DOMAINS =
 
 export const m365DkimEnabled = defineControl({
   id: 'M365-MAIL-001',
-  version: '1.0.0',
+  version: '1.0.1',
   lifecycle: 'stable',
   title: 'DKIM signing is enabled for every custom domain',
   technology: 'm365',
@@ -137,7 +137,7 @@ export const m365DkimEnabled = defineControl({
   optionalEvidence: ['exchange.mailDnsRecords'],
   evaluation: {
     logic:
-      'Considers authoritative accepted domains (domain type Authoritative, case-insensitive) excluding *.onmicrosoft.com. NOT_APPLICABLE when there are none. For each domain, the DKIM signing configuration is matched by domain name (case-insensitive); a missing configuration counts as not enabled. A domain fails when signing is not enabled, except that a domain whose SPF record is exactly "v=spf1 -all" (a parked domain that sends no mail, per the optional DNS evidence) is excluded and noted, following Microsoft guidance not to publish DKIM for parked domains. A domain needs review when signing is enabled but the reported status is something other than Valid (for example CnameMissing). FAIL if any domain fails, REVIEW if any needs review, otherwise PASS.',
+      'Considers authoritative accepted domains (domain type Authoritative, case-insensitive) excluding *.onmicrosoft.com. NOT_APPLICABLE when there are none. For each domain, the DKIM signing configuration is matched by domain name (case-insensitive); a missing configuration counts as not enabled. A domain fails when signing is not enabled, except that a domain whose SPF record is exactly "v=spf1 -all" (a parked domain that sends no mail, per the optional DNS evidence) is excluded and noted, following Microsoft guidance not to publish DKIM for parked domains. A domain needs review when signing is enabled but the status is missing or something other than Valid (for example CnameMissing). FAIL if any domain fails, REVIEW if any needs review, otherwise PASS.',
     parameters: {},
   },
   expectedState:
@@ -210,11 +210,11 @@ export const m365DkimEnabled = defineControl({
           verdict: 'fail',
           detail: `DKIM signing is disabled${config.status ? ` (status ${config.status})` : ''}`,
         });
-      } else if (config.status !== null && config.status.trim().toLowerCase() !== 'valid') {
+      } else if (config.status === null || config.status.trim().toLowerCase() !== 'valid') {
         verdicts.push({
           domain: name,
           verdict: 'review',
-          detail: `DKIM signing is enabled but the status is ${config.status}; confirm the CNAME records are published and signing works`,
+          detail: `DKIM signing is enabled but the status is ${config.status ?? 'not reported'}; confirm the CNAME records are published and signing works`,
         });
       } else {
         verdicts.push({ domain: name, verdict: 'pass', detail: 'DKIM signing enabled' });
@@ -318,7 +318,7 @@ function spfVerdict(entry: DnsEntry): DomainVerdict {
 
 export const m365SpfPublished = defineControl({
   id: 'M365-MAIL-002',
-  version: '1.0.0',
+  version: '1.0.1',
   lifecycle: 'stable',
   title: 'SPF records reject or soft-fail unauthorized senders for every custom domain',
   technology: 'm365',
@@ -372,7 +372,7 @@ export const m365SpfPublished = defineControl({
   references: [M365_REF.spf, M365_REF.dmarc, M365_REF.attackPhishing, REF.scubaGearBaselines],
   frameworkMappings: [
     { framework: 'NIST-800-53r5', id: 'SI-8' },
-    { framework: 'CISA-SCuBA', id: 'MS.EXO.2.2v3' },
+    { framework: 'CISA-SCuBA', id: 'MS.EXO.2.2v3', note: 'Partial configuration check: accepts ~all during rollout and does not validate recursive SPF resolution, authorized senders or DNS lookup limits; not full baseline compliance.' },
     { framework: 'MITRE-ATTACK', id: 'T1566' },
   ],
   tags: ['email-authentication', 'spf', 'anti-spoofing', 'dns'],
@@ -425,8 +425,8 @@ interface EffectiveDmarc {
 
 /**
  * The DMARC record that applies to a domain: its own record, or - when it has none -
- * the record of the shortest listed parent domain (the most likely organizational
- * domain), whose sp= (or p=) policy applies to subdomains per RFC 7489.
+ * a candidate from listed parent records. This is not a DNS tree walk; callers must
+ * REVIEW inherited candidates rather than claim an effective policy.
  */
 function effectiveDmarc(
   entry: DnsEntry,
@@ -454,7 +454,7 @@ function effectiveDmarc(
 
 export const m365DmarcPolicy = defineControl({
   id: 'M365-MAIL-003',
-  version: '1.0.0',
+  version: '1.0.1',
   lifecycle: 'stable',
   title: 'DMARC is published with a quarantine or reject policy for every custom domain',
   technology: 'm365',
@@ -474,7 +474,7 @@ export const m365DmarcPolicy = defineControl({
   optionalEvidence: [],
   evaluation: {
     logic:
-      'For each domain in the mail DNS evidence (duplicates and *.onmicrosoft.com excluded; NOT_APPLICABLE when none remain), the _dmarc TXT records are parsed with the RFC 7489 parser. When a domain has no record of its own, the record of the shortest listed parent domain applies (its sp= policy, or p= when sp= is absent). A domain fails when no DMARC record applies, when more than one DMARC record is published, or when the p= policy is missing or invalid. It needs review when the policy is p=none (monitoring only; appropriate during a planned rollout, which only the administrator can confirm) or when quarantine/reject applies to less than minimumPercentage percent of messages (pct=). It passes with p=quarantine or p=reject at pct >= minimumPercentage. A failed DNS lookup is not a pass. FAIL if any domain fails, REVIEW if any needs review, NOT_ASSESSED if lookups failed for the remaining domains, otherwise PASS.',
+      'For each domain in the mail DNS evidence (duplicates and *.onmicrosoft.com excluded; NOT_APPLICABLE when none remain), the _dmarc TXT records are parsed with the RFC 7489 parser. When a domain has no own record, a listed parent is only a candidate: REVIEW because the evidence lacks verified policy discovery. RFC 9989 supersedes RFC 7489; this legacy parser does not implement its DNS tree walk. A domain fails when no DMARC record applies, when more than one DMARC record is published, or when the p= policy is missing or invalid. It needs review when the policy is p=none (monitoring only; appropriate during a planned rollout, which only the administrator can confirm) or when quarantine/reject applies to less than minimumPercentage percent of messages (pct=). An own-domain record passes this limited configuration check with p=quarantine or p=reject at pct >= minimumPercentage. The pct check is a legacy rollout advisory, not an RFC 9989 conformance requirement. A failed DNS lookup is not a pass. FAIL if any domain fails, REVIEW if any needs review, NOT_ASSESSED if lookups failed for the remaining domains, otherwise PASS.',
     parameters: { minimumPercentage: 100 },
   },
   expectedState:
@@ -507,6 +507,7 @@ export const m365DmarcPolicy = defineControl({
   ],
   references: [
     M365_REF.dmarc,
+    M365_REF.dmarcCurrent,
     M365_REF.spf,
     M365_REF.dkim,
     M365_REF.attackPhishing,
@@ -543,7 +544,8 @@ export const m365DmarcPolicy = defineControl({
           detail: 'No DMARC record is published for the domain or a listed parent domain',
         };
       const { analysis, inheritedFrom } = effective;
-      const source = inheritedFrom === null ? '' : ` (inherited from ${inheritedFrom})`;
+      if (inheritedFrom !== null) return { domain, verdict: 'review', detail: `Possible policy inherited from ${inheritedFrom}; evidence does not establish the organizational domain or the RFC 9989 DNS tree walk. Verify policy discovery before treating this domain as protected.` };
+      const source = ''; // Inherited candidates return REVIEW above; only own-domain records remain.
       if (analysis.recordState === 'multiple') {
         return {
           domain,
@@ -595,7 +597,7 @@ export const m365DmarcPolicy = defineControl({
         what: 'DMARC',
         failReason: (n) => `${plural(n, 'domain')} have no valid DMARC record.`,
         reviewReason: (n) =>
-          `${plural(n, 'domain')} publish DMARC in monitoring mode (p=none) or apply enforcement to only part of the mail (pct below ${minimumPercentage}). This is normal during a staged rollout, which only an administrator can confirm.`,
+          `${plural(n, 'domain')} need review of monitoring mode, a legacy staged rollout, or unverified parent-policy discovery. This check is not a complete RFC 9989 validator.`,
         passReason: (n) =>
           `All ${plural(n, 'custom domain')} have a DMARC policy of quarantine or reject.`,
       },

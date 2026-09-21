@@ -9,6 +9,7 @@ const mitre = (title: string, url: string): Reference => ({ title, url, publishe
 const LEARN = 'https://learn.microsoft.com/en-us';
 
 export const AZ_REF = {
+  storageTlsRetirement: ms('Azure Blob Storage TLS 1.0 and 1.1 retirement', `${LEARN}/azure/storage/common/transport-layer-security-configure-migrate-to-tls2`),
   rbacBestPractices: ms('Best practices for Azure RBAC', `${LEARN}/azure/role-based-access-control/best-practices`),
   rbacBuiltInRoles: ms('Azure built-in roles', `${LEARN}/azure/role-based-access-control/built-in-roles`),
   defenderIdentityRecommendations: ms(

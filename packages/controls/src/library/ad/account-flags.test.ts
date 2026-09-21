@@ -40,6 +40,8 @@ describe('AD-ACC-002 per-account reversible encryption', () => {
     expect(result.status).toBe('FAIL');
     expect(result.affectedObjectCount).toBe(2);
     expect(result.affectedObjects.map((o) => o.detail).join(' ')).toContain('Disabled account');
+    expect(result.statusReason).toContain('configured to allow');
+    expect(result.affectedObjects.map((o) => o.detail).join(' ')).not.toContain('copy stored');
   });
 
   it('keeps FAIL even with partial evidence', () => {

@@ -46,6 +46,15 @@ const SA = `${CONTOSO_SID}-518`;
 const ROOT_ADMIN = { samAccountName: 'Administrator', sid: `${CONTOSO_SID}-500` };
 
 describe('AD-PRIV-003 Enterprise Admins and Schema Admins', () => {
+  it('does not exempt the forest root Administrator from Schema Admins cleanup', () => {
+    const result = run(adForestAdminGroupsEmpty, {
+      'ad.privilegedGroups': [privilegedGroup('Enterprise Admins', EA, [ROOT_ADMIN]), privilegedGroup('Schema Admins', SA, [ROOT_ADMIN])],
+    });
+    expect(result.status).toBe('FAIL');
+    expect(result.affectedObjectCount).toBe(1);
+    expect(result.affectedObjects[0]?.detail).toContain('Schema Admins');
+    expect(result.affectedObjects[0]?.detail).not.toContain('different domain');
+  });
   it('passes when both groups are empty or contain only the forest root Administrator', () => {
     const result = run(adForestAdminGroupsEmpty, {
       'ad.privilegedGroups': [privilegedGroup('Enterprise Admins', EA, [ROOT_ADMIN]), privilegedGroup('Schema Admins', SA, [])],

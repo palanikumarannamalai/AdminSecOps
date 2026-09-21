@@ -183,7 +183,7 @@ export const adLdapSigning = defineControl({
 
 export const adLdapChannelBinding = defineControl({
   id: 'AD-DC-002',
-  version: '1.0.0',
+  version: '1.1.0',
   lifecycle: 'stable',
   title: 'LDAP channel binding is enforced on all domain controllers',
   technology: 'ad',
@@ -200,7 +200,7 @@ export const adLdapChannelBinding = defineControl({
   optionalEvidence: ['ad.domainControllers'],
   evaluation: {
     logic:
-      'For each domain controller read successfully: PASS value 2 (Always); REVIEW value 1 (When supported: clients that send a channel binding token are validated, others are still accepted); FAIL value 0 (Never). When the value is not set: REVIEW if the domain controller is known to run Windows Server 2025 (documented default "When supported"), otherwise FAIL (documented default "Never" on earlier versions). Unreadable or missing domain controllers never count as passing and produce REVIEW. NOT_ASSESSED when no domain controller could be read.',
+      'For each domain controller read successfully: PASS value 2 (Always); REVIEW value 1 (When supported: clients that send a channel binding token are validated, others are still accepted); FAIL value 0 (Never). When the value is not set: REVIEW if the domain controller is known to run Windows Server 2025 (documented default "When supported"), REVIEW if the OS version is unknown, otherwise FAIL (documented default "Never" on earlier versions). Unreadable or missing domain controllers never count as passing and produce REVIEW. NOT_ASSESSED when no domain controller could be read.',
     parameters: {},
   },
   expectedState: 'LdapEnforceChannelBinding = 2 (Always) on every domain controller.',
@@ -245,6 +245,7 @@ export const adLdapChannelBinding = defineControl({
         if (value === 1) return { state: 'review', detail: 'LdapEnforceChannelBinding = 1 (When supported)' };
         if (value === 0) return { state: 'fail', detail: 'LdapEnforceChannelBinding = 0 (Never)' };
         if (value === null) {
+          if (!osKnown(dc)) return { state: 'review', detail: 'LdapEnforceChannelBinding not set and Windows Server version unknown; effective default cannot be determined' };
           return isServer2025(dc)
             ? { state: 'review', detail: 'LdapEnforceChannelBinding not set; Windows Server 2025 default is "When supported"' }
             : { state: 'fail', detail: 'LdapEnforceChannelBinding not set; default before Windows Server 2025 is "Never"' };

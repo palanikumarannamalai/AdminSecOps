@@ -131,6 +131,7 @@ export function exclusions(policy: ConditionalAccessPolicy): PolicyExclusions {
 
 export function blocksLegacyAuthentication(policy: ConditionalAccessPolicy): boolean {
   if (!blocksAccess(policy)) return false;
+  if (includesAllClientApps(policy)) return true;
   const types = policy.conditions.clientAppTypes.map((t) => t.toLowerCase());
   return LEGACY_CLIENT_APP_TYPES.every((legacy) => types.includes(legacy.toLowerCase()));
 }

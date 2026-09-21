@@ -1,3 +1,4 @@
+import { functionalLevelRank } from '@adminsecops/inventory';
 import { defineControl } from '../../define.js';
 import { affected, fact, fail, pass, plural, review } from '../../helpers.js';
 import { AD_REF } from './references.js';
@@ -118,7 +119,7 @@ export const adUnconstrainedDelegation = defineControl({
 
 export const adPrivilegedNotDelegated = defineControl({
   id: 'AD-PRIV-001',
-  version: '1.0.0',
+  version: '1.1.0',
   lifecycle: 'stable',
   title: 'Privileged accounts are protected from Kerberos delegation',
   technology: 'ad',
@@ -132,10 +133,10 @@ export const adPrivilegedNotDelegated = defineControl({
   confidence: 'high',
   applicability: { description: 'Every Active Directory domain in the collected forest.' },
   requiredEvidence: ['ad.users', 'ad.privilegedGroups'],
-  optionalEvidence: [],
+  optionalEvidence: ['ad.domains'],
   evaluation: {
     logic:
-      'Privileged accounts are the recursive members of the privileged built-in groups (see AD-KRB-003). For each privileged member whose object class is user or inetOrgPerson: FAIL when the account is enabled and has neither accountNotDelegated = true nor memberOfProtectedUsers = true. Privileged members that are not present in the user evidence produce REVIEW because their settings cannot be read. Disabled accounts, computers and managed service accounts are skipped (computers and gMSAs are noted). PASS when every enabled privileged user is protected.',
+      'Privileged accounts are the recursive members of the privileged built-in groups (see AD-KRB-003). For each privileged member whose object class is user or inetOrgPerson: FAIL when the account is enabled and has neither accountNotDelegated = true nor memberOfProtectedUsers = true. Privileged members that are not present in the user evidence produce REVIEW because their settings cannot be read. Protected Users-only protection produces REVIEW unless ad.domains confirms Windows Server 2012 R2 or later functional level for that account domain. Disabled accounts, computers and managed service accounts are skipped (computers and gMSAs are noted). PASS when every enabled privileged user is protected.',
     parameters: {},
   },
   expectedState: 'Every enabled privileged user account has "Account is sensitive and cannot be delegated" set, or is a member of Protected Users.',
@@ -179,6 +180,9 @@ export const adPrivilegedNotDelegated = defineControl({
   evaluate: (ctx) => {
     const { users } = ctx.data('ad.users');
     const privileged = privilegedBySid(ctx);
+    const domains = ctx.fact('ad.domains');
+    const protectedUsersLevel = functionalLevelRank('Windows2012R2Domain');
+    const protectionUnknown: ReturnType<typeof userObject>[] = [];
     const userBySid = new Map(users.map((u) => [u.sid.toUpperCase(), u]));
     const privilegedUsers = [...privileged.values()].filter((a) => USER_CLASSES.has(a.objectClass.toLowerCase()));
     const nonUser = privileged.size - privilegedUsers.length;
@@ -193,13 +197,22 @@ export const adPrivilegedNotDelegated = defineControl({
       }
       if (!user.enabled) continue;
       enabledCount += 1;
-      if (!user.accountNotDelegated && !user.memberOfProtectedUsers) unprotected.push({ user, groups: account.groups });
+      if (!user.accountNotDelegated) {
+        if (!user.memberOfProtectedUsers) unprotected.push({ user, groups: account.groups });
+        else {
+          const domain = domains.available ? domains.data.find((d) => [d.dnsRoot, d.netBIOSName].some((name) => name.toLowerCase() === user.domain.toLowerCase())) : undefined;
+          if (domain === undefined || functionalLevelRank(domain.domainMode) < protectedUsersLevel) {
+            protectionUnknown.push(userObject(user, 'Protected Users membership is present, but Windows Server 2012 R2 or later domain functional level could not be confirmed; verify delegation protection or set AccountNotDelegated.'));
+          }
+        }
+      }
     }
     const facts = [
       fact('Privileged user accounts', privilegedUsers.length),
       fact('Enabled privileged user accounts', enabledCount),
       fact('Unprotected from delegation', unprotected.length),
       fact('Privileged members without user evidence', missing.length),
+      fact('Protected Users members without confirmed functional-level prerequisite', protectionUnknown.length),
     ];
     const notes =
       nonUser > 0
@@ -208,6 +221,7 @@ export const adPrivilegedNotDelegated = defineControl({
           ]
         : [];
     const affectedObjects = [
+      ...protectionUnknown,
       ...unprotected.map(({ user, groups }) => userObject(user, `Not marked sensitive and not in Protected Users; member of ${groups.join(', ')}`)),
       ...missing.map((a) =>
         affected('adUser', a.sid, qualifiedName(a.domain, a.samAccountName), `Member of ${a.groups.join(', ')}; account settings were not present in the user evidence`),
@@ -222,9 +236,9 @@ export const adPrivilegedNotDelegated = defineControl({
         notes,
       });
     }
-    if (missing.length > 0) {
+    if (missing.length > 0 || protectionUnknown.length > 0) {
       return review({
-        reason: `${plural(missing.length, 'privileged account')} were not found in the user evidence, so their delegation protection could not be verified.`,
+        reason: `Delegation protection could not be verified for ${plural(missing.length + protectionUnknown.length, 'privileged account')} because user evidence or the Protected Users domain functional-level prerequisite is missing or insufficient.`,
         summary: 'Delegation protection could not be confirmed for every privileged account.',
         facts,
         affectedObjects,

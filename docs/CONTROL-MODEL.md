@@ -66,8 +66,8 @@ rollback, validation, references, framework mappings and priority.
 `packages/engine/src/prioritize.ts` orders findings deterministically. The sort key is
 lexicographic:
 
-1. severity (critical > high > medium > low > informational)
-2. status (FAIL before REVIEW - confirmed issues before judgement calls)
+1. status (FAIL before REVIEW - evidenced findings before judgement calls)
+2. severity (critical > high > medium > low > informational)
 3. confidence (high > medium > low)
 4. exposure tags present (max 3): `privileged-access`, `internet-exposure`,
    `credential-exposure`, `legacy-authentication`, `mfa`, `data-exfiltration`
@@ -97,3 +97,7 @@ and should be re-checked when ScubaGear baselines are updated.
 - `CONTROL_LIBRARY_VERSION` (packages/controls) versions the library as a whole.
 - Each control has its own `version`, recorded in every result and finding, so a
   comparison can tell whether a status change came from the environment or from the rule.
+
+REVIEW indicates unresolved verification, not a confirmed violation. Its result confidence is capped
+at medium. Displayed severity is potential impact if confirmed. All FAIL findings sort before REVIEW;
+framework mappings indicate relevance and do not constitute certification or full benchmark coverage.

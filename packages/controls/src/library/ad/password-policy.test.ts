@@ -4,7 +4,7 @@ import { run } from '../../../test/run.js';
 import { adPwdLockoutThreshold, adPwdMinimumLength, adPwdReversibleEncryption } from './password-policy.js';
 
 describe('AD-PWD-001 minimum password length', () => {
-  it('passes when every domain requires 14 characters', () => {
+  it('passes when every domain requires at least 15 characters', () => {
     const result = run(adPwdMinimumLength, { 'ad.passwordPolicies': [passwordPolicy(CONTOSO), passwordPolicy(CHILD, { minPasswordLength: 16 })] });
     expect(result.status).toBe('PASS');
   });
@@ -36,8 +36,8 @@ describe('AD-PWD-001 minimum password length', () => {
   });
 
   it('treats exactly the parameter value as compliant', () => {
-    expect(run(adPwdMinimumLength, { 'ad.passwordPolicies': [passwordPolicy(CONTOSO, { minPasswordLength: 14 })] }).status).toBe('PASS');
-    expect(run(adPwdMinimumLength, { 'ad.passwordPolicies': [passwordPolicy(CONTOSO, { minPasswordLength: 13 })] }).status).toBe('FAIL');
+    expect(run(adPwdMinimumLength, { 'ad.passwordPolicies': [passwordPolicy(CONTOSO, { minPasswordLength: 15 })] }).status).toBe('PASS');
+    expect(run(adPwdMinimumLength, { 'ad.passwordPolicies': [passwordPolicy(CONTOSO, { minPasswordLength: 14 })] }).status).toBe('FAIL');
   });
 
   it('is NOT_ASSESSED when the dataset is empty', () => {

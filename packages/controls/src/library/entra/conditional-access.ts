@@ -46,7 +46,7 @@ function policiesOrUnlicensed(ctx: ControlContext): Policy[] | null {
 }
 
 const UNLICENSED_REASON =
-  'Security defaults are disabled and the collector reported that Conditional Access is not available in this tenant (no Microsoft Entra ID P1 licence), so no mechanism enforces this requirement.';
+  'Security defaults are disabled and the collector reported Conditional Access as unavailable. No qualifying baseline configuration is established by this evidence; per-user MFA, Microsoft mandatory MFA and effective sign-in outcomes were not collected.';
 
 /** Tenant-wide policies (all users, all apps, modern clients, no narrowing conditions). */
 function isTenantWide(policy: Policy): boolean {
@@ -55,7 +55,7 @@ function isTenantWide(policy: Policy): boolean {
 
 export const entraCaMfaAllUsers = defineControl({
   id: 'ENTRA-CA-001',
-  version: '1.0.1',
+  version: '1.0.2',
   lifecycle: 'stable',
   title: 'Multifactor authentication is required for all users',
   technology: 'entra',
@@ -129,9 +129,9 @@ export const entraCaMfaAllUsers = defineControl({
     }
     const policies = policiesOrUnlicensed(ctx);
     if (policies === null) {
-      return fail({ reason: UNLICENSED_REASON, summary: 'No mechanism requires MFA for all users.', facts: [fact('Security defaults enabled', false)] });
+      return review({ reason: UNLICENSED_REASON, summary: 'Tenant-wide MFA baseline coverage is not established.', confidence: 'medium', facts: [fact('Security defaults enabled', false)] });
     }
-    const candidates = policies.filter((p) => ca.includesAllUsers(p) && ca.includesAllApps(p) && ca.mfaRequirement(p) !== 'none');
+    const candidates = policies.filter((p) => ca.mfaRequirement(p) !== 'none' || Boolean(p.grantControls?.authenticationStrength));
     const strict = candidates.filter((p) => ca.isEnabled(p) && isTenantWide(p) && ca.mfaRequirement(p) === 'required');
     const facts = [
       fact('Security defaults enabled', false),
@@ -159,8 +159,9 @@ export const entraCaMfaAllUsers = defineControl({
     if (candidates.length > 0) {
       return review({
         reason:
-          'Policies that require MFA for all users exist but are report-only, disabled, narrowed by conditions, or allow a non-MFA alternative.',
-        summary: `${plural(candidates.length, 'policy', 'policies')} partially address MFA for all users, but none enforce it unconditionally.`,
+          `MFA-related policies were found (${candidates.map(p => p.displayName).join(', ')}), but tenant-wide coverage is not proven by the collected scope and grant evidence.`,
+        summary: 'Validate policy targeting, exclusions, conditions and authentication strengths; group membership and combined policy coverage are not resolved.',
+        confidence: 'medium',
         facts,
         affectedObjects: candidates.map((p) =>
           policyObject(p, `state=${p.state}; MFA=${ca.mfaRequirement(p)}; narrowed=${!ca.hasNoNarrowingConditions(p)}`),
@@ -168,8 +169,8 @@ export const entraCaMfaAllUsers = defineControl({
       });
     }
     return fail({
-      reason: 'Security defaults are disabled and no Conditional Access policy requires MFA for all users.',
-      summary: 'No mechanism was found that requires multifactor authentication for all users.',
+      reason: 'Security defaults are disabled and no qualifying Conditional Access MFA policy was found in the collected configuration.',
+      summary: 'The collected configuration does not meet this MFA policy baseline; other enforcement mechanisms were not assessed.',
       facts,
     });
   },
@@ -177,7 +178,7 @@ export const entraCaMfaAllUsers = defineControl({
 
 export const entraCaMfaAdmins = defineControl({
   id: 'ENTRA-CA-002',
-  version: '1.0.1',
+  version: '1.0.2',
   lifecycle: 'stable',
   title: 'Multifactor authentication is required for administrator roles',
   technology: 'entra',
@@ -197,7 +198,7 @@ export const entraCaMfaAdmins = defineControl({
       'PASS when security defaults are enabled or every role in the Microsoft administrator MFA template is included (directly or through "All users") and not excluded by an enabled policy that targets all cloud apps, covers modern clients, has no narrowing conditions and always requires MFA or an authentication strength. REVIEW when coverage depends on user, group or guest exclusions requiring validation. FAIL lists role templates without a qualifying policy; it does not determine actual sign-in outcomes.',
     parameters: {},
   },
-  expectedState: 'Every administrator role requires MFA at every sign-in to every cloud app.',
+  expectedState: 'Administrator access requires MFA; existing valid MFA sessions may satisfy the requirement without a new prompt.',
   remediation: {
     summary: 'Create a Conditional Access policy requiring MFA for the administrator directory roles (Microsoft template "Require multifactor authentication for admins").',
     steps: [
@@ -230,16 +231,17 @@ export const entraCaMfaAdmins = defineControl({
   evaluate: (ctx) => {
     if (securityDefaultsEnabled(ctx)) {
       return pass({
-        reason: 'Security defaults are enabled and require MFA for administrator roles at every sign-in.',
+        reason: 'Security defaults are enabled and require MFA for supported administrator roles; this does not imply a fresh prompt for every request.',
         summary: 'Security defaults are enabled.',
         facts: [fact('Security defaults enabled', true)],
       });
     }
     const allPolicies = policiesOrUnlicensed(ctx);
     if (allPolicies === null) {
-      return fail({
+      return review({
         reason: UNLICENSED_REASON,
-        summary: 'No mechanism requires MFA for administrator roles.',
+        summary: 'Administrator MFA baseline coverage is not established.',
+        confidence: 'medium',
         facts: [fact('Security defaults enabled', false)],
         affectedObjects: MFA_ADMIN_ROLE_TEMPLATE_IDS.map((id) => affected('directoryRole', id, builtInRoleName(id))),
       });
@@ -255,14 +257,16 @@ export const entraCaMfaAdmins = defineControl({
     const uncovered = MFA_ADMIN_ROLE_TEMPLATE_IDS.filter((roleId) => !policies.some((p) => ca.coversRole(p, roleId)));
     const facts = [
       fact('Administrator roles checked', MFA_ADMIN_ROLE_TEMPLATE_IDS.length),
-      fact('Roles without an enforced MFA policy', uncovered.length),
+      fact('Enabled MFA policies found', policies.length),
+      fact('Roles without directly proven MFA policy coverage', uncovered.length),
     ];
     const uncertain = MFA_ADMIN_ROLE_TEMPLATE_IDS.filter((roleId) =>
       !policies.some((p) => ca.coversRole(p, roleId) && ca.exclusions(p).users === 0 && ca.exclusions(p).groups === 0 && !ca.exclusions(p).guestsOrExternal),
     );
     if (uncovered.length === 0 && uncertain.length > 0) {
       return review({
-        reason: 'Administrator role coverage depends on policies with user or group exclusions.',
+        reason: `Enabled administrator MFA policies were found (${policies.map(p => p.displayName).join(', ')}); exclusions require validation before full coverage can be confirmed.`,
+        confidence: 'medium',
         summary: 'Validate excluded identities and their alternative protection before confirming administrator MFA coverage.',
         facts,
         affectedObjects: uncertain.map((id) => affected('directoryRole', id, builtInRoleName(id), 'Coverage depends on excluded identities')),
@@ -278,6 +282,16 @@ export const entraCaMfaAdmins = defineControl({
         notes: exclusionNote(used),
       });
     }
+    const unresolved = allPolicies.filter(p => (ca.mfaRequirement(p) !== 'none' || Boolean(p.grantControls?.authenticationStrength)) &&
+      (p.conditions.users.includeGroups.length > 0 || p.conditions.users.includeUsers.some(user => user.toLowerCase() !== 'all') ||
+       (MFA_ADMIN_ROLE_TEMPLATE_IDS.some(role => ca.coversRole(p, role)) && (!ca.isEnabled(p) || !ca.includesAllApps(p) || !coversModernClients(p) || !ca.hasNoNarrowingConditions(p) || ca.mfaRequirement(p) !== 'required'))));
+    if (unresolved.length > 0) return review({
+      reason: `Administrator MFA-related policies were found (${unresolved.map(p => p.displayName).join(', ')}), but administrator coverage cannot be confirmed from this evidence.`,
+      summary: 'Review policy scope and effective sign-in results; user/group targeting, conditions or custom strengths need additional evidence.',
+      confidence: 'medium', facts,
+      affectedObjects: unresolved.map(p => policyObject(p, `state=${p.state}; direct role coverage unverified`)),
+      notes: ['This is an evidence gap, not a finding that these administrators can sign in without MFA. Group membership and combined policies are not resolved.'],
+    });
     return fail({
       reason: `${plural(uncovered.length, 'administrator role')} are not covered by an enabled MFA policy.`,
       summary: `No qualifying enforced MFA policy was found for ${plural(uncovered.length, 'administrator role template')}.`,
@@ -290,7 +304,7 @@ export const entraCaMfaAdmins = defineControl({
 
 export const entraCaBlockLegacyAuth = defineControl({
   id: 'ENTRA-CA-003',
-  version: '1.0.1',
+  version: '1.0.2',
   lifecycle: 'stable',
   title: 'Legacy authentication is blocked',
   technology: 'entra',
@@ -352,9 +366,9 @@ export const entraCaBlockLegacyAuth = defineControl({
       return fail({ reason: UNLICENSED_REASON, summary: 'No qualifying tenant-wide legacy authentication blocking policy was found.', facts: [fact('Security defaults enabled', false)] });
     }
     const blocking = policies.filter(
-      (p) => ca.blocksLegacyAuthentication(p) && ca.includesAllUsers(p) && ca.includesAllApps(p),
+      (p) => ca.blocksLegacyAuthentication(p),
     );
-    const enforced = blocking.filter((p) => ca.isEnabled(p) && ca.hasNoNarrowingConditions(p) && ca.exclusions(p).total === 0);
+    const enforced = blocking.filter((p) => ca.isEnabled(p) && ca.includesAllUsers(p) && ca.includesAllApps(p) && ca.hasNoNarrowingConditions(p) && ca.exclusions(p).total === 0);
     const facts = [
       fact('Security defaults enabled', false),
       fact('Enabled policies blocking legacy authentication for all users', enforced.length),
@@ -382,4 +396,3 @@ export const entraCaBlockLegacyAuth = defineControl({
     });
   },
 });
-

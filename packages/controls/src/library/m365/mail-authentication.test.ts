@@ -6,6 +6,14 @@ import { m365DkimEnabled, m365DmarcPolicy, m365SpfPublished } from './mail-authe
 const onmicrosoft = acceptedDomain('contoso.onmicrosoft.com');
 
 describe('M365-MAIL-001 DKIM signing for custom domains', () => {
+  it('does not claim valid signing when status is missing', () => {
+    const result = run(m365DkimEnabled, {
+      'exchange.acceptedDomains': [acceptedDomain('contoso.example')],
+      'exchange.dkimSigningConfigs': [dkimConfig('contoso.example', true, null)],
+    });
+    expect(result.status).toBe('REVIEW');
+    expect(result.affectedObjects[0]?.detail).toContain('not reported');
+  });
   it('passes when every custom authoritative domain signs with a Valid status', () => {
     const result = run(m365DkimEnabled, {
       'exchange.acceptedDomains': [
@@ -15,7 +23,7 @@ describe('M365-MAIL-001 DKIM signing for custom domains', () => {
       ],
       'exchange.dkimSigningConfigs': [
         dkimConfig('CONTOSO.example', true),
-        dkimConfig('fabrikam.example', true, null),
+        dkimConfig('fabrikam.example', true, 'Valid'),
         dkimConfig('contoso.onmicrosoft.com', false),
       ],
     });
@@ -274,14 +282,15 @@ describe('M365-MAIL-003 DMARC policy', () => {
     expect(result.affectedObjects[0]?.detail).toContain('inherited from contoso.example');
   });
 
-  it('applies the parent p= policy to a subdomain when sp= is absent', () => {
+  it('does not infer a passing policy from a parent without policy-discovery evidence', () => {
     const result = run(m365DmarcPolicy, {
       'exchange.mailDnsRecords': [
         dnsRecord('contoso.example'),
         dnsRecord('sales.contoso.example', { dmarc: 'NotFound' }),
       ],
     });
-    expect(result.status).toBe('PASS');
+    expect(result.status).toBe('REVIEW');
+    expect(result.affectedObjects[0]?.detail).toContain('RFC 9989');
   });
 
   it('notes domains without aggregate reporting', () => {

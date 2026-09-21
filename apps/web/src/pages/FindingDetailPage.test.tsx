@@ -7,6 +7,15 @@ import { FINDING_SECTIONS, FindingDetail } from './FindingDetailPage';
 const base = sampleFindings[0]!;
 
 describe('FindingDetail', () => {
+  it('explains review as unconfirmed and leads with the observed evidence', () => {
+    const finding = { ...base, status: 'REVIEW' as const, observedState: { summary: 'MFA policy found; exclusions need verification.', facts: [] } };
+    renderWithRouter(<FindingDetail finding={finding} assessmentId={ASSESSMENT_ID} />);
+    expect(screen.getByText('Confirmation pending')).toBeTruthy();
+    expect(within(document.getElementById('section-what')!).getByRole('note').textContent).toContain('does not establish a confirmed security gap');
+    expect(document.querySelector('#section-what .lead')?.textContent).toBe(finding.observedState.summary);
+    expect(screen.getAllByText(/Potential impact if confirmed/).length).toBeGreaterThan(0);
+  });
+
   it('renders every question section heading', () => {
     renderWithRouter(<FindingDetail finding={base} assessmentId={ASSESSMENT_ID} />);
     const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);

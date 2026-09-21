@@ -44,7 +44,7 @@ const PRIV_REFERENCES = [REF.entraRoleBestPractices, REF.emergencyAccess, REF.en
 
 export const entraGlobalAdminMaximum = defineControl({
   id: 'ENTRA-PRIV-001',
-  version: '1.0.0',
+  version: '1.0.2',
   lifecycle: 'stable',
   title: 'Fewer than five principals hold the Global Administrator role',
   technology: 'entra',
@@ -111,13 +111,14 @@ export const entraGlobalAdminMaximum = defineControl({
         notes,
       });
     }
+    if (!eligibleIncluded || groups.length > 0) return review({ reason: 'The observed Global Administrator principal count is within the threshold, but eligible assignments or group membership are unresolved.', summary: 'The total number of people with Global Administrator access is not proven.', confidence: 'medium', facts, notes, affectedObjects: objects });
     return pass({ reason: `${principals.size} principals hold Global Administrator (maximum ${max}).`, summary: `${principals.size} Global Administrators found.`, facts, notes });
   },
 });
 
 export const entraGlobalAdminMinimum = defineControl({
   id: 'ENTRA-PRIV-002',
-  version: '1.0.0',
+  version: '1.0.2',
   lifecycle: 'stable',
   title: 'At least two principals hold the Global Administrator role',
   technology: 'entra',
@@ -165,13 +166,15 @@ export const entraGlobalAdminMinimum = defineControl({
     if (principals.size < min) {
       return fail({ reason: `Only ${principals.size} principal(s) hold Global Administrator.`, summary: 'The tenant can be locked out if the only Global Administrator becomes unavailable.', facts });
     }
+    const directUsers = new Set(resolved(ctx).filter(a => a.roleTemplateId === GA && a.directoryScopeId === '/' && a.principalType === 'user' && a.accountEnabled === true).map(a => a.principalId));
+    if (directUsers.size < min) return review({ reason: 'The principal count includes eligible, group, non-user or unknown-state assignments; independent active administrator accounts are not proven.', summary: 'Validate at least two usable cloud-only emergency access accounts.', confidence: 'medium', facts });
     return pass({ reason: `${principals.size} principals hold Global Administrator.`, summary: 'Global Administrator is held by more than one principal.', facts });
   },
 });
 
 export const entraPrivilegedCloudOnly = defineControl({
   id: 'ENTRA-PRIV-003',
-  version: '1.0.1',
+  version: '1.0.2',
   lifecycle: 'stable',
   title: 'Highly privileged roles are held by cloud-only accounts',
   technology: 'entra',
@@ -215,7 +218,9 @@ export const entraPrivilegedCloudOnly = defineControl({
   ],
   tags: ['privileged-access', 'identity', 'hybrid'],
   evaluate: (ctx) => {
-    const privileged = resolved(ctx).filter((a) => a.isHighlyPrivileged && a.principalType === 'user');
+    const allPrivileged = resolved(ctx).filter(a => a.isHighlyPrivileged);
+    const privileged = allPrivileged.filter((a) => a.principalType === 'user');
+    const unresolved = allPrivileged.filter(a => a.principalType !== 'user' && a.principalType !== 'servicePrincipal');
     const synced = privileged.filter((a) => a.onPremisesSyncEnabled === true);
     const unknown = privileged.filter((a) => a.onPremisesSyncEnabled === null);
     const facts = [fact('Privileged user assignments', privileged.length), fact('Held by synchronized accounts', synced.length), fact('Unknown synchronization state', unknown.length)];
@@ -229,7 +234,7 @@ export const entraPrivilegedCloudOnly = defineControl({
         notes,
       });
     }
-    if (unknown.length > 0) {
+    if (unknown.length > 0 || unresolved.length > 0) {
       return review({ reason: 'Synchronization state is unknown for some privileged user assignments.', summary: 'Cloud-only status could not be confirmed for every assessed privileged account.', facts, notes, affectedObjects: unknown.map((a) => affected('user', a.principalId, a.userPrincipalName ?? a.principalName, `${a.roleName} (synchronization state unknown)`)) });
     }
     return pass({ reason: 'No synchronized account holds a highly privileged role.', summary: 'Highly privileged roles are held by cloud-only accounts.', facts, notes });

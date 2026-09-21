@@ -161,7 +161,7 @@ export const azRbacOwnerCount = defineControl({
 
 export const azRbacGuestPrivileged = defineControl({
   id: 'AZ-RBAC-002',
-  version: '1.0.0',
+  version: '1.0.1',
   lifecycle: 'stable',
   title: 'Guest accounts do not hold privileged Azure roles',
   technology: 'azure',
@@ -188,7 +188,7 @@ export const azRbacGuestPrivileged = defineControl({
       'For each affected assignment, confirm with the resource owner whether the external person still needs access.',
       'In the Azure portal open the scope shown (subscription, resource group or resource) > Access control (IAM) > Role assignments and remove the privileged role from the guest.',
       'If access is still required, grant a narrower built-in role at the smallest scope, as an eligible assignment in Privileged Identity Management with an expiry date.',
-      'Consider creating a member account in your tenant for long-term administrators from partners, so your MFA and Conditional Access policies apply fully.',
+      'Apply appropriate Conditional Access to external administrators and review cross-tenant access trust. Changing a guest to member is not a substitute for least privilege, MFA or governance.',
       'Schedule access reviews for guests with Azure role assignments.',
     ],
     scriptExample:

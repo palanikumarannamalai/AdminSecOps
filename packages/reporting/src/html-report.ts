@@ -122,11 +122,12 @@ function findingSection(f: Finding, maxObjects: number): SafeHtml {
   return html`<article class="finding" id="${anchorId('finding', f.controlId)}">
     <header>
       <h3>${f.priority.rank}. ${f.title}</h3>
-      <div>${statusBadge(f.status)} ${severityBadge(f.severity)} <span class="badge">confidence: ${f.confidence}</span>
+      <div>${statusBadge(f.status)} ${f.status === 'REVIEW' ? 'Potential impact if confirmed: ' : ''}${severityBadge(f.severity)} <span class="badge">${f.status === 'REVIEW' ? 'confirmation pending' : `confidence: ${f.confidence}`}</span>
       <span class="badge">${TIER_LABELS[f.priority.tier]}</span></div>
       <div class="muted small">${f.controlId} v${f.controlVersion} - ${TECHNOLOGY_LABELS[f.technology]} - ${f.category} - finding ${f.findingId}</div>
     </header>
     <h4>What did you find?</h4>
+    ${f.status === 'REVIEW' ? html`<p><strong>Verification required.</strong> This does not establish a confirmed security gap. Validate evidence, exclusions and alternative controls before making changes.</p>` : ''}
     <p>${f.description}</p>
     <p><strong>${f.observedState.summary}</strong></p>
     <h4>Why does it matter?</h4>

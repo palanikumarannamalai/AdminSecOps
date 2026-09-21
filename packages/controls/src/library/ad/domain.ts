@@ -178,7 +178,7 @@ const MINIMUM_LEVEL = 'Windows2016Domain';
 
 export const adDomainFunctionalLevel = defineControl({
   id: 'AD-DOM-003',
-  version: '1.0.0',
+  version: '1.1.0',
   lifecycle: 'stable',
   title: 'Domain functional level is Windows Server 2016 or later',
   technology: 'ad',
@@ -202,7 +202,7 @@ export const adDomainFunctionalLevel = defineControl({
     summary: 'Replace or upgrade domain controllers running older Windows Server versions, then raise the domain (and forest) functional level.',
     steps: [
       'List domain controllers and their operating systems (Get-ADDomainController -Filter * | Select HostName, OperatingSystem). All must run Windows Server 2016 or later.',
-      'Replace older domain controllers (see AD-DC-004) and check that FRS has been migrated to DFSR for SYSVOL (required before Windows Server 2016 level).',
+      'Replace older domain controllers (see AD-DC-004). Migrate SYSVOL replication from FRS to DFSR before adding Windows Server 2019 or later domain controllers; this is an OS promotion prerequisite, not a prerequisite for the Windows Server 2016 functional level itself.',
       'Raise the domain functional level in Active Directory Domains and Trusts (right-click the domain > Raise Domain Functional Level) or with PowerShell.',
       'When all domains are raised, raise the forest functional level as well.',
     ],

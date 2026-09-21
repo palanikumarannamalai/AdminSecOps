@@ -286,7 +286,7 @@ function Invoke-AsoGraphGet {
     $attempt = 0
     while ($true) {
         try {
-            $json = Invoke-MgGraphRequest -Method GET -Uri $full -OutputType Json -ErrorAction Stop
+            $json = Invoke-MgGraphRequest -Method GET -Uri $full -Headers @{ Prefer = 'include-unknown-enum-members' } -OutputType Json -ErrorAction Stop
             return , (ConvertFrom-AsoJson -Json ([string]$json))
         }
         catch {
