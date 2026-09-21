@@ -15,6 +15,47 @@ function fixture(overrides: Partial<StoredSession> = {}) {
 const headers = { cookie: `__Host-adminsecops=${token}`, origin: config.publicUrl, 'x-adminsecops-client': 'web' };
 
 describe('hosted HTTP boundary', () => {
+  it('handles declined Microsoft consent without reflecting provider errors', async () => {
+    const app = await buildServer({ config, store: fixture() });
+    const response = await app.inject({ url: '/auth/callback?error=access_denied&error_description=PRIVATE-DETAIL' });
+    expect(response.statusCode).toBe(401);
+    expect(response.body).toContain('Restart sign-in');
+    expect(response.body).not.toContain('PRIVATE-DETAIL');
+    await app.close();
+  });
+  it('routes open sign-in without exposing a tenant directory and requires fresh role authorization', async () => {
+    const open = { ...config, openTenantOnboarding: true };
+    const app = await buildServer({ config: open, store: fixture() });
+    expect((await app.inject({ url: '/auth/login' })).headers.location).toContain('/organizations/');
+    expect((await app.inject({ url: '/auth/login?tenantId=common' })).statusCode).toBe(403);
+    expect((await app.inject({ url: '/api/me', headers })).statusCode).toBe(401);
+    await app.close();
+  });
+  it('scopes open customer sessions to their own tenant and never query input', async () => {
+    const open = { ...config, openTenantOnboarding: true };
+    const tenant = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+    const store = fixture({ tenantId: tenant, userId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', encryptedTokens: encryptTokens({ accessToken: 'customer', expiresAt: Date.now() + 600_000, authorizationExpiresAt: Date.now() + 60_000 }, config.tokenEncryptionKey) });
+    const app = await buildServer({ config: open, store });
+    expect((await app.inject({ url: '/api/me', headers })).json().user.tenantId).toBe(tenant);
+    await app.inject({ url: `/api/jobs?tenantId=${config.tenantId}`, headers });
+    expect(store.listJobs).toHaveBeenCalledWith(tenant);
+    await app.inject({ url: `/api/assessments?tenantId=${config.tenantId}`, headers });
+    expect(store.listAssessments).toHaveBeenCalledWith(tenant);
+    const id = '44444444-4444-4444-4444-444444444444';
+    expect((await app.inject({ url: `/api/assessments/${id}/report.json`, headers })).statusCode).toBe(404);
+    expect((await app.inject({ url: `/api/assessments/${id}/report.html`, headers })).statusCode).toBe(404);
+    expect((await app.inject({ url: `/api/assessments/${id}`, headers })).statusCode).toBe(404);
+    expect((await app.inject({ url: `/api/compare?baseline=${id}&current=${id}`, headers })).statusCode).toBe(404);
+    expect(store.getAssessment).toHaveBeenCalledWith(tenant, id);
+    expect((await app.inject({ method: 'POST', url: '/api/jobs', headers, payload: {} })).statusCode).toBe(202);
+    expect(store.createJob).toHaveBeenCalledWith(tenant, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', expect.any(String));
+    await app.close();
+  });
+  it('rejects expired administrator authorization even with an unexpired session', async () => {
+    const app = await buildServer({ config: { ...config, openTenantOnboarding: true }, store: fixture({ encryptedTokens: encryptTokens({ accessToken: 'customer', expiresAt: Date.now() + 600_000, authorizationExpiresAt: 0 }, config.tokenEncryptionKey) }) });
+    expect((await app.inject({ url: '/api/me', headers })).statusCode).toBe(401);
+    await app.close();
+  });
   it('requires a session for all sensitive endpoints', async () => {
     const app = await buildServer({ config, store: fixture() });
     for (const url of ['/api/me', '/api/jobs', '/api/assessments', '/api/controls']) expect((await app.inject({ url })).statusCode).toBe(401);

@@ -3,8 +3,8 @@ import { CONTROL_LIBRARY, CONTROL_LIBRARY_VERSION } from '@adminsecops/controls'
 import { compareAssessments } from '@adminsecops/engine';
 import { listDatasetDefinitions } from '@adminsecops/schemas';
 import { buildJsonReport, renderHtmlReport, serializeJsonReport } from '@adminsecops/reporting';
-import type { Config } from './config.js';
-import { createAuth, decryptTokens, encryptTokens, hashToken, randomToken } from './auth.js';
+import { isApprovedUser, isTenantId, type Config } from './config.js';
+import { createAuth, decryptTokens, encryptTokens, hasFreshAuthorization, hashToken, randomToken } from './auth.js';
 import type { Store, StoredSession } from './store.js';
 
 const sessionName = '__Host-adminsecops';
@@ -47,18 +47,25 @@ export async function buildServer({ config, store }: { config: Config; store: St
     const token = readCookie(request, sessionName);
     if (!token || !/^[\w-]{43}$/.test(token)) throw failure(401, 'Sign in required');
     const current = await store.getSession(hashToken(token));
-    if (!current || current.expiresAt.getTime() <= Date.now() || current.tenantId !== config.tenantId || !config.allowedUserIds.includes(current.userId)) throw failure(401, 'Sign in required');
+    if (!current || current.expiresAt.getTime() <= Date.now() || !isApprovedUser(config, current.tenantId, current.userId)) throw failure(401, 'Sign in required');
+    if (config.openTenantOnboarding) {
+      try { if (!hasFreshAuthorization(decryptTokens(current.encryptedTokens, config.tokenEncryptionKey))) throw new Error('Expired'); }
+      catch { throw failure(401, 'Sign in again to verify administrator access'); }
+    }
     sessions.set(request, current);
     if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && (request.headers.origin !== config.publicUrl || request.headers['x-adminsecops-client'] !== 'web')) throw failure(403, 'Invalid request origin');
   });
   app.get('/api/health', () => ({ status: 'ok' }));
-  app.get('/auth/login', async (request, reply) => {
+  app.get<{ Querystring: { tenantId?: string } }>('/auth/login', async (request, reply) => {
     throttle(`login:${request.ip}`, 30);
-    const login = auth.begin();
+    const requestedTenant = request.query.tenantId ?? (config.openTenantOnboarding ? 'organizations' : config.tenantId);
+    if (typeof requestedTenant !== 'string' || (config.openTenantOnboarding ? requestedTenant !== 'organizations' && !isTenantId(requestedTenant.toLowerCase()) : !Object.hasOwn(config.allowedTenantUsers, requestedTenant.toLowerCase()))) throw failure(403, 'This tenant is not approved for access.');
+    const login = auth.begin(requestedTenant.toLowerCase());
     return reply.header('Set-Cookie', cookie(transactionName, login.cookie, 600)).redirect(login.url);
   });
-  app.get<{ Querystring: { state?: string; code?: string } }>('/auth/callback', async (request, reply) => {
+  app.get<{ Querystring: { state?: string; code?: string; error?: string } }>('/auth/callback', async (request, reply) => {
     reply.header('Set-Cookie', cookie(transactionName, '', 0));
+    if (request.query.error !== undefined) throw failure(401, 'Microsoft sign-in or consent was not completed. Restart sign-in at /auth/login.');
     const transaction = readCookie(request, transactionName);
     if (!transaction || typeof request.query.state !== 'string' || typeof request.query.code !== 'string') throw failure(400, 'Invalid sign-in callback');
     try {
@@ -69,7 +76,7 @@ export async function buildServer({ config, store }: { config: Config; store: St
       if (previous) await store.deleteSession(hashToken(previous));
       return reply.header('Set-Cookie', [cookie(transactionName, '', 0), cookie(sessionName, id, config.sessionTtlSeconds)]).redirect('/');
     } catch {
-      throw failure(401, 'Sign-in failed. Check tenant access and try signing in again.');
+      throw failure(401, 'Sign-in failed. Check Microsoft consent and tenant access. Open access requires an active Global Administrator, Security Administrator, Global Reader, Security Reader or Privileged Role Administrator role. Restart sign-in at /auth/login.');
     }
   });
   app.post('/auth/logout', async (request, reply) => {
@@ -84,9 +91,9 @@ export async function buildServer({ config, store }: { config: Config; store: St
   app.post('/api/jobs', async (request, reply) => {
     if (request.body !== undefined && (request.body === null || typeof request.body !== 'object' || Array.isArray(request.body) || Object.keys(request.body).length > 0)) throw failure(400, 'Assessment requests must have an empty body');
     const current = session(request);
-    throttle(`job:${current.userId}`, 3);
+    throttle(`job:${current.tenantId}:${current.userId}`, 3);
     let tokens;
-    try { tokens = await auth.refresh(decryptTokens(current.encryptedTokens, config.tokenEncryptionKey)); }
+    try { tokens = await auth.refresh(decryptTokens(current.encryptedTokens, config.tokenEncryptionKey), current.tenantId); }
     catch { throw failure(401, 'Microsoft Graph access expired. Sign in again to reconnect.'); }
     const encryptedTokens = encryptTokens(tokens, config.tokenEncryptionKey);
     await store.putSession({ ...current, encryptedTokens });

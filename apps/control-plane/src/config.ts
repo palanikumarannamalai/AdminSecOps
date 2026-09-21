@@ -5,6 +5,8 @@ export interface Config {
   clientId: string;
   clientSecret: string;
   allowedUserIds: string[];
+  allowedTenantUsers: Record<string, string[]>;
+  openTenantOnboarding: boolean;
   tokenEncryptionKey: string;
   databaseUrl: string;
   sessionTtlSeconds: number;
@@ -19,19 +21,44 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   };
   const publicUrl = new URL(required('PUBLIC_URL'));
   if (publicUrl.protocol !== 'https:' || publicUrl.username || publicUrl.password || publicUrl.pathname !== '/' || publicUrl.search || publicUrl.hash) throw new Error('PUBLIC_URL must be an HTTPS origin');
-  const tenantId = required('AZURE_TENANT_ID');
-  const clientId = required('AZURE_CLIENT_ID');
-  const allowedUserIds = required('ALLOWED_USER_IDS').split(',').map(value => value.trim());
+  const tenantId = required('AZURE_TENANT_ID').toLowerCase();
+  const clientId = required('AZURE_CLIENT_ID').toLowerCase();
+  if (env.OPEN_TENANT_ONBOARDING !== undefined && !['true', 'false'].includes(env.OPEN_TENANT_ONBOARDING)) throw new Error('OPEN_TENANT_ONBOARDING must be true or false');
+  const openTenantOnboarding = env.OPEN_TENANT_ONBOARDING === 'true';
+  if (openTenantOnboarding && env.ALLOWED_TENANT_USERS) throw new Error('Open onboarding cannot be combined with an approved-tenant map');
+  const allowedUserIds = env.ALLOWED_TENANT_USERS || openTenantOnboarding ? [] : required('ALLOWED_USER_IDS').split(',').map(value => value.trim().toLowerCase());
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (![tenantId, clientId, ...allowedUserIds].every(value => uuid.test(value))) throw new Error('Tenant, client and allowed user IDs must be UUIDs');
+  const allowedTenantUsers: Record<string, string[]> = Object.create(null) as Record<string, string[]>;
+  if (env.ALLOWED_TENANT_USERS) {
+    let raw: unknown;
+    try { raw = JSON.parse(env.ALLOWED_TENANT_USERS) as unknown; } catch { throw new Error('ALLOWED_TENANT_USERS must be a JSON tenant-to-user-ID map'); }
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !Object.keys(raw).length) throw new Error('ALLOWED_TENANT_USERS must be a nonempty tenant-to-user-ID map');
+    for (const [tenant, users] of Object.entries(raw)) {
+      if (!uuid.test(tenant) || !Array.isArray(users) || !users.length || !users.every((user: unknown) => typeof user === 'string' && uuid.test(user))) throw new Error('Each approved tenant must contain a nonempty array of user UUIDs');
+      const normalized = tenant.toLowerCase();
+      if (allowedTenantUsers[normalized]) throw new Error('Duplicate approved tenant');
+      allowedTenantUsers[normalized] = (users as string[]).map(user => user.toLowerCase());
+    }
+  } else allowedTenantUsers[tenantId] = allowedUserIds;
   const tokenEncryptionKey = required('TOKEN_ENCRYPTION_KEY');
   if (Buffer.from(tokenEncryptionKey, 'base64').length !== 32) throw new Error('TOKEN_ENCRYPTION_KEY must encode 32 random bytes');
   const port = Number(env.PORT ?? '8080');
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid PORT');
+  const graphScopes = required('GRAPH_SCOPES').split(/\s+/);
+  const readScopes = new Set(['User.Read', 'AuditLog.Read.All', 'Directory.Read.All', 'Organization.Read.All', 'Policy.Read.All', 'RoleManagement.Read.Directory', 'User.Read.All', 'UserAuthenticationMethod.Read.All']);
+  if (!graphScopes.every(scope => readScopes.has(scope.replace(/^https:\/\/graph\.microsoft\.com\//, '')))) throw new Error('GRAPH_SCOPES must contain only supported read-only Microsoft Graph scopes');
   return {
     port, publicUrl: publicUrl.origin, tenantId, clientId,
-    clientSecret: required('AZURE_CLIENT_SECRET'), allowedUserIds,
+    clientSecret: required('AZURE_CLIENT_SECRET'), allowedUserIds: allowedTenantUsers[tenantId] ?? [], allowedTenantUsers, openTenantOnboarding,
     tokenEncryptionKey, databaseUrl: required('DATABASE_URL'), sessionTtlSeconds: 3600,
-    graphScopes: required('GRAPH_SCOPES').split(/\s+/),
+    graphScopes,
   };
 }
+
+export function isApprovedUser(config: Config, tenantId: string, userId: string): boolean {
+  if (config.openTenantOnboarding) return isTenantId(tenantId) && isTenantId(userId);
+  return config.allowedTenantUsers[tenantId]?.includes(userId) === true;
+}
+
+export function isTenantId(value: unknown): value is string { return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value); }

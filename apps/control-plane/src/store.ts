@@ -20,7 +20,7 @@ export interface Store {
   listAssessments(tenantId:string): Promise<AssessmentResult[]>;
   getAssessment(tenantId:string,id:string): Promise<AssessmentResult|null>;
 }
-export interface ClaimedJob { id:string; tenantId:string; encryptedTokens:string }
+export interface ClaimedJob { id:string; tenantId:string; userId:string; encryptedTokens:string }
 export class PostgresStore implements Store {
   constructor(readonly pool:Pool) {}
   async initialize():Promise<void> {
@@ -78,8 +78,8 @@ export class PostgresStore implements Store {
   async claim():Promise<ClaimedJob|null> {
     // One atomic statement claims a durable job. Multiple processes cannot claim the same row.
     const r=await this.pool.query(`UPDATE aso_jobs SET status='running',started_at=now()
-      WHERE id=(SELECT id FROM aso_jobs WHERE status='queued' ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1)
-      RETURNING id,tenant_id AS "tenantId",encrypted_tokens AS "encryptedTokens"`);
+      WHERE id=(SELECT id FROM aso_jobs WHERE status='queued' AND created_at>=now()-interval '1 hour' ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1)
+      RETURNING id,tenant_id AS "tenantId",user_id AS "userId",encrypted_tokens AS "encryptedTokens"`);
     return r.rows[0] as ClaimedJob|undefined ?? null;
   }
   async complete(job:ClaimedJob,result:AssessmentResult):Promise<void> {

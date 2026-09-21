@@ -57,15 +57,16 @@ export function OnlineHomePage() {
   const active = jobs.some((job) => ['queued', 'running', 'collecting', 'processing'].includes(job.status));
   return <div className="page">
     <PageHeader title="Your tenant assessments" eyebrow="AdminSecOps online · Test release"
-      description={<p>Read-only Entra assessment for Palani Lab. Other Microsoft workloads and remediation are not enabled in this release.</p>} />
+      description={<p>Read-only Entra assessment for your Microsoft organization. Other Microsoft workloads and remediation are not enabled in this release.</p>} />
     <Panel title="Microsoft tenant connection" id="connection">
       <p>Signed in as <strong>{session.user.displayName}</strong></p>
-      <p className="muted">Tenant: {session.user.tenantId}</p>
+      <p><strong>Current directory (tenant) ID:</strong> <code>{session.user.tenantId}</code></p>
       <p>{session.connection.connected ? 'Connected for read-only collection.' : 'The tenant connection is unavailable. Contact the test administrator to configure consent.'}</p>
       <div className="inline-actions"><button className="button" disabled={starting || active || !session.connection.connected} onClick={() => void run()}>
         {starting ? 'Submitting…' : active ? 'Assessment in progress' : 'Run assessment'}</button>
-        <button className="button" onClick={() => void logout()}>Sign out</button></div>
-      <p className="muted">Evidence and results are processed and stored in the hosted service. Missing permissions or unavailable datasets remain unknown; they are never treated as passing.</p>
+        <button className="button" onClick={() => void logout()}>Sign out / switch tenant</button></div>
+      <p className="muted">To switch organizations, sign out first, then sign in with the other organization's account or enter its directory ID. Each assessment uses the current signed-in tenant.</p>
+      <p className="muted">Raw evidence is processed in memory. Assessment results are stored for 30 days and audit events for 90 days. Missing permissions or unavailable datasets remain unknown; they are never treated as passing.</p>
     </Panel>
     {error !== null ? <p role="alert" className="error-text">{error}</p> : null}
     <Panel title="Assessment jobs" id="jobs">
@@ -90,7 +91,7 @@ export function OnlineHomePage() {
 
 export function OnlineAboutPage() {
   return <div className="page"><PageHeader title="About this online test release" /><Panel title="Read-only Entra assessment" id="privacy">
-    <p>AdminSecOps collects supported Microsoft Graph evidence from the configured Palani Lab test tenant. The hosted backend evaluates the existing control library and stores assessment results in PostgreSQL.</p>
+    <p>AdminSecOps collects supported Microsoft Graph evidence from your signed-in Microsoft organization. Sign-in requires a supported administrator or reader role, and a tenant administrator must consent on Microsoft's screen to the read-only Graph permissions. The hosted backend evaluates the existing control library and stores assessment results in PostgreSQL.</p>
     <p>Evidence can contain user names, object identifiers and security configuration. Access requires Microsoft sign-in. Downloaded reports also contain this information; share them only with authorized recipients.</p>
     <p>This release does not modify tenant settings. It does not assess every Microsoft workload, provide a security certification, or treat uncollected evidence as a passing check.</p>
   </Panel></div>;

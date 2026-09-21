@@ -1,15 +1,15 @@
 # AdminSecOps online test deployment
 
-Status: deployed for first-user sign-in testing (21 September 2026).
+Status: multitenant administrator onboarding test release (21 September 2026).
 
 ## Test site and scope
 
 - URL: https://adminsecops-test-neu-palani.azurewebsites.net
-- Tenant: Palani Lab, c15f03d1-1adc-4b27-b475-c65192c029a7.
-- Allowed user: cloudadmin@palanilab.com (object ID 5c48b50f-8463-4707-95bf-8d63661fca83).
+- Registration home tenant: Palani Lab, c15f03d1-1adc-4b27-b475-c65192c029a7.
+- Open onboarding accepts Microsoft work accounts with a supported active tenant-wide directory role.
 - Entra app client ID: bb1cbc8b-51c1-472d-93a6-0476478eb71e.
 - Callback: https://adminsecops-test-neu-palani.azurewebsites.net/auth/callback.
-- Single-tenant private test, not a production multitenant SaaS release.
+- Multitenant test release; customer administrator consent is required in each organization.
 - Microsoft sign-in and delegated read-only Graph consent required. No administrator password stored.
 - No sample uploads or downloaded collectors required by the online flow.
 
@@ -101,5 +101,42 @@ ZIP deployment. Container Apps packaging is deferred; App Service is the active 
   focused lint and online/server builds passed. Excluded applications/platforms, device filters,
   MFA-strength requirements and grant alternatives cannot establish unrestricted coverage.
   Unknown administrator sync state and incomplete administrator coverage require review.
-- A fresh assessment after this correction requires completing the current Microsoft sign-in prompt.
-  Existing saved assessments retain their original results.
+- Existing saved assessments retain their original results. Customer tenant consent and the first
+  customer assessment require an administrator to complete Microsoft sign-in.
+
+
+## Multitenant onboarding
+
+With OPEN_TENANT_ONBOARDING=true, the default Microsoft sign-in uses the organizations
+endpoint. An optional tenant ID directs sign-in to a specific organization, including guest
+administrator scenarios. Personal Microsoft accounts are not a supported default audience.
+
+The Entra application registration must use signInAudience=AzureADMultipleOrgs and
+groupMembershipClaims=DirectoryRole so verified ID tokens carry tenant-wide directory roles.
+The app accepts Global Administrator, Privileged Role Administrator, Security Administrator,
+Global Reader and Security Reader. Activate eligible PIM roles before signing in. A role without
+permission to grant the requested Microsoft Graph scopes needs an authorized tenant administrator
+to grant consent first. Customer tenant policy may require a separate approval workflow.
+
+Authentication verifies the signature, exact tenant issuer, audience, expiry, nonce and directory
+role. The tenant from an unverified ID token is used only to select Microsoft metadata; it cannot
+create a session until verification succeeds. Refresh uses the verified tenant endpoint.
+Sessions, jobs, assessment lists, individual reports and comparisons remain tenant-scoped.
+A browser has one active organization session; sign out to switch. Results are shared among
+supported signed-in administrators of the same tenant, not across customer tenants.
+
+Role approval lasts at most one hour and requires a fresh sign-in afterwards. Role removal is
+not continuously synchronized during that interval. Queued work also requires current approval.
+Missing directory-role claims fail closed. Microsoft consent is not automatically granted by this app.
+
+Restricted testing remains available with OPEN_TENANT_ONBOARDING=false and an
+ALLOWED_TENANT_USERS JSON map of tenant UUIDs to arrays of user object UUIDs. When this map
+is absent, AZURE_TENANT_ID and ALLOWED_USER_IDS retain legacy home-tenant restrictions.
+Changing a customer allowlist must not involve copying customer credentials into source control.
+
+Rollback: disable OPEN_TENANT_ONBOARDING and retain the known home tenant/user settings;
+restore the prior artifact if needed. Do not delete customer results or app consent as part of rollback.
+
+Multitenant release validation: 1,242 automated tests passed, including signed-token rejection,
+role-expiry enforcement, worker authorization and cross-tenant report isolation. Typecheck, builds,
+focused lint and an independent Claude code review completed. Live customer consent is not simulated.

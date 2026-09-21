@@ -44,6 +44,35 @@ describe('online assessment flow', () => {
     unmount();
   });
 
+  it('validates customer directory IDs and preserves the default organization login', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(json({}, 401))));
+    mount();
+    const user = userEvent.setup();
+    const input = await screen.findByLabelText('Directory (tenant) ID');
+    expect(screen.getByRole('button', { name: 'Sign in to customer tenant' })).toHaveProperty('disabled', true);
+    await user.type(input, 'https://untrusted.example');
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(screen.queryByRole('link', { name: 'Sign in to customer tenant' })).toBeNull();
+    await user.clear(input);
+    await user.type(input, ' C15F03D1-1ADC-4B27-B475-C65192C029A7 ');
+    expect(screen.getByRole('link', { name: 'Sign in to customer tenant' }).getAttribute('href')).toBe('/auth/login?tenantId=c15f03d1-1adc-4b27-b475-c65192c029a7');
+    expect(screen.getByRole('link', { name: 'Sign in with Microsoft' }).getAttribute('href')).toBe('/auth/login');
+  });
+
+  it('shows the current tenant and sends a protected logout request when switching', async () => {
+    const fetcher = vi.fn((path: string) => {
+      if (path === '/api/me') return Promise.resolve(json(session));
+      if (path === '/auth/logout') return Promise.resolve(json({ error: { message: 'Sign-out unavailable' } }, 503));
+      return Promise.resolve(json({ jobs: [] }));
+    });
+    vi.stubGlobal('fetch', fetcher);
+    mount();
+    expect(await screen.findByText('tenant', { selector: 'code' })).toBeTruthy();
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Sign out / switch tenant' }));
+    expect(fetcher).toHaveBeenCalledWith('/auth/logout', expect.objectContaining({ method: 'POST', credentials: 'same-origin', headers: expect.objectContaining({ 'X-AdminSecOps-Client': 'web' }) }));
+    expect(await screen.findByRole('alert')).toHaveProperty('textContent', 'Sign-out unavailable');
+  });
+
   it('refreshes completed history and cancels polling when unmounted', async () => {
     let calls = 0;
     let signal: AbortSignal | null | undefined;

@@ -1,9 +1,13 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
-import type { Config } from './config.js';
+import { createRemoteJWKSet, decodeJwt, jwtVerify } from 'jose';
+import { isApprovedUser, isTenantId, type Config } from './config.js';
 
-export interface GraphTokens { accessToken: string; refreshToken?: string; expiresAt: number }
-interface Transaction { state: string; nonce: string; verifier: string; expiresAt: number }
+export interface GraphTokens { accessToken: string; refreshToken?: string; expiresAt: number; authorizationExpiresAt?: number }
+// Microsoft built-in directory role template IDs; roles must be in the verified ID token's wids.
+// https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/permissions-reference
+const assessmentRoles = new Set(['62e90394-69f5-4237-9190-012177145e10', '194ae4cb-b126-40b2-bd5b-6091b380977d', 'f2ef992c-3afb-46b9-b7cf-a126ee74c451', '5d6b6bb7-de71-4623-b4af-96380a352509', 'e8611ab8-c189-46e8-94e1-60213ab1f814']);
+export function hasFreshAuthorization(tokens: GraphTokens): boolean { return typeof tokens.authorizationExpiresAt === 'number' && tokens.authorizationExpiresAt > Date.now(); }
+interface Transaction { state: string; nonce: string; verifier: string; expiresAt: number; tenantId: string }
 export const randomToken = (): string => randomBytes(32).toString('base64url');
 export const hashToken = (value: string): string => createHash('sha256').update(value).digest('hex');
 
@@ -28,11 +32,15 @@ export function decryptTokens(value: string, key: string): GraphTokens {
 }
 
 export function createAuth(config: Config) {
-  const authority = `https://login.microsoftonline.com/${config.tenantId}`;
-  const keys = createRemoteJWKSet(new URL(`${authority}/discovery/v2.0/keys`));
+  function authorityFor(tenantId: string): string {
+    if (config.openTenantOnboarding ? tenantId !== 'organizations' && !isTenantId(tenantId) : !Object.hasOwn(config.allowedTenantUsers, tenantId)) throw new Error('Tenant is not approved');
+    return `https://login.microsoftonline.com/${tenantId}`;
+  }
+  const keySets = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
   const redirectUri = `${config.publicUrl}/auth/callback`;
   const scopes = [...new Set(['openid', 'profile', 'offline_access', ...config.graphScopes])].join(' ');
-  async function exchange(parameters: Record<string, string>): Promise<Record<string, unknown>> {
+  async function exchange(tenantId: string, parameters: Record<string, string>): Promise<Record<string, unknown>> {
+    const authority = authorityFor(tenantId);
     const response = await fetch(`${authority}/oauth2/v2.0/token`, {
       method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ client_id: config.clientId, client_secret: config.clientSecret, scope: scopes, ...parameters }),
@@ -46,8 +54,9 @@ export function createAuth(config: Config) {
     return { accessToken: response.access_token, refreshToken: typeof response.refresh_token === 'string' ? response.refresh_token : undefined, expiresAt: Date.now() + response.expires_in * 1000 };
   }
   return {
-    begin() {
-      const transaction: Transaction = { state: randomToken(), nonce: randomToken(), verifier: randomToken(), expiresAt: Date.now() + 600_000 };
+    begin(tenantId = config.openTenantOnboarding ? 'organizations' : config.tenantId) {
+      const authority = authorityFor(tenantId);
+      const transaction: Transaction = { state: randomToken(), nonce: randomToken(), verifier: randomToken(), expiresAt: Date.now() + 600_000, tenantId };
       const url = new URL(`${authority}/oauth2/v2.0/authorize`);
       url.search = new URLSearchParams({ client_id: config.clientId, response_type: 'code', response_mode: 'query', redirect_uri: redirectUri, scope: scopes, state: transaction.state, nonce: transaction.nonce, code_challenge: createHash('sha256').update(transaction.verifier).digest('base64url'), code_challenge_method: 'S256', prompt: 'select_account' }).toString();
       return { url: url.toString(), cookie: seal(transaction, config.tokenEncryptionKey) };
@@ -55,18 +64,30 @@ export function createAuth(config: Config) {
     async complete(cookie: string, state: string, code: string) {
       const transaction = unseal(cookie, config.tokenEncryptionKey) as Transaction;
       if (!state || transaction.state !== state || transaction.expiresAt < Date.now() || !transaction.nonce || !transaction.verifier) throw new Error('Invalid authentication transaction');
-      const response = await exchange({ grant_type: 'authorization_code', code, redirect_uri: redirectUri, code_verifier: transaction.verifier });
+      const response = await exchange(transaction.tenantId, { grant_type: 'authorization_code', code, redirect_uri: redirectUri, code_verifier: transaction.verifier });
       if (typeof response.id_token !== 'string') throw new Error('Missing ID token');
+      // Only a constrained routing candidate: no identity/authorization is trusted before jwtVerify.
+      const candidate = transaction.tenantId === 'organizations' ? decodeJwt(response.id_token).tid : transaction.tenantId;
+      if (!isTenantId(candidate)) throw new Error('Invalid tenant identity');
+      const authority = authorityFor(candidate);
+      let keys = keySets.get(candidate);
+      if (!keys) {
+        if (keySets.size >= 100) keySets.delete(keySets.keys().next().value!);
+        keys = createRemoteJWKSet(new URL(`${authority}/discovery/v2.0/keys`)); keySets.set(candidate, keys);
+      }
       const { payload } = await jwtVerify(response.id_token, keys, { issuer: `${authority}/v2.0`, audience: config.clientId, algorithms: ['RS256'], requiredClaims: ['exp', 'iat', 'sub', 'nonce', 'tid', 'oid'] });
-      if (payload.tid !== config.tenantId || payload.nonce !== transaction.nonce || typeof payload.oid !== 'string' || !config.allowedUserIds.includes(payload.oid)) throw new Error('Account is not permitted');
-      return { tenantId: config.tenantId, userId: payload.oid, displayName: typeof payload.name === 'string' ? payload.name : 'Administrator', tokens: tokensFrom(response) };
+      if (payload.tid !== candidate || payload.nonce !== transaction.nonce || typeof payload.oid !== 'string' || !isApprovedUser(config, candidate, payload.oid)) throw new Error('Account is not permitted');
+      if (config.openTenantOnboarding && (!Array.isArray(payload.wids) || !payload.wids.some((role: unknown) => typeof role === 'string' && assessmentRoles.has(role)))) throw new Error('A supported directory administrator or security reader role is required');
+      return { tenantId: candidate, userId: payload.oid, displayName: typeof payload.name === 'string' ? payload.name : 'Administrator', tokens: { ...tokensFrom(response), ...(config.openTenantOnboarding ? { authorizationExpiresAt: Date.now() + config.sessionTtlSeconds * 1000 } : {}) } };
     },
-    async refresh(tokens: GraphTokens): Promise<GraphTokens> {
+    async refresh(tokens: GraphTokens, tenantId: string): Promise<GraphTokens> {
+      authorityFor(tenantId);
+      if (!isTenantId(tenantId) || config.openTenantOnboarding && !hasFreshAuthorization(tokens)) throw new Error('Sign in again to verify administrator access');
       if (tokens.expiresAt > Date.now() + 120_000) return tokens;
       if (!tokens.refreshToken) throw new Error('Sign in again to reconnect Microsoft Graph');
-      const response = await exchange({ grant_type: 'refresh_token', refresh_token: tokens.refreshToken });
+      const response = await exchange(tenantId, { grant_type: 'refresh_token', refresh_token: tokens.refreshToken });
       const next = tokensFrom(response);
-      return { ...next, refreshToken: next.refreshToken ?? tokens.refreshToken };
+      return { ...next, refreshToken: next.refreshToken ?? tokens.refreshToken, authorizationExpiresAt: tokens.authorizationExpiresAt };
     },
   };
 }

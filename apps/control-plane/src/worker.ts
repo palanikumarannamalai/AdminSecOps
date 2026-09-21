@@ -3,15 +3,15 @@ import { CONTROL_LIBRARY } from '@adminsecops/controls';
 import { runAssessment } from '@adminsecops/engine';
 import { createAuth, decryptTokens } from './auth.js';
 import { collectEntra } from './collector/index.js';
-import type { Config } from './config.js';
+import { isApprovedUser, type Config } from './config.js';
 import type { PostgresStore } from './store.js';
 
 export async function processNext(store:PostgresStore, config:Config):Promise<boolean> {
   const job=await store.claim();
   if(!job) return false;
   try {
-    if(job.tenantId!==config.tenantId) throw new Error('Unexpected tenant');
-    const tokens=await createAuth(config).refresh(decryptTokens(job.encryptedTokens,config.tokenEncryptionKey));
+    if(!isApprovedUser(config,job.tenantId,job.userId)) throw new Error('Tenant user is no longer approved');
+    const tokens=await createAuth(config).refresh(decryptTokens(job.encryptedTokens,config.tokenEncryptionKey),job.tenantId);
     const bundle=await collectEntra({tenantId:job.tenantId,assessmentId:randomUUID(),accessToken:tokens.accessToken,signal:AbortSignal.timeout(600_000)});
     const result=runAssessment(bundle,CONTROL_LIBRARY);
     await store.complete(job,result);

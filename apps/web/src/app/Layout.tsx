@@ -165,7 +165,7 @@ export function Layout() {
             </li>
           </ul>
           <p className="nav__footnote">
-            {IS_ONLINE ? 'Read-only cloud collection. Evidence and results are stored in the hosted service.' : IS_HOSTED
+            {IS_ONLINE ? 'Read-only cloud collection. Raw evidence processed in memory; results retained 30 days, audit events 90 days.' : IS_HOSTED
               ? 'Processed in this browser. Evidence is not uploaded to palanikumar.net.'
               : 'Local-only. Evidence never leaves this machine.'}
           </p>
