@@ -74,8 +74,10 @@ describe('end-to-end local assessment pipeline', () => {
     const comparison = compareAssessments(before, after);
     expect(comparison.sameEnvironment).toBe(true);
     expect(comparison.resolvedFindings.length).toBeGreaterThan(0);
-    expect(comparison.newFindings.map((f) => f.controlId)).toContain('ENTRA-CA-003');
-    expect(comparison.direction).toBe('mixed');
+    // Legacy-auth exclusions already require review in the baseline.
+    expect(before.results.find((r) => r.controlId === 'ENTRA-CA-003')?.status).toBe('REVIEW');
+    expect(comparison.newFindings.map((f) => f.controlId)).toContain('HYB-SYNC-001');
+    expect(comparison.direction).toBe('improved');
   });
 
   it('assesses an on-premises-only environment without inventing cloud results', async () => {

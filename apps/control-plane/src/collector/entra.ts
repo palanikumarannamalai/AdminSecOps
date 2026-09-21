@@ -1,5 +1,11 @@
 import { AdminSecOpsError, findSensitiveContent, type CollectionStatus } from '@adminsecops/core';
-import { buildEvidencePackage, loadEvidenceBundle, summarizeZodIssues, type EvidenceBundle, type PackageFiles } from '@adminsecops/evidence/browser';
+import {
+  buildEvidencePackage,
+  loadEvidenceBundle,
+  summarizeZodIssues,
+  type EvidenceBundle,
+  type PackageFiles,
+} from '@adminsecops/evidence/browser';
 import {
   ENTRA_DATASETS,
   GuidSchema,
@@ -53,7 +59,9 @@ export const HOSTED_ENTRA_DATASETS = [
 const COLLECTED_IDS: ReadonlySet<string> = new Set(HOSTED_ENTRA_DATASETS.map((d) => d.id));
 
 /** Entra datasets defined by the schema registry that this hosted collector does not produce. */
-export const HOSTED_ENTRA_UNSUPPORTED_DATASETS: readonly string[] = ENTRA_DATASETS.map((d) => d.id).filter((id) => !COLLECTED_IDS.has(id));
+export const HOSTED_ENTRA_UNSUPPORTED_DATASETS: readonly string[] = ENTRA_DATASETS.map(
+  (d) => d.id,
+).filter((id) => !COLLECTED_IDS.has(id));
 
 export interface GraphPermissionRequirement {
   /** Microsoft Graph permission name, e.g. Policy.Read.All. */
@@ -68,9 +76,16 @@ export interface GraphPermissionRequirement {
  * ENTRA_ADDITIONAL_REQUIREMENTS.
  */
 export const ENTRA_GRAPH_PERMISSIONS: readonly GraphPermissionRequirement[] = derivePermissions();
-export const ENTRA_REQUIRED_GRAPH_PERMISSIONS: readonly string[] = ENTRA_GRAPH_PERMISSIONS.map((p) => p.permission);
-export const ENTRA_ADDITIONAL_REQUIREMENTS: readonly { readonly datasetId: string; readonly requirement: string }[] = HOSTED_ENTRA_DATASETS.flatMap((d) =>
-  d.permissions.filter((p) => !p.startsWith('Graph: ')).map((requirement) => ({ datasetId: d.id, requirement })),
+export const ENTRA_REQUIRED_GRAPH_PERMISSIONS: readonly string[] = ENTRA_GRAPH_PERMISSIONS.map(
+  (p) => p.permission,
+);
+export const ENTRA_ADDITIONAL_REQUIREMENTS: readonly {
+  readonly datasetId: string;
+  readonly requirement: string;
+}[] = HOSTED_ENTRA_DATASETS.flatMap((d) =>
+  d.permissions
+    .filter((p) => !p.startsWith('Graph: '))
+    .map((requirement) => ({ datasetId: d.id, requirement })),
 );
 
 function derivePermissions(): GraphPermissionRequirement[] {
@@ -84,7 +99,9 @@ function derivePermissions(): GraphPermissionRequirement[] {
       byPermission.set(match[1], list);
     }
   }
-  return [...byPermission.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([permission, datasets]) => ({ permission, datasets }));
+  return [...byPermission.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([permission, datasets]) => ({ permission, datasets }));
 }
 
 /** Service plans that license a feature (same plan names as the PowerShell collector). */
@@ -121,23 +138,46 @@ export async function collectEntra(options: CollectEntraOptions): Promise<Eviden
   return (await collectEntraEvidence(options)).bundle;
 }
 
-export async function collectEntraEvidence(options: CollectEntraOptions): Promise<EntraCollectionResult> {
+export async function collectEntraEvidence(
+  options: CollectEntraOptions,
+): Promise<EntraCollectionResult> {
   const { tenantId, assessmentId, accessToken } = validateOptions(options);
   const clock = options.now ?? (() => new Date());
-  const overrides = Object.entries(options.limits ?? {}).filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0);
-  const limits: GraphLimits = { ...DEFAULT_GRAPH_LIMITS, ...(Object.fromEntries(overrides) as Partial<GraphLimits>) };
+  const overrides = Object.entries(options.limits ?? {}).filter(
+    ([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0,
+  );
+  const limits: GraphLimits = {
+    ...DEFAULT_GRAPH_LIMITS,
+    ...(Object.fromEntries(overrides) as Partial<GraphLimits>),
+  };
   const fetchImpl = options.fetch ?? globalThis.fetch.bind(globalThis);
-  const client = new GraphClient({ accessToken, fetch: fetchImpl, signal: options.signal, limits, now: () => clock().getTime() });
+  const client = new GraphClient({
+    accessToken,
+    fetch: fetchImpl,
+    signal: options.signal,
+    limits,
+    now: () => clock().getTime(),
+  });
 
   const startedAt = clock().toISOString();
-  const context: CollectionContext = { client, clock, tenantId, servicePlans: undefined, organization: undefined };
+  const context: CollectionContext = {
+    client,
+    clock,
+    tenantId,
+    servicePlans: undefined,
+    organization: undefined,
+  };
   const outcomes: DatasetOutcome[] = [];
   for (const definition of HOSTED_ENTRA_DATASETS) {
     client.throwIfCancelled();
     const outcome = await runDataset(definition, context);
     outcomes.push(outcome);
     if (definition.id === 'entra.organization' && outcome.status !== 'Success') {
-      throw new AdminSecOpsError('TENANT_NOT_VERIFIED', 'The organization could not be verified. No tenant evidence was produced.', { statusCode: 403 });
+      throw new AdminSecOpsError(
+        'TENANT_NOT_VERIFIED',
+        'The organization could not be verified. No tenant evidence was produced.',
+        { statusCode: 403 },
+      );
     }
   }
   client.throwIfCancelled();
@@ -154,7 +194,8 @@ export async function collectEntraEvidence(options: CollectEntraOptions): Promis
   if (context.organization === undefined) {
     moduleWarnings.push({
       code: 'TENANT_NOT_VERIFIED',
-      message: 'The organization could not be read, so the tenant the token belongs to was not verified against the requested tenant.',
+      message:
+        'The organization could not be read, so the tenant the token belongs to was not verified against the requested tenant.',
       target: null,
     });
   }
@@ -182,15 +223,27 @@ export async function collectEntraEvidence(options: CollectEntraOptions): Promis
     product: 'AdminSecOps',
     assessmentId,
     createdAt: completedAt,
-    collector: { name: HOSTED_COLLECTOR_NAME, version: HOSTED_COLLECTOR_VERSION, powershellVersion: null, platform: 'MicrosoftGraph' },
+    collector: {
+      name: HOSTED_COLLECTOR_NAME,
+      version: HOSTED_COLLECTOR_VERSION,
+      powershellVersion: null,
+      platform: 'MicrosoftGraph',
+    },
     environment,
-    options: { modules: ['Entra'], collectionMode: 'hosted-graph', datasets: outcomes.map((o) => o.definition.id) },
+    options: {
+      modules: ['Entra'],
+      collectionMode: 'hosted-graph',
+      datasets: outcomes.map((o) => o.definition.id),
+    },
     modules: [module],
   };
 
   const { files, manifest } = buildEvidencePackage(
     manifestBase,
-    outcomes.map((outcome) => ({ path: evidencePath(outcome.definition.id), envelope: toEnvelope(outcome, assessmentId) })),
+    outcomes.map((outcome) => ({
+      path: evidencePath(outcome.definition.id),
+      envelope: toEnvelope(outcome, assessmentId),
+    })),
   );
   return { files, manifest, bundle: loadEvidenceBundle(files) };
 }
@@ -230,8 +283,18 @@ interface DatasetOutcome {
 
 type DatasetCollector = (state: DatasetState, context: CollectionContext) => Promise<unknown>;
 
-async function runDataset(definition: DatasetDefinition, context: CollectionContext): Promise<DatasetOutcome> {
-  const state: DatasetState = { definition, operations: [], errors: [], warnings: [], partial: false, notApplicable: false };
+async function runDataset(
+  definition: DatasetDefinition,
+  context: CollectionContext,
+): Promise<DatasetOutcome> {
+  const state: DatasetState = {
+    definition,
+    operations: [],
+    errors: [],
+    warnings: [],
+    partial: false,
+    notApplicable: false,
+  };
   const collector = COLLECTORS[definition.id];
   const finish = (status: CollectionStatus, data: unknown): DatasetOutcome => ({
     definition,
@@ -244,7 +307,9 @@ async function runDataset(definition: DatasetDefinition, context: CollectionCont
   });
 
   if (collector === undefined) {
-    state.errors.push(message('COLLECTOR_MISSING', 'No hosted collector is implemented for this dataset.'));
+    state.errors.push(
+      message('COLLECTOR_MISSING', 'No hosted collector is implemented for this dataset.'),
+    );
     return finish('NotCollected', null);
   }
 
@@ -254,7 +319,9 @@ async function runDataset(definition: DatasetDefinition, context: CollectionCont
   } catch (error) {
     if (!(error instanceof GraphRequestError)) throw error; // cancellation, tenant mismatch, programming errors
     const status = statusForError(error);
-    state.errors.push(message(codeForError(error, status), explainError(error, status, definition)));
+    state.errors.push(
+      message(codeForError(error, status), explainError(error, status, definition)),
+    );
     return finish(status, null);
   }
   if (state.notApplicable) return finish('NotApplicable', null);
@@ -262,13 +329,23 @@ async function runDataset(definition: DatasetDefinition, context: CollectionCont
   // Defence in depth: the payload must satisfy the dataset schema and contain no secret material.
   const sensitive = findSensitiveContent(data);
   if (sensitive.length > 0) {
-    state.errors.push(message('SENSITIVE_CONTENT', `Collected data contained ${sensitive.length} secret-like value(s) and was discarded.`));
+    state.errors.push(
+      message(
+        'SENSITIVE_CONTENT',
+        `Collected data contained ${sensitive.length} secret-like value(s) and was discarded.`,
+      ),
+    );
     return finish('Failed', null);
   }
   const parsed = definition.schema.safeParse(data);
   if (!parsed.success) {
     const where = summarizeZodIssues(parsed.error).join('; ');
-    state.errors.push(message('DATA_INVALID', `The Microsoft Graph response did not match the ${definition.id} schema and was not used (${where}).`));
+    state.errors.push(
+      message(
+        'DATA_INVALID',
+        `The Microsoft Graph response did not match the ${definition.id} schema and was not used (${where}).`,
+      ),
+    );
     return finish('Failed', null);
   }
   if (definition.id === 'entra.subscribedSkus' && !state.partial && Array.isArray(parsed.data)) {
@@ -291,8 +368,13 @@ function codeForError(error: GraphRequestError, status: CollectionStatus): strin
   return error.kind.toUpperCase().replace(/-/g, '_');
 }
 
-function explainError(error: GraphRequestError, status: CollectionStatus, definition: DatasetDefinition): string {
-  if (status === 'NotApplicable') return `${error.message} The service reported that the required licence or feature is not available.`;
+function explainError(
+  error: GraphRequestError,
+  status: CollectionStatus,
+  definition: DatasetDefinition,
+): string {
+  if (status === 'NotApplicable')
+    return `${error.message} The service reported that the required licence or feature is not available.`;
   if (status === 'Unauthorized') {
     return `${error.message} The collecting identity is not authorised to read this data. Required: ${definition.permissions.join('; ')}.`;
   }
@@ -315,9 +397,18 @@ function toEnvelope(outcome: DatasetOutcome, assessmentId: string): EvidenceEnve
     schemaVersion: '1.0',
     datasetId: outcome.definition.id,
     assessmentId,
-    collector: { name: HOSTED_COLLECTOR_NAME, version: HOSTED_COLLECTOR_VERSION, module: 'Entra', moduleVersion: HOSTED_COLLECTOR_VERSION },
+    collector: {
+      name: HOSTED_COLLECTOR_NAME,
+      version: HOSTED_COLLECTOR_VERSION,
+      module: 'Entra',
+      moduleVersion: HOSTED_COLLECTOR_VERSION,
+    },
     collectedAt: outcome.collectedAt,
-    source: { system: 'MicrosoftGraph', operations: outcome.operations.slice(0, 200).map((o) => o.slice(0, 2000)), apiVersion: 'v1.0' },
+    source: {
+      system: 'MicrosoftGraph',
+      operations: outcome.operations.slice(0, 200).map((o) => o.slice(0, 2000)),
+      apiVersion: 'v1.0',
+    },
     status: outcome.status,
     errors: [...outcome.errors],
     warnings: [...outcome.warnings],
@@ -329,7 +420,11 @@ function evidencePath(datasetId: string): string {
   return `evidence/entra/${datasetId.slice(datasetId.indexOf('.') + 1)}.json`;
 }
 
-function validateOptions(options: CollectEntraOptions): { tenantId: string; assessmentId: string; accessToken: string } {
+function validateOptions(options: CollectEntraOptions): {
+  tenantId: string;
+  assessmentId: string;
+  accessToken: string;
+} {
   if (!GuidSchema.safeParse(options.tenantId).success) {
     throw new AdminSecOpsError('INVALID_TENANT_ID', 'tenantId must be a tenant GUID.');
   }
@@ -338,24 +433,45 @@ function validateOptions(options: CollectEntraOptions): { tenantId: string; asse
   }
   const token = options.accessToken;
   // Printable ASCII only: prevents header injection. The token value is never echoed.
-  if (typeof token !== 'string' || token.length === 0 || token.length > 16_384 || !/^[\x21-\x7e]+$/.test(token)) {
+  if (
+    typeof token !== 'string' ||
+    token.length === 0 ||
+    token.length > 16_384 ||
+    !/^[\x21-\x7e]+$/.test(token)
+  ) {
     throw new AdminSecOpsError('INVALID_ACCESS_TOKEN', 'accessToken is missing or malformed.');
   }
-  return { tenantId: options.tenantId.toLowerCase(), assessmentId: options.assessmentId.toLowerCase(), accessToken: token };
+  return {
+    tenantId: options.tenantId.toLowerCase(),
+    assessmentId: options.assessmentId.toLowerCase(),
+    accessToken: token,
+  };
 }
 
 // ---------------------------------------------------------------------------------------------
 // Graph helpers
 // ---------------------------------------------------------------------------------------------
 
-async function getOne(state: DatasetState, context: CollectionContext, url: string): Promise<Record<string, unknown>> {
+async function getOne(
+  state: DatasetState,
+  context: CollectionContext,
+  url: string,
+): Promise<Record<string, unknown>> {
   state.operations.push(`GET ${url}`);
   const body = asRecord(await context.client.get(url));
-  if (body === undefined) throw new GraphRequestError('invalid-response', 'Microsoft Graph returned a response that is not a JSON object.');
+  if (body === undefined)
+    throw new GraphRequestError(
+      'invalid-response',
+      'Microsoft Graph returned a response that is not a JSON object.',
+    );
   return body;
 }
 
-async function getAll(state: DatasetState, context: CollectionContext, url: string): Promise<unknown[]> {
+async function getAll(
+  state: DatasetState,
+  context: CollectionContext,
+  url: string,
+): Promise<unknown[]> {
   state.operations.push(`GET ${url}`);
   const result: GraphPageResult = await context.client.getAll(url);
   if (result.incomplete !== null) {
@@ -366,10 +482,20 @@ async function getAll(state: DatasetState, context: CollectionContext, url: stri
 }
 
 /** Marks the dataset NotApplicable when subscribedSkus shows none of the plans; warns when licences are unknown. */
-function licensed(state: DatasetState, context: CollectionContext, plans: readonly string[], feature: string): boolean {
+function licensed(
+  state: DatasetState,
+  context: CollectionContext,
+  plans: readonly string[],
+  feature: string,
+): boolean {
   const known = context.servicePlans;
   if (known === null || known === undefined) {
-    state.warnings.push(message('LICENSE_UNKNOWN', `Licence information was not available; ${feature} availability is inferred from the service response.`));
+    state.warnings.push(
+      message(
+        'LICENSE_UNKNOWN',
+        `Licence information was not available; ${feature} availability is inferred from the service response.`,
+      ),
+    );
     return true;
   }
   if (plans.some((p) => known.has(p.toUpperCase()))) return true;
@@ -390,7 +516,8 @@ const rec = (v: unknown): Rec | undefined => asRecord(v);
 const val = (o: Rec | undefined, key: string): unknown => o?.[key] ?? null;
 const arr = (v: unknown): unknown[] | null => (Array.isArray(v) ? v : null);
 const strings = (v: unknown): unknown[] | null => arr(v);
-const pick = (o: Rec | undefined, keys: readonly string[]): Rec => Object.fromEntries(keys.map((k) => [k, val(o, k)]));
+const pick = (o: Rec | undefined, keys: readonly string[]): Rec =>
+  Object.fromEntries(keys.map((k) => [k, val(o, k)]));
 const pickOrNull = (v: unknown, keys: readonly string[]): Rec | null => {
   const o = rec(v);
   return o === undefined ? null : pick(o, keys);
@@ -410,13 +537,28 @@ const COLLECTORS: Record<string, DatasetCollector> = {
   'entra.organization': async (state, context) => {
     const orgs = await getAll(state, context, `${GRAPH_BASE}/organization`);
     const org = rec(orgs[0]);
-    if (org === undefined) throw new GraphRequestError('invalid-response', 'The organization endpoint returned no tenant.');
+    if (org === undefined)
+      throw new GraphRequestError(
+        'invalid-response',
+        'The organization endpoint returned no tenant.',
+      );
     const id = val(org, 'id');
-    if (typeof id !== 'string' || !GuidSchema.safeParse(id).success) throw new GraphRequestError('invalid-response', 'The organization response did not contain a valid tenant ID.');
+    if (typeof id !== 'string' || !GuidSchema.safeParse(id).success)
+      throw new GraphRequestError(
+        'invalid-response',
+        'The organization response did not contain a valid tenant ID.',
+      );
     if (typeof id === 'string' && id.toLowerCase() !== context.tenantId) {
-      throw new AdminSecOpsError('TENANT_MISMATCH', 'The access token belongs to a different tenant than the one requested. No evidence was produced.', { statusCode: 409 });
+      throw new AdminSecOpsError(
+        'TENANT_MISMATCH',
+        'The access token belongs to a different tenant than the one requested. No evidence was produced.',
+        { statusCode: 409 },
+      );
     }
-    const verifiedDomains = arr(val(org, 'verifiedDomains'))?.map((d) => pick(rec(d), ['name', 'isDefault', 'isInitial', 'type', 'capabilities'])) ?? null;
+    const verifiedDomains =
+      arr(val(org, 'verifiedDomains'))?.map((d) =>
+        pick(rec(d), ['name', 'isDefault', 'isInitial', 'type', 'capabilities']),
+      ) ?? null;
     const displayName = val(org, 'displayName');
     const primary = verifiedDomains?.find((d) => d['isDefault'] === true)?.['name'];
     context.organization = {
@@ -436,9 +578,14 @@ const COLLECTORS: Record<string, DatasetCollector> = {
   'entra.subscribedSkus': async (state, context) => {
     context.servicePlans = null;
     const skus = (await getAll(state, context, `${GRAPH_BASE}/subscribedSkus`)).map((s) => rec(s));
-    if (skus.some(sku => !Array.isArray(sku?.['servicePlans']))) {
+    if (skus.some((sku) => !Array.isArray(sku?.['servicePlans']))) {
       state.partial = true;
-      state.errors.push(message('SERVICE_PLANS_MISSING', 'Service plan details were missing; licence availability could not be determined.'));
+      state.errors.push(
+        message(
+          'SERVICE_PLANS_MISSING',
+          'Service plan details were missing; licence availability could not be determined.',
+        ),
+      );
     }
     return skus.map((sku) => ({
       skuId: val(sku, 'skuId'),
@@ -446,12 +593,19 @@ const COLLECTORS: Record<string, DatasetCollector> = {
       capabilityStatus: val(sku, 'capabilityStatus'),
       consumedUnits: val(sku, 'consumedUnits'),
       prepaidUnits: pickOrNull(val(sku, 'prepaidUnits'), ['enabled', 'suspended', 'warning']),
-      servicePlans: arr(val(sku, 'servicePlans'))?.map((p) => pick(rec(p), ['servicePlanId', 'servicePlanName', 'provisioningStatus', 'appliesTo'])) ?? null,
+      servicePlans:
+        arr(val(sku, 'servicePlans'))?.map((p) =>
+          pick(rec(p), ['servicePlanId', 'servicePlanName', 'provisioningStatus', 'appliesTo']),
+        ) ?? null,
     }));
   },
 
   'entra.securityDefaults': async (state, context) => {
-    const policy = await getOne(state, context, `${GRAPH_BASE}/policies/identitySecurityDefaultsEnforcementPolicy`);
+    const policy = await getOne(
+      state,
+      context,
+      `${GRAPH_BASE}/policies/identitySecurityDefaultsEnforcementPolicy`,
+    );
     return { isEnabled: val(policy, 'isEnabled') };
   },
 
@@ -460,7 +614,11 @@ const COLLECTORS: Record<string, DatasetCollector> = {
     // v1.0 returns a single object; tolerate the collection form as well.
     const list = arr(response['value']);
     const policy = list !== null ? rec(list[0]) : response;
-    if (policy === undefined) throw new GraphRequestError('invalid-response', 'The authorization policy response contained no policy.');
+    if (policy === undefined)
+      throw new GraphRequestError(
+        'invalid-response',
+        'The authorization policy response contained no policy.',
+      );
     return {
       ...pick(policy, [
         'allowInvitesFrom',
@@ -470,7 +628,9 @@ const COLLECTORS: Record<string, DatasetCollector> = {
         'blockMsolPowerShell',
         'guestUserRoleId',
       ]),
-      permissionGrantPolicyIdsAssignedToDefaultUserRole: strings(val(policy, 'permissionGrantPolicyIdsAssignedToDefaultUserRole')),
+      permissionGrantPolicyIdsAssignedToDefaultUserRole: strings(
+        val(policy, 'permissionGrantPolicyIdsAssignedToDefaultUserRole'),
+      ),
       defaultUserRolePermissions: pickOrNull(val(policy, 'defaultUserRolePermissions'), [
         'allowedToCreateApps',
         'allowedToCreateSecurityGroups',
@@ -482,9 +642,17 @@ const COLLECTORS: Record<string, DatasetCollector> = {
   },
 
   'entra.authenticationMethodsPolicy': async (state, context) => {
-    const policy = await getOne(state, context, `${GRAPH_BASE}/policies/authenticationMethodsPolicy`);
+    const policy = await getOne(
+      state,
+      context,
+      `${GRAPH_BASE}/policies/authenticationMethodsPolicy`,
+    );
     const configs = arr(val(policy, 'authenticationMethodConfigurations'));
-    if (configs === null) throw new GraphRequestError('invalid-response', 'Authentication method configurations were absent from the response.');
+    if (configs === null)
+      throw new GraphRequestError(
+        'invalid-response',
+        'Authentication method configurations were absent from the response.',
+      );
     const out: Rec[] = [];
     let lookups = 0;
     for (const raw of configs) {
@@ -494,40 +662,86 @@ const COLLECTORS: Record<string, DatasetCollector> = {
       if (config !== undefined && !('includeTargets' in config)) {
         // includeTargets is not always returned inline; read the individual configuration.
         if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{1,100}$/.test(id) || lookups >= 50) {
-          state.errors.push(message('METHOD_CONFIGURATION_UNREADABLE', 'The targets of an authentication method configuration could not be read.', typeof id === 'string' ? id.slice(0, 100) : null));
+          state.errors.push(
+            message(
+              'METHOD_CONFIGURATION_UNREADABLE',
+              'The targets of an authentication method configuration could not be read.',
+              typeof id === 'string' ? id.slice(0, 100) : null,
+            ),
+          );
           state.partial = true;
         } else {
           lookups += 1;
           const url = `${GRAPH_BASE}/policies/authenticationMethodsPolicy/authenticationMethodConfigurations/${encodeURIComponent(id)}`;
-          if (lookups === 1) state.operations.push(`GET ${GRAPH_BASE}/policies/authenticationMethodsPolicy/authenticationMethodConfigurations/{id}`);
+          if (lookups === 1)
+            state.operations.push(
+              `GET ${GRAPH_BASE}/policies/authenticationMethodsPolicy/authenticationMethodConfigurations/{id}`,
+            );
           try {
             source = rec(await context.client.get(url)) ?? config;
           } catch (error) {
             if (!(error instanceof GraphRequestError)) throw error;
-            state.errors.push(message('METHOD_CONFIGURATION_UNREADABLE', `The targets of the '${id}' method could not be read. ${error.message}`, id));
+            state.errors.push(
+              message(
+                'METHOD_CONFIGURATION_UNREADABLE',
+                `The targets of the '${id}' method could not be read. ${error.message}`,
+                id,
+              ),
+            );
             state.partial = true;
           }
         }
       }
       if (!Array.isArray(source?.['includeTargets'])) {
         state.partial = true;
-        state.errors.push(message('METHOD_TARGETS_MISSING', 'Authentication method targets were absent; coverage is incomplete.'));
+        state.errors.push(
+          message(
+            'METHOD_TARGETS_MISSING',
+            'Authentication method targets were absent; coverage is incomplete.',
+          ),
+        );
       }
       out.push({
         id,
         state: val(config, 'state'),
-        includeTargets: arr(val(source, 'includeTargets'))?.map((t) => pick(rec(t), ['targetType', 'id'])) ?? null,
+        includeTargets:
+          arr(val(source, 'includeTargets'))?.map((t) => pick(rec(t), ['targetType', 'id'])) ??
+          null,
       });
     }
-    return { policyMigrationState: val(policy, 'policyMigrationState'), authenticationMethodConfigurations: out };
+    return {
+      policyMigrationState: val(policy, 'policyMigrationState'),
+      authenticationMethodConfigurations: out,
+    };
   },
 
   'entra.conditionalAccessPolicies': async (state, context) => {
-    if (!licensed(state, context, P1_PLANS, 'Conditional Access (Microsoft Entra ID P1)')) return null;
-    const policies = await getAll(state, context, `${GRAPH_BASE}/identity/conditionalAccess/policies`);
+    if (!licensed(state, context, P1_PLANS, 'Conditional Access (Microsoft Entra ID P1)'))
+      return null;
+    const policies = await getAll(
+      state,
+      context,
+      `${GRAPH_BASE}/identity/conditionalAccess/policies`,
+    );
     return policies.map((raw) => {
       const p = rec(raw);
       const cond = rec(val(p, 'conditions'));
+      // Preserve uncertainty when Graph returns scope dimensions the evaluator does not model.
+      const applications = rec(val(cond, 'applications'));
+      const unsupportedScope =
+        ['clientApplications', 'servicePrincipalRiskLevels', 'insiderRiskLevels'].some((key) => {
+          const value = val(cond, key);
+          return value !== null && (!Array.isArray(value) || value.length > 0);
+        }) || val(applications, 'applicationFilter') !== null;
+      if (unsupportedScope) {
+        state.partial = true;
+        state.warnings.push(
+          message(
+            'CA_SCOPE_NOT_MODELED',
+            'A Conditional Access policy uses scope conditions not modeled by this evaluator; passing checks require review.',
+          ),
+        );
+      }
       const users = rec(val(cond, 'users'));
       const grant = rec(val(p, 'grantControls'));
       const session = rec(val(p, 'sessionControls'));
@@ -539,7 +753,14 @@ const COLLECTORS: Record<string, DatasetCollector> = {
             users === undefined
               ? null
               : {
-                  ...pick(users, ['includeUsers', 'excludeUsers', 'includeGroups', 'excludeGroups', 'includeRoles', 'excludeRoles']),
+                  ...pick(users, [
+                    'includeUsers',
+                    'excludeUsers',
+                    'includeGroups',
+                    'excludeGroups',
+                    'includeRoles',
+                    'excludeRoles',
+                  ]),
                   includeGuestsOrExternalUsers: val(users, 'includeGuestsOrExternalUsers'),
                   excludeGuestsOrExternalUsers: val(users, 'excludeGuestsOrExternalUsers'),
                 },
@@ -554,29 +775,64 @@ const COLLECTORS: Record<string, DatasetCollector> = {
           userRiskLevels: strings(val(cond, 'userRiskLevels')),
           platforms: pickOrNull(val(cond, 'platforms'), ['includePlatforms', 'excludePlatforms']),
           locations: pickOrNull(val(cond, 'locations'), ['includeLocations', 'excludeLocations']),
-          authenticationFlows: flows === undefined ? null : { transferMethods: val(flows, 'transferMethods') },
+          devices: pickOrNull(val(cond, 'devices'), [
+            'includeDevices',
+            'excludeDevices',
+            'deviceFilter',
+          ]),
+          authenticationFlows:
+            flows === undefined ? null : { transferMethods: val(flows, 'transferMethods') },
         },
         grantControls:
           grant === undefined
             ? null
             : {
-                ...pick(grant, ['operator', 'builtInControls', 'customAuthenticationFactors', 'termsOfUse']),
-                authenticationStrength: pickOrNull(val(grant, 'authenticationStrength'), ['id', 'displayName']),
+                ...pick(grant, [
+                  'operator',
+                  'builtInControls',
+                  'customAuthenticationFactors',
+                  'termsOfUse',
+                ]),
+                authenticationStrength: pickOrNull(val(grant, 'authenticationStrength'), [
+                  'id',
+                  'displayName',
+                  'requirementsSatisfied',
+                ]),
               },
         sessionControls:
           session === undefined
             ? null
             : {
-                signInFrequency: pickOrNull(val(session, 'signInFrequency'), ['isEnabled', 'value', 'type', 'frequencyInterval']),
-                persistentBrowser: pickOrNull(val(session, 'persistentBrowser'), ['isEnabled', 'mode']),
+                signInFrequency: pickOrNull(val(session, 'signInFrequency'), [
+                  'isEnabled',
+                  'value',
+                  'type',
+                  'frequencyInterval',
+                ]),
+                persistentBrowser: pickOrNull(val(session, 'persistentBrowser'), [
+                  'isEnabled',
+                  'mode',
+                ]),
               },
       };
     });
   },
 
   'entra.userRegistrationDetails': async (state, context) => {
-    if (!licensed(state, context, P1_PLANS, 'Authentication methods activity reports (Microsoft Entra ID P1/P2)')) return null;
-    const items = await getAll(state, context, `${GRAPH_BASE}/reports/authenticationMethods/userRegistrationDetails`);
+    if (
+      !licensed(
+        state,
+        context,
+        P1_PLANS,
+        'Authentication methods activity reports (Microsoft Entra ID P1/P2)',
+      )
+    )
+      return null;
+    const items = await getAll(
+      state,
+      context,
+      `${GRAPH_BASE}/reports/authenticationMethods/userRegistrationDetails`,
+    );
     return items.map((raw) =>
       pick(rec(raw), [
         'id',
@@ -593,13 +849,23 @@ const COLLECTORS: Record<string, DatasetCollector> = {
   },
 
   'entra.roleDefinitions': async (state, context) => {
-    const items = await getAll(state, context, `${GRAPH_BASE}/roleManagement/directory/roleDefinitions`);
+    const items = await getAll(
+      state,
+      context,
+      `${GRAPH_BASE}/roleManagement/directory/roleDefinitions`,
+    );
     // isPrivileged is only returned by the beta endpoint; it stays null from v1.0.
-    return items.map((raw) => pick(rec(raw), ['id', 'displayName', 'templateId', 'isBuiltIn', 'isEnabled', 'isPrivileged']));
+    return items.map((raw) =>
+      pick(rec(raw), ['id', 'displayName', 'templateId', 'isBuiltIn', 'isEnabled', 'isPrivileged']),
+    );
   },
 
   'entra.roleAssignments': async (state, context) => {
-    const items = await getAll(state, context, `${GRAPH_BASE}/roleManagement/directory/roleAssignments?$expand=principal`);
+    const items = await getAll(
+      state,
+      context,
+      `${GRAPH_BASE}/roleManagement/directory/roleAssignments?$expand=principal`,
+    );
     return items.map((raw) => {
       const a = rec(raw);
       const principal = rec(val(a, 'principal'));
@@ -609,7 +875,14 @@ const COLLECTORS: Record<string, DatasetCollector> = {
           principal === undefined
             ? null
             : {
-                ...pick(principal, ['id', 'displayName', 'userPrincipalName', 'userType', 'accountEnabled', 'onPremisesSyncEnabled']),
+                ...pick(principal, [
+                  'id',
+                  'displayName',
+                  'userPrincipalName',
+                  'userType',
+                  'accountEnabled',
+                  'onPremisesSyncEnabled',
+                ]),
                 principalType: principalType(principal['@odata.type']),
               },
       };
@@ -625,7 +898,12 @@ const COLLECTORS: Record<string, DatasetCollector> = {
       items = await getAll(state, context, `${base}${fields},signInActivity`);
     } catch (error) {
       // signInActivity needs AuditLog.Read.All and Entra ID P1/P2; collect the rest and flag the gap.
-      if (!(error instanceof GraphRequestError) || error.kind !== 'http' || !(error.status === 403 || error.licenceHint)) throw error;
+      if (
+        !(error instanceof GraphRequestError) ||
+        error.kind !== 'http' ||
+        !(error.status === 403 || error.licenceHint)
+      )
+        throw error;
       withActivity = false;
       items = await getAll(state, context, `${base}${fields}`);
       state.errors.push(
@@ -640,7 +918,13 @@ const COLLECTORS: Record<string, DatasetCollector> = {
       const u = rec(raw);
       const activity = withActivity ? rec(val(u, 'signInActivity')) : undefined;
       return {
-        ...pick(u, ['id', 'userPrincipalName', 'accountEnabled', 'createdDateTime', 'externalUserState']),
+        ...pick(u, [
+          'id',
+          'userPrincipalName',
+          'accountEnabled',
+          'createdDateTime',
+          'externalUserState',
+        ]),
         lastSignInDateTime: val(activity, 'lastSignInDateTime'),
         lastNonInteractiveSignInDateTime: val(activity, 'lastNonInteractiveSignInDateTime'),
       };
@@ -652,7 +936,8 @@ function enabledServicePlans(skus: readonly (Rec | undefined)[]): Set<string> {
   const names = new Set<string>();
   for (const sku of skus) {
     const status = val(sku, 'capabilityStatus');
-    if (typeof status === 'string' && !['Enabled', 'Warning', 'LockedOut'].includes(status)) continue;
+    if (typeof status === 'string' && !['Enabled', 'Warning', 'LockedOut'].includes(status))
+      continue;
     for (const plan of arr(val(sku, 'servicePlans')) ?? []) {
       const p = rec(plan);
       if (val(p, 'provisioningStatus') === 'Disabled') continue;

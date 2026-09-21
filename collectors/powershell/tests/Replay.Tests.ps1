@@ -131,6 +131,10 @@ Describe 'Entra transformations' {
         ($ca.data | Where-Object { $_.displayName -like 'CA004*' }).conditions.authenticationFlows.transferMethods | Should -Be 'deviceCodeFlow'
         ($ca.data | Where-Object { $_.displayName -like 'CA001*' }).conditions.users.includeRoles.Count | Should -Be 3
         ($ca.data | Where-Object { $_.displayName -like 'CA003*' }).grantControls.authenticationStrength.displayName | Should -Be 'Multifactor authentication'
+        ($ca.data | Where-Object { $_.displayName -like 'CA003*' }).grantControls.authenticationStrength.requirementsSatisfied | Should -Be 'mfa'
+        ($ca.data | Where-Object { $_.displayName -like 'CA005*' }).conditions.devices.deviceFilter.mode | Should -Be 'exclude'
+        ($ca.data | Where-Object { $_.displayName -like 'CA005*' }).conditions.devices.deviceFilter.rule | Should -Be 'device.isCompliant -eq True'
+        ($ca.data | Where-Object { $_.displayName -like 'CA001*' }).conditions.devices | Should -BeNullOrEmpty
         ($ca.data | Where-Object { $_.displayName -like 'CA003*' }).sessionControls.signInFrequency.value | Should -Be 12
         ($ca.data | Where-Object { $_.displayName -like 'CA005*' }).conditions.locations.excludeLocations | Should -Be @('AllTrusted')
         ($ca.data | Where-Object { $_.displayName -like 'CA001*' }).conditions.platforms | Should -BeNullOrEmpty

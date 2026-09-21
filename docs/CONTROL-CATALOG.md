@@ -85,7 +85,7 @@ tests, authoritative references, remediation, rollback and validation guidance. 
 | ENTRA-PRIV-002 | At least two principals hold the Global Administrator role | medium | high | `entra.roleAssignments` | NIST CP-2, MCSB PA-5, SCuBA MS.AAD.7.1v1 |
 | ENTRA-PRIV-003 | Highly privileged roles are held by cloud-only accounts | high | high | `entra.roleAssignments` | NIST AC-6(5), MCSB PA-1, SCuBA MS.AAD.7.3v1, ATT&CK T1078.004 |
 | ENTRA-PRIV-004 | Highly privileged roles use just-in-time (PIM) instead of permanent assignments | high | high | `entra.roleAssignmentScheduleInstances` | NIST AC-2(7), NIST AC-6(5), MCSB PA-2, SCuBA MS.AAD.7.4v1 |
-| ENTRA-PRIV-005 | All users with administrator roles are registered for MFA | high | high | `entra.roleAssignments`, `entra.userRegistrationDetails` | NIST IA-2(1), MCSB IM-6, ATT&CK T1098 |
+| ENTRA-PRIV-005 | Users in the assessed administrator roles are registered for MFA | high | high | `entra.roleAssignments`, `entra.userRegistrationDetails` | NIST IA-2(1), MCSB IM-6, ATT&CK T1098 |
 | ENTRA-TEN-001 | Non-administrators cannot create new tenants | low | high | `entra.authorizationPolicy` | NIST CM-11 |
 
 ## Group Policy (4)

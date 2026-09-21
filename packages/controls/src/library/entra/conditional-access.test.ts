@@ -30,12 +30,12 @@ describe('ENTRA-CA-001 MFA for all users', () => {
     expect(result.status).toBe('PASS');
   });
 
-  it('notes exclusions on a passing policy', () => {
+  it('requires review for unverified emergency account exclusions', () => {
     const result = run(entraCaMfaAllUsers, {
       'entra.securityDefaults': sdOff,
       'entra.conditionalAccessPolicies': [caPolicy({ excludeUsers: ['a', 'b'] })],
     });
-    expect(result.status).toBe('PASS');
+    expect(result.status).toBe('REVIEW');
     expect(result.notes.join(' ')).toContain('excludes 2 users');
   });
 
@@ -193,5 +193,16 @@ describe('ENTRA-CA-003 legacy authentication blocked', () => {
   it('fails when no policy blocks legacy authentication', () => {
     const result = run(entraCaBlockLegacyAuth, { 'entra.securityDefaults': sdOff, 'entra.conditionalAccessPolicies': [] });
     expect(result.status).toBe('FAIL');
+  });
+});
+
+
+describe('Conditional Access coverage regressions', () => {
+  it.each([entraCaMfaAllUsers, entraCaMfaAdmins])('reviews exclusions without rejecting emergency access outright: $id', (control) => {
+    expect(run(control, { 'entra.securityDefaults': sdOff, 'entra.conditionalAccessPolicies': [caPolicy({ excludeGroups: ['emergency'] })] }).status).toBe('REVIEW');
+    expect(run(control, { 'entra.securityDefaults': sdOff, 'entra.conditionalAccessPolicies': [caPolicy({ excludeGroups: ['emergency'] }), caPolicy()] }).status).toBe('PASS');
+  });
+  it('does not treat a narrowed legacy block as tenant-wide enforcement', () => {
+    expect(run(entraCaBlockLegacyAuth, { 'entra.securityDefaults': sdOff, 'entra.conditionalAccessPolicies': [caPolicy({ builtInControls: ['block'], clientAppTypes: ['exchangeActiveSync', 'other'], excludePlatforms: ['iOS'] })] }).status).toBe('REVIEW');
   });
 });

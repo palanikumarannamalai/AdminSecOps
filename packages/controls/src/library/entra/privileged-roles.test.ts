@@ -69,6 +69,22 @@ describe('ENTRA-PRIV-003 cloud-only privileged accounts', () => {
     expect(result.status).toBe('PASS');
   });
 
+  it('requires review when a privileged account synchronization state is unknown', () => {
+    const result = run(entraPrivilegedCloudOnly, {
+      'entra.roleAssignments': [roleAssignment(GA, { onPremisesSyncEnabled: null })],
+    });
+    expect(result.status).toBe('REVIEW');
+    expect(result.affectedObjectCount).toBe(1);
+  });
+
+  it('preserves failure when synchronized and unknown states coexist', () => {
+    const result = run(entraPrivilegedCloudOnly, {
+      'entra.roleAssignments': [roleAssignment(GA, { onPremisesSyncEnabled: true }), roleAssignment(GA, { onPremisesSyncEnabled: null })],
+    });
+    expect(result.status).toBe('FAIL');
+    expect(result.notes.join(' ')).toContain('cannot be confirmed');
+  });
+
   it('uses role definitions to resolve custom role names', () => {
     const result = run(entraPrivilegedCloudOnly, {
       'entra.roleAssignments': [roleAssignment(GA, { onPremisesSyncEnabled: true })],
@@ -124,10 +140,11 @@ describe('ENTRA-PRIV-005 administrators registered for MFA', () => {
   const adminId = 'bbbbbbbb-0000-4000-8000-000000000001';
   const reg = (id: string, registered: boolean) => ({ id, userPrincipalName: `${id}@contoso.example`, userType: 'member', isAdmin: true, isMfaRegistered: registered, methodsRegistered: [] });
 
-  it('passes when every administrator is registered', () => {
+  it('passes when every assessed administrator is registered and eligibility is empty', () => {
     const result = run(entraPrivilegedMfaRegistered, {
       'entra.roleAssignments': [roleAssignment(GA, { id: adminId })],
       'entra.userRegistrationDetails': [reg(adminId, true)],
+      'entra.roleEligibilitySchedules': [],
     });
     expect(result.status).toBe('PASS');
   });
@@ -146,7 +163,7 @@ describe('ENTRA-PRIV-005 administrators registered for MFA', () => {
     expect(result.status).toBe('REVIEW');
   });
 
-  it('ignores disabled accounts, service principals and non-admin roles', () => {
+  it('does not pass when disabled accounts, service principals and out-of-scope roles leave no user checked', () => {
     const result = run(entraPrivilegedMfaRegistered, {
       'entra.roleAssignments': [
         roleAssignment(GA, { id: adminId, accountEnabled: false }),
@@ -155,7 +172,49 @@ describe('ENTRA-PRIV-005 administrators registered for MFA', () => {
       ],
       'entra.userRegistrationDetails': [reg(adminId, false)],
     });
-    expect(result.status).toBe('PASS');
+    expect(result.status).toBe('REVIEW');
+    expect(result.observed.facts.find((f) => f.label === 'Administrators checked')?.value).toBe(0);
+  });
+
+  it('requires review when eligible administrator evidence was not collected', () => {
+    const result = run(entraPrivilegedMfaRegistered, {
+      'entra.roleAssignments': [roleAssignment(GA, { id: adminId })],
+      'entra.userRegistrationDetails': [reg(adminId, true)],
+    });
+    expect(result.status).toBe('REVIEW');
+    expect(result.notes.join(' ')).toContain('PIM eligibility evidence was not available');
+  });
+
+  it('requires review for unexpanded group assignments even with a registered direct user', () => {
+    const result = run(entraPrivilegedMfaRegistered, {
+      'entra.roleAssignments': [roleAssignment(GA, { id: adminId }), roleAssignment(GA, { principalType: 'group' })],
+      'entra.userRegistrationDetails': [reg(adminId, true)],
+      'entra.roleEligibilitySchedules': [],
+    });
+    expect(result.status).toBe('REVIEW');
+    expect(result.observed.facts.find((f) => f.label === 'Unresolved group or principal assignments')?.value).toBe(1);
+  });
+
+  it('requires review for selected PIM-eligible assignments with tenant-specific role definition IDs', () => {
+    const roleId = nextGuid();
+    const result = run(entraPrivilegedMfaRegistered, {
+      'entra.roleAssignments': [roleAssignment(GA, { id: adminId })],
+      'entra.userRegistrationDetails': [reg(adminId, true)],
+      'entra.roleDefinitions': [{ id: roleId, templateId: GA, displayName: 'Global Administrator', isBuiltIn: true }],
+      'entra.roleEligibilitySchedules': [{ id: nextGuid(), roleDefinitionId: roleId, principalId: nextGuid(), directoryScopeId: '/' }],
+    });
+    expect(result.status).toBe('REVIEW');
+    expect(result.observed.facts.find((f) => f.label === 'Selected PIM-eligible assignments not assessed')?.value).toBe(1);
+  });
+
+  it('preserves known registration failures when group and eligibility coverage are incomplete', () => {
+    const result = run(entraPrivilegedMfaRegistered, {
+      'entra.roleAssignments': [roleAssignment(GA, { id: adminId }), roleAssignment(GA, { principalType: 'group' })],
+      'entra.userRegistrationDetails': [reg(adminId, false)],
+    });
+    expect(result.status).toBe('FAIL');
+    expect(result.affectedObjectCount).toBe(1);
+    expect(result.notes.join(' ')).toContain('groups or unidentified principals');
   });
 
   it('is NOT_ASSESSED without the registration report', () => {

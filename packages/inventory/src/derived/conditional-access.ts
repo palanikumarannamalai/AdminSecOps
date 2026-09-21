@@ -23,7 +23,11 @@ export function includesAllUsers(policy: ConditionalAccessPolicy): boolean {
 }
 
 export function includesAllApps(policy: ConditionalAccessPolicy): boolean {
-  return policy.conditions.applications.includeApplications.some((a) => a.toLowerCase() === 'all');
+  const apps = policy.conditions.applications;
+  return (
+    apps.excludeApplications.length === 0 &&
+    apps.includeApplications.some((a) => a.toLowerCase() === 'all')
+  );
 }
 
 /** Policy applies to all client app types (empty list or explicit 'all'). */
@@ -37,13 +41,27 @@ export function hasNoNarrowingConditions(policy: ConditionalAccessPolicy): boole
   const c = policy.conditions;
   const platformsNarrow =
     c.platforms !== null &&
-    c.platforms.includePlatforms.length > 0 &&
-    !c.platforms.includePlatforms.some((p) => p.toLowerCase() === 'all');
+    (c.platforms.excludePlatforms.length > 0 ||
+      (c.platforms.includePlatforms.length > 0 &&
+        !c.platforms.includePlatforms.some((p) => p.toLowerCase() === 'all')));
   const locationsNarrow =
     c.locations !== null &&
     (c.locations.excludeLocations.length > 0 ||
-      (c.locations.includeLocations.length > 0 && !c.locations.includeLocations.some((l) => l.toLowerCase() === 'all')));
-  return !platformsNarrow && !locationsNarrow && c.signInRiskLevels.length === 0 && c.userRiskLevels.length === 0;
+      (c.locations.includeLocations.length > 0 &&
+        !c.locations.includeLocations.some((l) => l.toLowerCase() === 'all')));
+  const devicesNarrow =
+    c.devices !== null &&
+    (c.devices.includeDevices.length > 0 ||
+      c.devices.excludeDevices.length > 0 ||
+      c.devices.deviceFilter !== null);
+  return (
+    !platformsNarrow &&
+    !locationsNarrow &&
+    !devicesNarrow &&
+    transferMethods(policy).length === 0 &&
+    c.signInRiskLevels.length === 0 &&
+    c.userRiskLevels.length === 0
+  );
 }
 
 export function blocksAccess(policy: ConditionalAccessPolicy): boolean {
@@ -52,19 +70,32 @@ export function blocksAccess(policy: ConditionalAccessPolicy): boolean {
 
 /**
  * How strongly the grant controls require MFA:
- * - 'required': MFA (or an authentication strength) must always be satisfied;
+ * - 'required': MFA (or a strength known to require MFA) must always be satisfied;
  * - 'alternative': MFA is one of several OR-ed alternatives (e.g. MFA or compliant device);
  * - 'none': no MFA requirement.
  */
-export function mfaRequirement(policy: ConditionalAccessPolicy): 'required' | 'alternative' | 'none' {
+export function mfaRequirement(
+  policy: ConditionalAccessPolicy,
+): 'required' | 'alternative' | 'none' {
   const grant = policy.grantControls;
   if (grant === null) return 'none';
   const controls = grant.builtInControls.map((c) => c.toLowerCase());
-  const hasMfa = controls.includes('mfa') || grant.authenticationStrength !== null;
+  const strength = grant.authenticationStrength;
+  const strengthRequiresMfa =
+    strength !== null &&
+    (strength.requirementsSatisfied === 'mfa' ||
+      (strength.requirementsSatisfied === null &&
+        [MFA_STRENGTH_ID, PASSWORDLESS_STRENGTH_ID, PHISHING_RESISTANT_STRENGTH_ID].includes(
+          strength.id,
+        )));
+  const hasMfa = controls.includes('mfa') || strengthRequiresMfa;
   if (!hasMfa) return 'none';
   const nonMfaControls = controls.filter((c) => c !== 'mfa');
   const hasOtherAlternatives =
-    nonMfaControls.length > 0 || grant.customAuthenticationFactors.length > 0 || grant.termsOfUse.length > 0;
+    nonMfaControls.length > 0 ||
+    (strength !== null && !strengthRequiresMfa) ||
+    grant.customAuthenticationFactors.length > 0 ||
+    grant.termsOfUse.length > 0;
   if (grant.operator.toUpperCase() === 'OR' && hasOtherAlternatives) return 'alternative';
   return 'required';
 }
@@ -93,7 +124,8 @@ export function exclusions(policy: ConditionalAccessPolicy): PolicyExclusions {
     groups: u.excludeGroups.length,
     roles: u.excludeRoles.length,
     guestsOrExternal: guests,
-    total: u.excludeUsers.length + u.excludeGroups.length + u.excludeRoles.length + (guests ? 1 : 0),
+    total:
+      u.excludeUsers.length + u.excludeGroups.length + u.excludeRoles.length + (guests ? 1 : 0),
   };
 }
 

@@ -24,23 +24,20 @@ function requiresP2(ctx: ControlContext): Applicability {
       };
 }
 
-/** Enabled, all apps, no location/platform narrowing (risk conditions are allowed). */
-function broadEnabled(policy: Policy): boolean {
-  const c = policy.conditions;
-  const narrowedByLocation =
-    c.locations !== null &&
-    (c.locations.excludeLocations.length > 0 ||
-      (c.locations.includeLocations.length > 0 && !c.locations.includeLocations.some((l) => l.toLowerCase() === 'all')));
-  const narrowedByPlatform =
-    c.platforms !== null &&
-    c.platforms.includePlatforms.length > 0 &&
-    !c.platforms.includePlatforms.some((p) => p.toLowerCase() === 'all');
-  return ca.isEnabled(policy) && ca.includesAllApps(policy) && !narrowedByLocation && !narrowedByPlatform;
+function coversModernClients(policy: Policy): boolean {
+  if (ca.includesAllClientApps(policy)) return true;
+  const types = policy.conditions.clientAppTypes.map((t) => t.toLowerCase());
+  return types.includes('browser') && types.includes('mobileappsanddesktopclients');
+}
+
+function hasIdentityExclusions(policy: Policy): boolean {
+  const ex = ca.exclusions(policy);
+  return ex.users > 0 || ex.groups > 0 || ex.guestsOrExternal;
 }
 
 export const entraCaPhishingResistantAdmins = defineControl({
   id: 'ENTRA-CA-004',
-  version: '1.0.0',
+  version: '1.0.1',
   lifecycle: 'stable',
   title: 'Phishing-resistant MFA is required for highly privileged roles',
   technology: 'entra',
@@ -58,7 +55,7 @@ export const entraCaPhishingResistantAdmins = defineControl({
   requiredEvidence: ['entra.conditionalAccessPolicies'],
   evaluation: {
     logic:
-      'For each highly privileged role (Global, Privileged Role, Privileged Authentication, Security, Conditional Access, Exchange, SharePoint, User, Application, Cloud Application, Hybrid Identity, Intune and Authentication Policy Administrator) look for an enabled policy that includes the role (directly or via All users), does not exclude it, targets all cloud apps, has no location/platform narrowing and whose grant uses the built-in phishing-resistant authentication strength. PASS when all roles are covered. REVIEW when uncovered roles are only covered by a custom authentication strength (its allowed methods are not in the evidence). FAIL otherwise, listing uncovered roles.',
+      'For each highly privileged role (Global, Privileged Role, Privileged Authentication, Security, Conditional Access, Exchange, SharePoint, User, Application, Cloud Application, Hybrid Identity, Intune and Authentication Policy Administrator) look for an enabled policy that includes the role (directly or via All users), does not exclude it, targets all cloud apps, covers modern clients, has no narrowing conditions and whose grant unconditionally requires the built-in phishing-resistant authentication strength. PASS when all roles are covered without unverified identity exclusions. REVIEW when coverage depends on identity exclusions or uncovered roles are only covered by a custom authentication strength (its allowed methods are not in the evidence). FAIL otherwise, listing uncovered roles.',
     parameters: {},
   },
   expectedState: 'Every highly privileged role must satisfy the phishing-resistant MFA authentication strength at every sign-in.',
@@ -80,7 +77,7 @@ export const entraCaPhishingResistantAdmins = defineControl({
   impact: 'Administrators must sign in with a FIDO2 key, passkey, Windows Hello for Business or certificate. One-time codes, SMS and push approvals are no longer accepted for these roles.',
   rollback: ['Set the Conditional Access policy to Report-only or Off, or change its grant to the "Multifactor authentication" strength.'],
   validation: [
-    'Re-run the AdminSecOps Entra collector and confirm ENTRA-CA-004 is PASS.',
+    'Re-run the AdminSecOps Entra collector and confirm ENTRA-CA-004 is PASS, or validate documented emergency access exclusions if it is REVIEW.',
     'Sign in as an administrator and confirm the sign-in log shows the phishing-resistant authentication strength was satisfied.',
   ],
   references: [REF.caPhishingResistantAdmins, REF.authenticationStrengths, REF.emergencyAccess],
@@ -94,16 +91,25 @@ export const entraCaPhishingResistantAdmins = defineControl({
   ],
   tags: ['mfa', 'privileged-access', 'conditional-access', 'identity'],
   evaluate: (ctx) => {
-    const policies = ctx.data('entra.conditionalAccessPolicies').filter(broadEnabled);
+    const policies = ctx.data('entra.conditionalAccessPolicies').filter((p) => ca.isEnabled(p) && ca.includesAllApps(p) && coversModernClients(p) && ca.hasNoNarrowingConditions(p));
     const roles = [...HIGHLY_PRIVILEGED_ROLE_TEMPLATE_IDS];
-    const phishingResistant = policies.filter((p) => p.grantControls?.authenticationStrength?.id === ca.PHISHING_RESISTANT_STRENGTH_ID);
+    const phishingResistant = policies.filter((p) => p.grantControls?.authenticationStrength?.id === ca.PHISHING_RESISTANT_STRENGTH_ID && ca.mfaRequirement(p) === 'required' && (p.grantControls.operator === 'AND' || p.grantControls.builtInControls.length === 0));
     const builtInIds = new Set([ca.MFA_STRENGTH_ID, ca.PASSWORDLESS_STRENGTH_ID, ca.PHISHING_RESISTANT_STRENGTH_ID]);
     const customStrength = policies.filter((p) => {
       const id = p.grantControls?.authenticationStrength?.id;
-      return id !== undefined && !builtInIds.has(id);
+      return id !== undefined && !builtInIds.has(id) && (p.grantControls?.operator === 'AND' || (p.grantControls?.builtInControls.length === 0 && p.grantControls.customAuthenticationFactors.length === 0 && p.grantControls.termsOfUse.length === 0));
     });
     const uncovered = roles.filter((r) => !phishingResistant.some((p) => ca.coversRole(p, r)));
     const facts = [fact('Highly privileged roles checked', roles.length), fact('Roles without phishing-resistant MFA', uncovered.length)];
+    const uncertain = roles.filter((r) => !phishingResistant.some((p) => ca.coversRole(p, r) && !hasIdentityExclusions(p)));
+    if (uncovered.length === 0 && uncertain.length > 0) {
+      return review({
+        reason: 'Phishing-resistant role coverage depends on policies with identity exclusions.',
+        summary: 'Validate excluded identities and their alternative protection before confirming coverage.',
+        facts,
+        affectedObjects: uncertain.map((id) => affected('directoryRole', id, builtInRoleName(id), 'Coverage depends on excluded identities')),
+      });
+    }
     if (uncovered.length === 0) {
       return pass({ reason: 'Every highly privileged role requires the phishing-resistant MFA authentication strength.', summary: 'Phishing-resistant MFA is enforced for all highly privileged roles.', facts });
     }
@@ -125,8 +131,8 @@ export const entraCaPhishingResistantAdmins = defineControl({
       });
     }
     return fail({
-      reason: `${plural(uncovered.length, 'highly privileged role')} are not required to use phishing-resistant MFA.`,
-      summary: `${plural(uncovered.length, 'highly privileged role')} can sign in with phishable MFA methods.`,
+      reason: `${plural(uncovered.length, 'highly privileged role template')} lack a qualifying enforced phishing-resistant MFA policy.`,
+      summary: `No qualifying enforced phishing-resistant MFA policy was found for ${plural(uncovered.length, 'highly privileged role template')}.`,
       facts,
       affectedObjects: objects,
     });
@@ -135,7 +141,7 @@ export const entraCaPhishingResistantAdmins = defineControl({
 
 export const entraCaBlockDeviceCode = defineControl({
   id: 'ENTRA-CA-005',
-  version: '1.0.0',
+  version: '1.0.1',
   lifecycle: 'stable',
   title: 'Device code flow is blocked by Conditional Access',
   technology: 'entra',
@@ -184,20 +190,20 @@ export const entraCaBlockDeviceCode = defineControl({
     const blocking = policies.filter(
       (p) => ca.blocksAccess(p) && ca.transferMethods(p).some((m) => m.toLowerCase() === 'devicecodeflow'),
     );
-    const enforcedAll = blocking.filter((p) => ca.isEnabled(p) && ca.includesAllUsers(p) && ca.includesAllApps(p));
+    const enforcedAll = blocking.filter((p) => ca.isEnabled(p) && ca.includesAllUsers(p) && ca.includesAllApps(p) && ca.includesAllClientApps(p) && ca.exclusions(p).total === 0 && ca.hasNoNarrowingConditions({ ...p, conditions: { ...p.conditions, authenticationFlows: null } }));
     const facts = [fact('Policies blocking device code flow', blocking.length), fact('Enabled for all users and apps', enforcedAll.length)];
     if (enforcedAll.length > 0) {
       return pass({ reason: `Device code flow is blocked by ${enforcedAll.map((p) => `"${p.displayName}"`).join(', ')}.`, summary: 'Device code flow is blocked for all users.', facts });
     }
     if (blocking.length > 0) {
       return review({
-        reason: 'Policies that block device code flow exist but are not enabled, or target only some users or apps.',
-        summary: 'Device code flow blocking is configured but not enforced tenant-wide.',
+        reason: 'Policies that block device code flow exist but are not enabled, or have user, app, client or condition scope restrictions requiring validation.',
+        summary: 'Device code flow blocking needs enforcement or scope validation.',
         facts,
         affectedObjects: blocking.map((p) => affected('conditionalAccessPolicy', p.id, p.displayName, `state=${p.state}; allUsers=${ca.includesAllUsers(p)}`)),
       });
     }
-    return fail({ reason: 'No Conditional Access policy blocks the device code flow.', summary: 'The device code authentication flow is allowed for all users.', facts });
+    return fail({ reason: 'No Conditional Access policy blocks the device code flow.', summary: 'No Conditional Access device code blocking policy was found in the collected evidence.', facts });
   },
 });
 
@@ -205,7 +211,7 @@ function riskControl(kind: 'signIn' | 'user') {
   const signIn = kind === 'signIn';
   return defineControl({
     id: signIn ? 'ENTRA-CA-006' : 'ENTRA-CA-007',
-    version: '1.0.0',
+    version: '1.0.1',
     lifecycle: 'stable',
     title: signIn ? 'High-risk sign-ins are challenged or blocked' : 'High-risk users are remediated or blocked',
     technology: 'entra',
@@ -277,17 +283,24 @@ function riskControl(kind: 'signIn' | 'user') {
         if (!levels.includes('high') || !ca.includesAllUsers(p) || !ca.includesAllApps(p)) return false;
         if (ca.blocksAccess(p)) return true;
         if (signIn) return ca.mfaRequirement(p) === 'required';
-        return p.grantControls?.builtInControls.some((c) => c.toLowerCase() === 'passwordchange') ?? false;
+        const grant = p.grantControls;
+        if (!grant?.builtInControls.some((c) => c.toLowerCase() === 'passwordchange')) return false;
+        return grant.operator === 'AND' || (
+          grant.builtInControls.every((c) => c.toLowerCase() === 'passwordchange') &&
+          grant.authenticationStrength === null &&
+          grant.customAuthenticationFactors.length === 0 &&
+          grant.termsOfUse.length === 0
+        );
       });
-      const enforced = matching.filter((p) => ca.isEnabled(p));
+      const enforced = matching.filter((p) => ca.isEnabled(p) && ca.includesAllClientApps(p) && ca.exclusions(p).total === 0 && ca.hasNoNarrowingConditions({ ...p, conditions: { ...p.conditions, ...(signIn ? { signInRiskLevels: [] } : { userRiskLevels: [] }) } }));
       const facts = [fact('Matching policies', matching.length), fact('Enabled matching policies', enforced.length)];
       if (enforced.length > 0) {
         return pass({ reason: `High ${signIn ? 'sign-in' : 'user'} risk is handled by ${enforced.map((p) => `"${p.displayName}"`).join(', ')}.`, summary: 'An enabled risk-based policy covers high risk.', facts });
       }
       if (matching.length > 0) {
         return review({
-          reason: 'A risk-based policy exists but is not enabled.',
-          summary: 'Risk-based policy is configured but not enforced.',
+          reason: 'A risk-based policy exists but is not enabled, has additional scope restrictions, or has exclusions requiring validation.',
+          summary: 'Risk-based policy needs enforcement or scope validation.',
           facts,
           affectedObjects: matching.map((p) => affected('conditionalAccessPolicy', p.id, p.displayName, `state=${p.state}`)),
         });

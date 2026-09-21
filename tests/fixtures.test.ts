@@ -147,7 +147,7 @@ describe('fixture environments', () => {
     expect(comparison.current.assessmentId).toBe(CONTOSO_FOLLOWUP_ASSESSMENT_ID);
     expect(comparison.resolvedFindings.length).toBeGreaterThan(0);
     expect(comparison.newFindings.length).toBeGreaterThan(0);
-    expect(comparison.direction).toBe('mixed');
+    expect(comparison.direction).toBe('improved');
     expect(comparison.controlStatusChanges.length).toBeGreaterThan(0);
   });
 });

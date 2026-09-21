@@ -94,5 +94,12 @@ ZIP deployment. Container Apps packaging is deferred; App Service is the active 
 - Live PostgreSQL verification: restricted role, session persistence, tenant-scoped jobs,
   exclusive job claim and failed-job persistence; synthetic records removed.
 - Live site verified: root and health return 200; unauthenticated identity and assessment requests return 401; sign-in page renders and redirects to the correct Microsoft tenant.
-- First real Microsoft sign-in/consent and live tenant assessment remain user-assisted validation.
-  Do not claim a real tenant assessment has passed until it is completed.
+- Real Microsoft sign-in/consent and a live read-only tenant assessment completed on 2026-09-21.
+- Follow-up validation compared policy states, role counts and MFA registration scope with live Graph reads.
+  Private tenant evidence remains outside source control. No tenant configuration was changed.
+- Validation corrections: 1,229 automated tests and 45 PowerShell replay tests passed; typecheck,
+  focused lint and online/server builds passed. Excluded applications/platforms, device filters,
+  MFA-strength requirements and grant alternatives cannot establish unrestricted coverage.
+  Unknown administrator sync state and incomplete administrator coverage require review.
+- A fresh assessment after this correction requires completing the current Microsoft sign-in prompt.
+  Existing saved assessments retain their original results.

@@ -171,7 +171,7 @@ export const entraGlobalAdminMinimum = defineControl({
 
 export const entraPrivilegedCloudOnly = defineControl({
   id: 'ENTRA-PRIV-003',
-  version: '1.0.0',
+  version: '1.0.1',
   lifecycle: 'stable',
   title: 'Highly privileged roles are held by cloud-only accounts',
   technology: 'entra',
@@ -186,7 +186,7 @@ export const entraPrivilegedCloudOnly = defineControl({
   requiredEvidence: ['entra.roleAssignments'],
   optionalEvidence: ['entra.roleDefinitions'],
   evaluation: {
-    logic: 'FAIL when any active assignment of a highly privileged role at any scope belongs to a user principal with onPremisesSyncEnabled = true. User principals whose sync state is unknown (null) are listed in notes.',
+    logic: 'FAIL when any active assignment of a highly privileged role at any scope belongs to a user principal with onPremisesSyncEnabled = true. REVIEW when any assessed user principal has an unknown synchronization state and no synchronized assignment is confirmed.',
     parameters: {},
   },
   expectedState: 'Every account with a highly privileged role is a cloud-only account.',
@@ -218,8 +218,8 @@ export const entraPrivilegedCloudOnly = defineControl({
     const privileged = resolved(ctx).filter((a) => a.isHighlyPrivileged && a.principalType === 'user');
     const synced = privileged.filter((a) => a.onPremisesSyncEnabled === true);
     const unknown = privileged.filter((a) => a.onPremisesSyncEnabled === null);
-    const facts = [fact('Privileged user assignments', privileged.length), fact('Held by synchronized accounts', synced.length)];
-    const notes = unknown.length > 0 ? [`${plural(unknown.length, 'assignment')} have no synchronization state in the evidence (typically cloud-only accounts).`] : [];
+    const facts = [fact('Privileged user assignments', privileged.length), fact('Held by synchronized accounts', synced.length), fact('Unknown synchronization state', unknown.length)];
+    const notes = unknown.length > 0 ? [`${plural(unknown.length, 'assignment')} have no synchronization state in the evidence; cloud-only status cannot be confirmed.`] : [];
     if (synced.length > 0) {
       return fail({
         reason: `${plural(synced.length, 'highly privileged role assignment')} are held by accounts synchronized from on-premises.`,
@@ -228,6 +228,9 @@ export const entraPrivilegedCloudOnly = defineControl({
         affectedObjects: synced.map((a) => affected('user', a.principalId, a.userPrincipalName ?? a.principalName, `${a.roleName} (synchronized from on-premises)`)),
         notes,
       });
+    }
+    if (unknown.length > 0) {
+      return review({ reason: 'Synchronization state is unknown for some privileged user assignments.', summary: 'Cloud-only status could not be confirmed for every assessed privileged account.', facts, notes, affectedObjects: unknown.map((a) => affected('user', a.principalId, a.userPrincipalName ?? a.principalName, `${a.roleName} (synchronization state unknown)`)) });
     }
     return pass({ reason: 'No synchronized account holds a highly privileged role.', summary: 'Highly privileged roles are held by cloud-only accounts.', facts, notes });
   },
@@ -321,26 +324,26 @@ export const entraPrivilegedNoPermanent = defineControl({
 
 export const entraPrivilegedMfaRegistered = defineControl({
   id: 'ENTRA-PRIV-005',
-  version: '1.0.0',
+  version: '1.0.1',
   lifecycle: 'stable',
-  title: 'All users with administrator roles are registered for MFA',
+  title: 'Users in the assessed administrator roles are registered for MFA',
   technology: 'entra',
   category: 'Privileged access',
   subcategory: 'MFA registration',
-  description: 'Joins active administrator role assignments with the authentication methods registration report and lists administrators who have not registered an MFA method.',
+  description: 'Joins direct active user assignments in the highly privileged role catalog and Microsoft administrator MFA template with the registration report. Disabled users are excluded. Group membership and PIM-eligible users are not resolved; incomplete coverage requires review.',
   rationale:
     'An administrator without a registered MFA method can be registered by whoever first signs in with the password. If that is an attacker using a phished or sprayed password, they bind their own authenticator to a privileged account.',
   severity: 'high',
   confidence: 'high',
   applicability: { description: 'Tenants licensed for the registration report (Microsoft Entra ID P1 or P2).' },
   requiredEvidence: ['entra.roleAssignments', 'entra.userRegistrationDetails'],
-  optionalEvidence: ['entra.roleDefinitions'],
+  optionalEvidence: ['entra.roleDefinitions', 'entra.roleEligibilitySchedules'],
   evaluation: {
     logic:
-      'Consider enabled user principals with an active assignment of a highly privileged role or a role from the Microsoft administrator MFA template. FAIL when any of them has isMfaRegistered = false in entra.userRegistrationDetails. Administrators missing from the report are noted and make a PASS a REVIEW.',
+      'Consider enabled user principals with an active assignment of a highly privileged role or a role from the Microsoft administrator MFA template. FAIL when any of them has isMfaRegistered = false in entra.userRegistrationDetails. REVIEW when registration rows, eligible assignment evidence, or principal coverage are incomplete, when selected eligible assignments exist, or when no user was checked. Groups are not expanded. Roles outside the selected built-in templates are outside this control.',
     parameters: {},
   },
-  expectedState: 'Every administrator has registered at least one MFA method (preferably phishing-resistant).',
+  expectedState: 'Every user in the assessed administrator roles has registered at least one MFA method (preferably phishing-resistant).',
   remediation: {
     summary: 'Have each listed administrator register MFA immediately, or remove their role until they do.',
     steps: [
@@ -353,7 +356,7 @@ export const entraPrivilegedMfaRegistered = defineControl({
   implementationConsiderations: ['Verify the identity of the administrator out-of-band before issuing a Temporary Access Pass.'],
   impact: 'None for users once registered.',
   rollback: ['Not applicable - registering an authentication method does not change configuration.'],
-  validation: ['Re-run the AdminSecOps Entra collector and confirm ENTRA-PRIV-005 is PASS.', 'Check Entra ID > Authentication methods > User registration details filtered by Admin = Yes.'],
+  validation: ['Re-run the AdminSecOps Entra collector and confirm ENTRA-PRIV-005 is PASS.', 'Compare the affected direct role assignments with Entra ID > Authentication methods > User registration details. The Admin = Yes filter can include roles outside this control; separately review group members and PIM-eligible users.'],
   references: [REF.userRegistrationDetails, REF.caRequireMfaAdmins],
   frameworkMappings: [
     { framework: 'NIST-800-53r5', id: 'IA-2(1)' },
@@ -364,7 +367,13 @@ export const entraPrivilegedMfaRegistered = defineControl({
   evaluate: (ctx) => {
     const adminRoleIds = new Set([...HIGHLY_PRIVILEGED_ROLE_TEMPLATE_IDS, ...MFA_ADMIN_ROLE_TEMPLATE_IDS]);
     const admins = new Map<string, ResolvedRoleAssignment[]>();
-    for (const a of resolved(ctx)) {
+    const selectedAssignments = resolved(ctx).filter((a) => adminRoleIds.has(a.roleTemplateId));
+    const unresolved = selectedAssignments.filter((a) => a.principalType !== 'user' && a.principalType !== 'servicePrincipal');
+    const eligible = ctx.fact('entra.roleEligibilitySchedules');
+    const definitions = ctx.fact('entra.roleDefinitions');
+    const templateIds = new Map(definitions.available ? definitions.data.map((d) => [d.id.toLowerCase(), (d.templateId ?? d.id).toLowerCase()]) : []);
+    const selectedEligible = eligible.available ? eligible.data.filter((a) => adminRoleIds.has(templateIds.get(a.roleDefinitionId.toLowerCase()) ?? a.roleDefinitionId.toLowerCase())) : [];
+    for (const a of selectedAssignments) {
       if (a.principalType !== 'user' || a.accountEnabled === false || !adminRoleIds.has(a.roleTemplateId)) continue;
       const list = admins.get(a.principalId.toLowerCase()) ?? [];
       list.push(a);
@@ -383,8 +392,13 @@ export const entraPrivilegedMfaRegistered = defineControl({
       const first = list[0];
       return affected('user', id, first?.userPrincipalName ?? first?.principalName ?? id, list.map((a) => a.roleName).join(', '));
     };
-    const facts = [fact('Administrators checked', admins.size), fact('Not registered for MFA', unregistered.length), fact('Not found in registration report', missing.length)];
+    const facts = [fact('Administrators checked', admins.size), fact('Not registered for MFA', unregistered.length), fact('Not found in registration report', missing.length), fact('Unresolved group or principal assignments', unresolved.length), fact('PIM eligibility evidence available', eligible.available), fact('Selected PIM-eligible assignments not assessed', selectedEligible.length)];
     const notes = missing.length > 0 ? [`${plural(missing.length, 'administrator')} were not found in the registration report: ${missing.map((m) => describe(m).name).join(', ')}.`] : [];
+    notes.push('Checks direct active users in the highly privileged role catalog and Microsoft administrator MFA template; other roles and custom roles are outside this control. MFA registration is not proof of MFA enforcement.');
+    if (!eligible.available) notes.push('PIM eligibility evidence was not available; eligible administrators were not assessed.');
+    if (selectedEligible.length > 0) notes.push('PIM-eligible assignments in the selected roles were found, but their users and group members were not assessed.');
+    if (unresolved.length > 0) notes.push('Some selected assignments belong to groups or unidentified principals; their users could not be assessed.');
+    if (admins.size === 0) notes.push('No direct active user in the selected roles was checked.');
     if (unregistered.length > 0) {
       return fail({
         reason: `${plural(unregistered.length, 'administrator')} have not registered an MFA method.`,
@@ -394,9 +408,9 @@ export const entraPrivilegedMfaRegistered = defineControl({
         notes,
       });
     }
-    if (missing.length > 0) {
-      return review({ reason: 'Some administrators could not be matched to the registration report.', summary: 'MFA registration could not be confirmed for every administrator.', facts, affectedObjects: missing.map(describe), notes });
+    if (missing.length > 0 || unresolved.length > 0 || !eligible.available || selectedEligible.length > 0 || admins.size === 0) {
+      return review({ reason: 'Administrator MFA registration coverage is incomplete.', summary: 'MFA registration could not be confirmed for every administrator.', facts, affectedObjects: missing.map(describe), notes });
     }
-    return pass({ reason: 'All administrators are registered for MFA.', summary: `${plural(admins.size, 'administrator')} checked; all registered for MFA.`, facts });
+    return pass({ reason: 'All assessed direct active administrator users are registered for MFA.', summary: `${plural(admins.size, 'administrator')} checked; all registered for MFA.`, facts, notes });
   },
 });
