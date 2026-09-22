@@ -115,6 +115,28 @@ export const M365_REF = {
     'Set-SPOTenant (SharePoint Online PowerShell)',
     `${LEARN}/powershell/module/microsoft.online.sharepoint.powershell/set-spotenant`,
   ),
+  spoIdleSignOut: ms(
+    'Sign out inactive users (SharePoint in Microsoft 365)',
+    `${LEARN}/sharepoint/sign-out-inactive-users`,
+  ),
+
+  // --- Microsoft Teams ------------------------------------------------------------------------
+  graphTeamsAppSettings: ms(
+    'teamsAppSettings resource type (Microsoft Graph v1.0)',
+    `${LEARN}/graph/api/resources/teamsappsettings?view=graph-rest-1.0`,
+  ),
+  teamsRsc: ms(
+    'Resource-specific consent for apps (Microsoft Teams)',
+    `${LEARN}/microsoftteams/platform/graph-api/rsc/resource-specific-consent`,
+  ),
+  graphTeam: ms(
+    'team resource type (Microsoft Graph v1.0)',
+    `${LEARN}/graph/api/resources/team?view=graph-rest-1.0`,
+  ),
+  teamsGuestAccess: ms(
+    'Guest access in Microsoft Teams',
+    `${LEARN}/microsoftteams/guest-access`,
+  ),
 
   // --- Defender for Office 365 -------------------------------------------------------------
   safeAttachmentsSpoAbout: ms(

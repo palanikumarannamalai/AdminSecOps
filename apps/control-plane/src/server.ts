@@ -5,6 +5,7 @@ import { listDatasetDefinitions } from '@adminsecops/schemas';
 import { buildJsonReport, renderHtmlReport, serializeJsonReport } from '@adminsecops/reporting';
 import { isApprovedUser, isTenantId, type Config } from './config.js';
 import { createAuth, decryptTokens, encryptTokens, hasFreshAuthorization, hashToken, randomToken } from './auth.js';
+import { ONLINE_REQUIRED_GRAPH_PERMISSIONS } from './collector/index.js';
 import type { Store, StoredSession } from './store.js';
 
 const sessionName = '__Host-adminsecops';
@@ -56,11 +57,13 @@ export async function buildServer({ config, store }: { config: Config; store: St
     if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && (request.headers.origin !== config.publicUrl || request.headers['x-adminsecops-client'] !== 'web')) throw failure(403, 'Invalid request origin');
   });
   app.get('/api/health', () => ({ status: 'ok' }));
-  app.get<{ Querystring: { tenantId?: string } }>('/auth/login', async (request, reply) => {
+  app.get<{ Querystring: { tenantId?: string; consent?: string } }>('/auth/login', async (request, reply) => {
     throttle(`login:${request.ip}`, 30);
     const requestedTenant = request.query.tenantId ?? (config.openTenantOnboarding ? 'organizations' : config.tenantId);
     if (typeof requestedTenant !== 'string' || (config.openTenantOnboarding ? requestedTenant !== 'organizations' && !isTenantId(requestedTenant.toLowerCase()) : !Object.hasOwn(config.allowedTenantUsers, requestedTenant.toLowerCase()))) throw failure(403, 'This tenant is not approved for access.');
-    const login = auth.begin(requestedTenant.toLowerCase());
+    // Re-consent path: only the literal value "true" is accepted; the same role gate applies at the callback.
+    if (request.query.consent !== undefined && request.query.consent !== 'true') throw failure(400, 'Invalid sign-in request');
+    const login = auth.begin(requestedTenant.toLowerCase(), { consent: request.query.consent === 'true' });
     return reply.header('Set-Cookie', cookie(transactionName, login.cookie, 600)).redirect(login.url);
   });
   app.get<{ Querystring: { state?: string; code?: string; error?: string } }>('/auth/callback', async (request, reply) => {
@@ -85,9 +88,13 @@ export async function buildServer({ config, store }: { config: Config; store: St
   });
   app.get('/api/me', request => {
     const current = session(request);
-    return { authenticated: true, user: { displayName: current.displayName, tenantId: current.tenantId, userId: current.userId }, connection: { connected: true } };
-  });
-  app.get('/api/jobs', async request => ({ jobs: await store.listJobs(session(request).tenantId) }));
+    let granted: string[] | null = null;
+    try { granted = decryptTokens(current.encryptedTokens, config.tokenEncryptionKey).scopes ?? null; } catch { granted = null; }
+    const requested = new Set(config.graphScopes.map(scope => scope.replace(/^https:\/\/graph\.microsoft\.com\//, '')));
+    // Scopes the online collector uses that were not granted (when Microsoft reported grants) or not requested by this deployment.
+    const missingScopes = ONLINE_REQUIRED_GRAPH_PERMISSIONS.filter(scope => granted !== null ? !granted.includes(scope) : !requested.has(scope));
+    return { authenticated: true, user: { displayName: current.displayName, tenantId: current.tenantId, userId: current.userId }, connection: { connected: true, requiredScopes: ONLINE_REQUIRED_GRAPH_PERMISSIONS, grantedScopes: granted, missingScopes } };
+  });  app.get('/api/jobs', async request => ({ jobs: await store.listJobs(session(request).tenantId) }));
   app.post('/api/jobs', async (request, reply) => {
     if (request.body !== undefined && (request.body === null || typeof request.body !== 'object' || Array.isArray(request.body) || Object.keys(request.body).length > 0)) throw failure(400, 'Assessment requests must have an empty body');
     const current = session(request);

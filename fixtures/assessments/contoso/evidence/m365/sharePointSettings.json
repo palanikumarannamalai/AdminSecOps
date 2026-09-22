@@ -8,7 +8,7 @@
     "module": "M365",
     "moduleVersion": "0.1.0"
   },
-  "collectedAt": "2026-08-10T09:36:53.0000000Z",
+  "collectedAt": "2026-08-10T09:36:39.0000000Z",
   "source": {
     "system": "MicrosoftGraph",
     "operations": [
@@ -24,6 +24,14 @@
     "sharingDomainRestrictionMode": "none",
     "isResharingByExternalUsersEnabled": true,
     "isLegacyAuthProtocolsEnabled": false,
-    "isUnmanagedSyncAppForTenantRestricted": false
+    "isUnmanagedSyncAppForTenantRestricted": false,
+    "sharingAllowedDomainList": [],
+    "sharingBlockedDomainList": [],
+    "isRequireAcceptingUserToMatchInvitedUserEnabled": true,
+    "idleSessionSignOut": {
+      "isEnabled": false,
+      "warnAfterInSeconds": 0,
+      "signOutAfterInSeconds": 0
+    }
   }
 }

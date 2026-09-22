@@ -1,0 +1,6 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#teamwork/teamsAppSettings/$entity",
+  "id": "a1b2c3d4-0000-4000-8000-0000000000aa",
+  "allowUserRequestsForAppAccess": true,
+  "isUserPersonalScopeResourceSpecificConsentEnabled": true
+}

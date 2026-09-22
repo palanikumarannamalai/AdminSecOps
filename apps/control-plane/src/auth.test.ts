@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
-import { createAuth, decryptTokens, encryptTokens, hashToken } from './auth.js';
+import { createAuth, decryptTokens, encryptTokens, grantedScopes, hashToken } from './auth.js';
 import { loadConfig } from './config.js';
 
 export const testConfig = (extra: NodeJS.ProcessEnv = {}) => loadConfig({ PUBLIC_URL: 'https://admin.example.com', AZURE_TENANT_ID: '11111111-1111-1111-1111-111111111111', AZURE_CLIENT_ID: '22222222-2222-2222-2222-222222222222', AZURE_CLIENT_SECRET: 'test-only-secret', ALLOWED_USER_IDS: '33333333-3333-3333-3333-333333333333', TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 1).toString('base64'), DATABASE_URL: 'postgresql://localhost/test', GRAPH_SCOPES: 'https://graph.microsoft.com/User.Read', ...extra });
@@ -116,5 +116,16 @@ describe('hosted authentication', () => {
     expect(() => testConfig({ GRAPH_SCOPES: 'Directory.ReadWrite.All' })).toThrow('read-only');
     expect(() => testConfig({ GRAPH_SCOPES: 'https://attacker.example/User.Read' })).toThrow('read-only');
     expect(() => testConfig({ GRAPH_SCOPES: 'https://graph.microsoft.com/Directory.Read.All User.Read' })).not.toThrow();
+  });
+  it('accepts the read-only workload scopes and still rejects write scopes', () => {
+    expect(() => testConfig({ GRAPH_SCOPES: 'DeviceManagementConfiguration.Read.All DeviceManagementManagedDevices.Read.All SharePointTenantSettings.Read.All TeamworkAppSettings.Read.All Team.ReadBasic.All' })).not.toThrow();
+    for (const scope of ['DeviceManagementConfiguration.ReadWrite.All', 'SharePointTenantSettings.ReadWrite.All', 'TeamSettings.ReadWrite.All', 'TeamworkAppSettings.ReadWrite.All', 'Sites.FullControl.All']) {
+      expect(() => testConfig({ GRAPH_SCOPES: scope })).toThrow('read-only');
+    }
+  });
+  it('records only well-formed granted scopes from the token response', () => {
+    expect(grantedScopes('openid profile https://graph.microsoft.com/Policy.Read.All Team.ReadBasic.All bad/scope')).toEqual(['Policy.Read.All', 'Team.ReadBasic.All']);
+    expect(grantedScopes(undefined)).toBeUndefined();
+    expect(grantedScopes(42)).toBeUndefined();
   });
 });

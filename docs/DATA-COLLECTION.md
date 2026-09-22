@@ -31,7 +31,7 @@ Licence prerequisites are detected: when a feature is not licensed the dataset i
 - **identifiers** - names, UPNs or account names of users, groups, devices or mailboxes.
 - **identifiers-and-activity** - identifiers plus activity metadata such as last sign-in time.
 
-## Datasets (55)
+## Datasets (57)
 
 ### Entra
 
@@ -59,7 +59,9 @@ Licence prerequisites are detected: when a feature is not licensed the dataset i
 
 | Dataset | Description | Read operations | Permissions | Prerequisites | Personal data |
 |---|---|---|---|---|---|
-| `m365.sharePointSettings` | Tenant-level SharePoint Online and OneDrive sharing and access settings. | `GET https://graph.microsoft.com/v1.0/admin/sharepoint/settings` | Graph: SharePointTenantSettings.Read.All | - | none |
+| `m365.sharePointSettings` | Tenant-level SharePoint Online and OneDrive sharing and access settings. | `GET https://graph.microsoft.com/v1.0/admin/sharepoint/settings` | Graph: SharePointTenantSettings.Read.All<br>Directory role for delegated access: Global Reader or SharePoint Administrator | - | none |
+| `m365.teamsAppSettings` | Tenant-wide settings for Teams apps: whether users can request unavailable apps and whether apps that need resource-specific consent can be installed in the personal scope. Teams meeting, messaging, federation and app permission policies are not available to delegated Microsoft Graph and are not included. | `GET https://graph.microsoft.com/v1.0/teamwork/teamsAppSettings` | Graph: TeamworkAppSettings.Read.All (delegated only)<br>Directory role: Microsoft does not document the directory role for delegated access; a signed-in role that cannot read it is reported Unauthorized | Microsoft Teams | none |
+| `m365.teamsTeamSettings` | Member and guest settings of individual teams (settings chosen by team owners, not tenant-wide policy). Collection is bounded: when not every team can be read the dataset is Partial. Channels, messages, members and files are not collected. | `GET https://graph.microsoft.com/v1.0/teams?$select=id,displayName,visibility`<br>`GET https://graph.microsoft.com/v1.0/teams/{id}?$select=id,displayName,visibility,isArchived,memberSettings,guestSettings` | Graph: Team.ReadBasic.All<br>Directory role: Microsoft does not document the directory role for delegated access; a signed-in role that cannot read it is reported Unauthorized | Microsoft Teams | identifiers |
 
 ### Exchange
 
@@ -81,9 +83,9 @@ Licence prerequisites are detected: when a feature is not licensed the dataset i
 
 | Dataset | Description | Read operations | Permissions | Prerequisites | Personal data |
 |---|---|---|---|---|---|
-| `intune.settings` | Tenant-wide device compliance settings, including how devices without a compliance policy are treated. | `GET https://graph.microsoft.com/v1.0/deviceManagement?$select=settings` | Graph: DeviceManagementConfiguration.Read.All | Microsoft Intune | none |
-| `intune.deviceOverview` | Counts of enrolled devices by platform. No per-device data is collected. | `GET https://graph.microsoft.com/v1.0/deviceManagement/managedDeviceOverview` | Graph: DeviceManagementManagedDevices.Read.All | Microsoft Intune | none |
-| `intune.compliancePolicies` | Device compliance policies with selected security settings and assignment targets. | `GET https://graph.microsoft.com/v1.0/deviceManagement/deviceCompliancePolicies?$expand=assignments` | Graph: DeviceManagementConfiguration.Read.All | Microsoft Intune | none |
+| `intune.settings` | Tenant-wide device compliance settings, including how devices without a compliance policy are treated. | `GET https://graph.microsoft.com/v1.0/deviceManagement?$select=settings` | Graph: DeviceManagementConfiguration.Read.All<br>Directory role: Global Reader, Intune Administrator or another role with Intune read access (Intune licence required) | Microsoft Intune | none |
+| `intune.deviceOverview` | Counts of enrolled devices by platform. No per-device data is collected. | `GET https://graph.microsoft.com/v1.0/deviceManagement/managedDeviceOverview` | Graph: DeviceManagementManagedDevices.Read.All<br>Directory role: Global Reader, Intune Administrator or another role with Intune read access (Intune licence required) | Microsoft Intune | none |
+| `intune.compliancePolicies` | Device compliance policies with selected security settings and assignment targets. Windows antivirus, firewall and TPM requirements are exposed only by the Microsoft Graph beta API, so collectors using v1.0 report them as null. | `GET https://graph.microsoft.com/v1.0/deviceManagement/deviceCompliancePolicies?$expand=assignments` | Graph: DeviceManagementConfiguration.Read.All<br>Directory role: Global Reader, Intune Administrator or another role with Intune read access (Intune licence required) | Microsoft Intune | none |
 
 ### Azure
 

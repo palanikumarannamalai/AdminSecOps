@@ -1,0 +1,15 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#teams(id,displayName,visibility)",
+  "value": [
+    {
+      "id": "dddd0001-0000-4000-8000-000000000001",
+      "displayName": "Contoso Finance",
+      "visibility": "private"
+    },
+    {
+      "id": "dddd0001-0000-4000-8000-000000000002",
+      "displayName": "Partner Project Falcon",
+      "visibility": "private"
+    }
+  ]
+}

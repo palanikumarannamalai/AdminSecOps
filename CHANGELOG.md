@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Online workloads (engine 0.3.0, control library 0.3.0, hosted collector 0.2.0, PowerShell
+  collector 0.2.0):
+  - A unified read-only Graph v1.0 collector for Entra ID, SharePoint/OneDrive, Microsoft Teams
+    settings and Intune, with shared budgets, bounded per-resource requests and tenant
+    verification first.
+  - Exchange Online is reported as not available online.
+  - New datasets `m365.teamsAppSettings` and `m365.teamsTeamSettings`; optional SharePoint
+    domain-list and idle sign-out fields.
+  - New controls M365-SPO-003, M365-SPO-004, M365-TMS-001 and M365-TMS-002 (review-based where
+    the setting depends on context).
+  - Coverage page per workload.
+  - Consent-aware `/api/me` with a re-consent sign-in path.
+  - See `docs/ONLINE-WORKLOADS.md`.
+
 - Hosted browser mode: a static build of the dashboard that runs the engine entirely in
   the browser, published at https://www.palanikumar.net/tools/adminsecops/app. No
   server-side API; strict Content-Security-Policy with `connect-src 'none'`; fictional

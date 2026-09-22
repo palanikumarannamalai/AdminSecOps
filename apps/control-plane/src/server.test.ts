@@ -99,6 +99,27 @@ describe('hosted HTTP boundary', () => {
     expect((await app.inject({ method: 'POST', url: '/api/jobs', headers, payload: {} })).statusCode).toBe(429);
     await app.close();
   });
+  it('offers an explicit re-consent sign-in and rejects other consent values', async () => {
+    const app = await buildServer({ config, store: fixture() });
+    const consent = new URL((await app.inject({ url: '/auth/login?consent=true' })).headers.location as string);
+    expect(consent.searchParams.get('prompt')).toBe('consent');
+    const normal = new URL((await app.inject({ url: '/auth/login' })).headers.location as string);
+    expect(normal.searchParams.get('prompt')).toBe('select_account');
+    expect((await app.inject({ url: '/auth/login?consent=admin' })).statusCode).toBe(400);
+    await app.close();
+  });
+  it('reports online scopes that were not granted without exposing tokens', async () => {
+    const store = fixture({ encryptedTokens: encryptTokens({ accessToken: 'secret-access', expiresAt: Date.now() + 600_000, scopes: ['Policy.Read.All', 'Organization.Read.All'] }, config.tokenEncryptionKey) });
+    const app = await buildServer({ config, store });
+    const response = await app.inject({ url: '/api/me', headers });
+    const body = response.json<{ connection: { grantedScopes: string[]; missingScopes: string[]; requiredScopes: string[] } }>();
+    expect(body.connection.grantedScopes).toEqual(['Policy.Read.All', 'Organization.Read.All']);
+    expect(body.connection.missingScopes).toContain('SharePointTenantSettings.Read.All');
+    expect(body.connection.missingScopes).toContain('DeviceManagementConfiguration.Read.All');
+    expect(body.connection.missingScopes).not.toContain('Policy.Read.All');
+    expect(response.body).not.toContain('secret-access');
+    await app.close();
+  });
   it('asks for reconnection when Graph credentials have expired', async () => {
     const store = fixture({ encryptedTokens: encryptTokens({ accessToken: 'expired', expiresAt: 0 }, config.tokenEncryptionKey) });
     const app = await buildServer({ config, store });

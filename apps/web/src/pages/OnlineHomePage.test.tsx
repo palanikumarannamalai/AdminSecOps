@@ -73,6 +73,21 @@ describe('online assessment flow', () => {
     expect(await screen.findByRole('alert')).toHaveProperty('textContent', 'Sign-out unavailable');
   });
 
+  it('lists missing read-only permissions with a re-consent path', async () => {
+    const withMissing = { ...session, connection: { connected: true, requiredScopes: ['Policy.Read.All', 'SharePointTenantSettings.Read.All'], grantedScopes: ['Policy.Read.All'], missingScopes: ['SharePointTenantSettings.Read.All'] } };
+    vi.stubGlobal('fetch', vi.fn((path: string) => Promise.resolve(json(path === '/api/me' ? withMissing : { jobs: [] }))));
+    mount();
+    expect(await screen.findByText('SharePointTenantSettings.Read.All')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Reconnect and review Microsoft consent' }).getAttribute('href')).toBe('/auth/login?consent=true');
+  });
+
+  it('does not show the consent notice when every scope is granted', async () => {
+    vi.stubGlobal('fetch', vi.fn((path: string) => Promise.resolve(json(path === '/api/me' ? { ...session, connection: { connected: true, missingScopes: [] } } : { jobs: [] }))));
+    mount();
+    await screen.findByRole('button', { name: 'Run assessment' });
+    expect(screen.queryByRole('link', { name: 'Reconnect and review Microsoft consent' })).toBeNull();
+  });
+
   it('refreshes completed history and cancels polling when unmounted', async () => {
     let calls = 0;
     let signal: AbortSignal | null | undefined;

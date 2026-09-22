@@ -34,6 +34,8 @@ export interface GraphLimits {
   maxRetryDelayMs: number;
   /** First backoff delay when the service sends no Retry-After. */
   baseRetryDelayMs: number;
+  /** Per-resource requests (one per policy, team...) sent for one dataset. */
+  maxFanoutRequests: number;
 }
 
 export const DEFAULT_GRAPH_LIMITS: Readonly<GraphLimits> = Object.freeze({
@@ -45,6 +47,7 @@ export const DEFAULT_GRAPH_LIMITS: Readonly<GraphLimits> = Object.freeze({
   maxRetries: 3,
   maxRetryDelayMs: 30_000,
   baseRetryDelayMs: 1_000,
+  maxFanoutRequests: 200,
 });
 
 const MAX_URL_LENGTH = 4096;

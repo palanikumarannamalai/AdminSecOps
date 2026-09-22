@@ -24,6 +24,8 @@ import {
   type intuneDeviceOverview,
   type intuneSettings,
   type m365SharePointSettings,
+  type m365TeamsAppSettings,
+  type m365TeamsTeamSettings,
 } from '@adminsecops/schemas';
 import type { z } from 'zod';
 import { guid } from '../common.js';
@@ -43,6 +45,8 @@ export interface ContosoM365Data {
   smtpAuthMailboxes: In<typeof exchangeSmtpAuthMailboxes>;
   mailDnsRecords: In<typeof exchangeMailDnsRecords>;
   sharePointSettings: In<typeof m365SharePointSettings>;
+  teamsAppSettings: In<typeof m365TeamsAppSettings>;
+  teamsTeamSettings: In<typeof m365TeamsTeamSettings>;
   intuneSettings: In<typeof intuneSettings>;
   intuneDeviceOverview: In<typeof intuneDeviceOverview>;
   intuneCompliancePolicies: In<typeof intuneCompliancePolicies>;
@@ -126,7 +130,42 @@ export function contosoM365(): ContosoM365Data {
       isResharingByExternalUsersEnabled: true,
       isLegacyAuthProtocolsEnabled: false,
       isUnmanagedSyncAppForTenantRestricted: false,
+      sharingAllowedDomainList: [],
+      sharingBlockedDomainList: [],
+      isRequireAcceptingUserToMatchInvitedUserEnabled: true,
+      idleSessionSignOut: { isEnabled: false, warnAfterInSeconds: 0, signOutAfterInSeconds: 0 },
     },
+    teamsAppSettings: { allowUserRequestsForAppAccess: true, isUserPersonalScopeResourceSpecificConsentEnabled: true },
+    teamsTeamSettings: [
+      {
+        id: guid('contoso:teams:finance'),
+        displayName: 'Finance',
+        visibility: 'private',
+        isArchived: false,
+        memberSettings: {
+          allowCreateUpdateChannels: true,
+          allowDeleteChannels: true,
+          allowAddRemoveApps: true,
+          allowCreateUpdateRemoveTabs: true,
+          allowCreateUpdateRemoveConnectors: true,
+        },
+        guestSettings: { allowCreateUpdateChannels: false, allowDeleteChannels: false },
+      },
+      {
+        id: guid('contoso:teams:partner-falcon'),
+        displayName: 'Partner Project Falcon',
+        visibility: 'private',
+        isArchived: false,
+        memberSettings: {
+          allowCreateUpdateChannels: true,
+          allowDeleteChannels: false,
+          allowAddRemoveApps: false,
+          allowCreateUpdateRemoveTabs: true,
+          allowCreateUpdateRemoveConnectors: false,
+        },
+        guestSettings: { allowCreateUpdateChannels: true, allowDeleteChannels: true },
+      },
+    ],
     intuneSettings: { secureByDefault: false, deviceComplianceCheckinThresholdDays: 30, isScheduledActionEnabled: true },
     intuneDeviceOverview: { enrolledDeviceCount: 432, windowsCount: 368, macOSCount: 0, iosCount: 64, androidCount: 0 },
     intuneCompliancePolicies: [

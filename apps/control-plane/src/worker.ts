@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { CONTROL_LIBRARY } from '@adminsecops/controls';
 import { runAssessment } from '@adminsecops/engine';
 import { createAuth, decryptTokens } from './auth.js';
-import { collectEntra } from './collector/index.js';
+import { collectOnline } from './collector/index.js';
 import { isApprovedUser, type Config } from './config.js';
 import type { PostgresStore } from './store.js';
 
@@ -12,7 +12,7 @@ export async function processNext(store:PostgresStore, config:Config):Promise<bo
   try {
     if(!isApprovedUser(config,job.tenantId,job.userId)) throw new Error('Tenant user is no longer approved');
     const tokens=await createAuth(config).refresh(decryptTokens(job.encryptedTokens,config.tokenEncryptionKey),job.tenantId);
-    const bundle=await collectEntra({tenantId:job.tenantId,assessmentId:randomUUID(),accessToken:tokens.accessToken,signal:AbortSignal.timeout(600_000)});
+    const bundle=await collectOnline({tenantId:job.tenantId,assessmentId:randomUUID(),accessToken:tokens.accessToken,...(tokens.scopes?{grantedScopes:tokens.scopes}:{}),signal:AbortSignal.timeout(600_000)});
     const result=runAssessment(bundle,CONTROL_LIBRARY);
     await store.complete(job,result);
   } catch {

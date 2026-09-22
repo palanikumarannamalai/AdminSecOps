@@ -13,11 +13,19 @@ Status: multitenant administrator onboarding test release (21 September 2026).
 - Microsoft sign-in and delegated read-only Graph consent required. No administrator password stored.
 - No sample uploads or downloaded collectors required by the online flow.
 
-The current collector supports organization, subscribed licences, guest users, security defaults,
-authorization policy, authentication methods policy, conditional access policies, MFA registration
-details, role definitions and role assignments. General user inventory, PIM eligibility, Exchange,
-Intune, Defender, Azure resources and on-premises modules are not collected yet. The full roadmap
-is retained; missing evidence is not a pass.
+The current collector (hosted collector 0.2.0) supports these workloads:
+
+- **Entra:** organization, subscribed licences, guest users, security defaults, authorization
+  policy, authentication methods policy, Conditional Access policies, MFA registration details,
+  role definitions and assignments, and allow-listed directory settings.
+- **SharePoint/OneDrive:** tenant settings.
+- **Teams:** app settings and per-team member/guest settings.
+- **Intune:** compliance settings, device overview, and compliance policies with assignments.
+
+Exchange Online, Defender for Office 365, Teams tenant policies, PIM, app registrations, Azure
+resources and on-premises modules are not collected online. See docs/ONLINE-WORKLOADS.md for the
+endpoint/permission matrix, limitations and consent steps. Missing evidence is not a pass; each
+assessment's Coverage page shows what was and was not assessed.
 
 ## Runtime and cost
 
@@ -78,6 +86,9 @@ node apps/control-plane/dist/main.js
 
 Required environment variables: PUBLIC_URL, AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET,
 ALLOWED_USER_IDS, TOKEN_ENCRYPTION_KEY (base64 32 random bytes), DATABASE_URL, GRAPH_SCOPES.
+GRAPH_SCOPES accepts only the read-only scopes in READ_ONLY_GRAPH_SCOPES (config.ts); the full
+online set is listed in docs/ONLINE-WORKLOADS.md. Scopes absent from GRAPH_SCOPES are not requested,
+and datasets that need them are reported Unauthorized and not assessed.
 The Node runtime supplies PORT. DATABASE_URL must not disable TLS certificate verification.
 
 The online-test.json ARM template provisions the App Service plan, HTTPS-only site and database.

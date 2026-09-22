@@ -13,6 +13,29 @@ export interface Config {
   graphScopes: string[];
 }
 
+/**
+ * The only delegated Microsoft Graph scopes GRAPH_SCOPES may contain. All are read-only;
+ * each maps to datasets in packages/schemas (see docs/ONLINE-WORKLOADS.md).
+ */
+export const READ_ONLY_GRAPH_SCOPES: readonly string[] = [
+  'User.Read',
+  'AuditLog.Read.All',
+  'Directory.Read.All',
+  'Organization.Read.All',
+  'Policy.Read.All',
+  'RoleManagement.Read.Directory',
+  'User.Read.All',
+  'UserAuthenticationMethod.Read.All',
+  // Microsoft Intune
+  'DeviceManagementConfiguration.Read.All',
+  'DeviceManagementManagedDevices.Read.All',
+  // SharePoint and OneDrive
+  'SharePointTenantSettings.Read.All',
+  // Microsoft Teams
+  'TeamworkAppSettings.Read.All',
+  'Team.ReadBasic.All',
+];
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const required = (name: string): string => {
     const value = env[name]?.trim();
@@ -45,8 +68,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   if (Buffer.from(tokenEncryptionKey, 'base64').length !== 32) throw new Error('TOKEN_ENCRYPTION_KEY must encode 32 random bytes');
   const port = Number(env.PORT ?? '8080');
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid PORT');
-  const graphScopes = required('GRAPH_SCOPES').split(/\s+/);
-  const readScopes = new Set(['User.Read', 'AuditLog.Read.All', 'Directory.Read.All', 'Organization.Read.All', 'Policy.Read.All', 'RoleManagement.Read.Directory', 'User.Read.All', 'UserAuthenticationMethod.Read.All']);
+  const graphScopes = required('GRAPH_SCOPES').split(/\s+/).filter(scope => scope !== '');
+  const readScopes = new Set(READ_ONLY_GRAPH_SCOPES);
   if (!graphScopes.every(scope => readScopes.has(scope.replace(/^https:\/\/graph\.microsoft\.com\//, '')))) throw new Error('GRAPH_SCOPES must contain only supported read-only Microsoft Graph scopes');
   return {
     port, publicUrl: publicUrl.origin, tenantId, clientId,

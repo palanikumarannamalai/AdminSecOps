@@ -1,5 +1,5 @@
 /** Version of the AdminSecOps assessment engine and data contracts. */
-export const ENGINE_VERSION = '0.2.0';
+export const ENGINE_VERSION = '0.3.0';
 
 /** Evidence package format understood by this build (see docs/EVIDENCE-MODEL.md). */
 export const SUPPORTED_MANIFEST_VERSIONS = ['1.0'] as const;

@@ -24,7 +24,7 @@ AfterAll {
 Describe 'Replay package' {
     It 'returns a summary' {
         $script:result.Mode | Should -Be 'Replay'
-        $script:result.DatasetCount | Should -Be 55
+        $script:result.DatasetCount | Should -Be 57
         $script:result.AssessmentId | Should -Match '^[0-9a-f]{8}-'
         Split-Path -Leaf $script:pkg | Should -Match '^AdminSecOps-Assessment-\d{8}-\d{6}$'
         Split-Path -Leaf $script:result.ZipPath | Should -Match '^adminsecops-assessment-\d{8}-\d{6}\.zip$'
@@ -34,7 +34,7 @@ Describe 'Replay package' {
     It 'writes manifest, evidence and log' {
         Test-Path -LiteralPath (Join-Path $script:pkg 'evidence-manifest.json') | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $script:pkg 'logs/collection-log.json') | Should -BeTrue
-        @(Get-ChildItem -LiteralPath (Join-Path $script:pkg 'evidence') -Recurse -File).Count | Should -Be 55
+        @(Get-ChildItem -LiteralPath (Join-Path $script:pkg 'evidence') -Recurse -File).Count | Should -Be 57
     }
 
     It 'lists every evidence file with a matching hash and size' {
@@ -85,7 +85,7 @@ Describe 'Replay package' {
         $statuses['exchange.atpPolicy'] | Should -Be 'NotApplicable'
         $statuses['azure.keyVaults'] | Should -Be 'Partial'
         $statuses['ad.domainControllerSettings'] | Should -Be 'NotCollected'
-        @($statuses.Values | Where-Object { $_ -eq 'Success' }).Count | Should -Be 49
+        @($statuses.Values | Where-Object { $_ -eq 'Success' }).Count | Should -Be 51
     }
 
     It 'never writes secret material from the recorded responses' {
@@ -110,7 +110,7 @@ Describe 'Replay package' {
             $names | Should -Contain 'logs/collection-log.json'
             $names | Should -Contain 'evidence/entra/conditionalAccessPolicies.json'
             @($names | Where-Object { $_ -match '\\' }).Count | Should -Be 0
-            $names.Count | Should -Be 57
+            $names.Count | Should -Be 59
         }
         finally { $zip.Dispose() }
     }
@@ -203,6 +203,16 @@ Describe 'Entra transformations' {
 Describe 'Microsoft 365, Exchange and Intune transformations' {
     It 'maps SharePoint settings' {
         (Evidence 'm365.sharePointSettings').data.sharingCapability | Should -Be 'externalUserAndGuestSharing'
+        (Evidence 'm365.sharePointSettings').data.idleSessionSignOut.isEnabled | Should -BeFalse
+        @((Evidence 'm365.sharePointSettings').data.sharingAllowedDomainList).Count | Should -Be 0
+    }
+
+    It 'maps Teams app settings and per-team guest settings' {
+        (Evidence 'm365.teamsAppSettings').data.isUserPersonalScopeResourceSpecificConsentEnabled | Should -BeTrue
+        $teams = (Evidence 'm365.teamsTeamSettings').data
+        $teams.Count | Should -Be 2
+        ($teams | Where-Object { $_.displayName -eq 'Partner Project Falcon' }).guestSettings.allowCreateUpdateChannels | Should -BeTrue
+        ($teams | Where-Object { $_.displayName -eq 'Contoso Finance' }).guestSettings.allowDeleteChannels | Should -BeFalse
     }
 
     It 'collects only mailboxes with forwarding and per-mailbox SMTP AUTH overrides' {

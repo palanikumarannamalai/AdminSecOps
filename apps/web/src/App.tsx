@@ -5,6 +5,7 @@ import { EmptyState } from './components/States';
 import { AboutPage } from './pages/AboutPage';
 import { ComparePage } from './pages/ComparePage';
 import { ControlsPage } from './pages/ControlsPage';
+import { CoveragePage } from './pages/CoveragePage';
 import { EvidencePage } from './pages/EvidencePage';
 import { FindingDetailPage } from './pages/FindingDetailPage';
 import { FindingsPage } from './pages/FindingsPage';
@@ -39,6 +40,7 @@ export function AppRoutes() {
           <Route path="findings" element={<FindingsPage />} />
           <Route path="findings/:findingId" element={<FindingDetailPage />} />
           <Route path="controls" element={<ControlsPage />} />
+          <Route path="coverage" element={<CoveragePage />} />
           <Route path="evidence" element={<EvidencePage />} />
           <Route path="inventory" element={<InventoryPage />} />
           <Route path="frameworks" element={<FrameworksPage />} />

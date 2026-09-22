@@ -11,6 +11,7 @@ export const ASSESSMENT_PAGES = [
   { path: '', label: 'Overview' },
   { path: 'findings', label: 'Findings' },
   { path: 'controls', label: 'Controls' },
+  { path: 'coverage', label: 'Coverage' },
   { path: 'evidence', label: 'Evidence' },
   { path: 'inventory', label: 'Inventory' },
   { path: 'frameworks', label: 'Frameworks' },

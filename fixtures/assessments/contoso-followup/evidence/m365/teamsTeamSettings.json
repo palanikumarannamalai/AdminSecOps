@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "1.0",
+  "datasetId": "m365.teamsTeamSettings",
+  "assessmentId": "cfd71ace-6be2-4c14-bd4a-c7f1978d9de7",
+  "collector": {
+    "name": "AdminSecOps.Collector",
+    "version": "0.1.0",
+    "module": "M365",
+    "moduleVersion": "0.1.0"
+  },
+  "collectedAt": "2026-09-09T09:11:53.0000000Z",
+  "source": {
+    "system": "MicrosoftGraph",
+    "operations": [
+      "GET https://graph.microsoft.com/v1.0/teams?$select=id,displayName,visibility",
+      "GET https://graph.microsoft.com/v1.0/teams/{id}?$select=id,displayName,visibility,isArchived,memberSettings,guestSettings"
+    ],
+    "apiVersion": "v1.0"
+  },
+  "status": "Success",
+  "errors": [],
+  "warnings": [],
+  "data": [
+    {
+      "id": "6b172e39-a619-4738-bc6f-d89d20a29913",
+      "displayName": "Finance",
+      "visibility": "private",
+      "isArchived": false,
+      "memberSettings": {
+        "allowCreateUpdateChannels": true,
+        "allowDeleteChannels": true,
+        "allowAddRemoveApps": true,
+        "allowCreateUpdateRemoveTabs": true,
+        "allowCreateUpdateRemoveConnectors": true
+      },
+      "guestSettings": {
+        "allowCreateUpdateChannels": false,
+        "allowDeleteChannels": false
+      }
+    },
+    {
+      "id": "e0b595ad-4021-46d7-a712-42e14869b0e0",
+      "displayName": "Partner Project Falcon",
+      "visibility": "private",
+      "isArchived": false,
+      "memberSettings": {
+        "allowCreateUpdateChannels": true,
+        "allowDeleteChannels": false,
+        "allowAddRemoveApps": false,
+        "allowCreateUpdateRemoveTabs": true,
+        "allowCreateUpdateRemoveConnectors": false
+      },
+      "guestSettings": {
+        "allowCreateUpdateChannels": true,
+        "allowDeleteChannels": true
+      }
+    }
+  ]
+}

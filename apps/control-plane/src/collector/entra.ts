@@ -1,11 +1,5 @@
-import { AdminSecOpsError, findSensitiveContent, type CollectionStatus } from '@adminsecops/core';
-import {
-  buildEvidencePackage,
-  loadEvidenceBundle,
-  summarizeZodIssues,
-  type EvidenceBundle,
-  type PackageFiles,
-} from '@adminsecops/evidence/browser';
+import { AdminSecOpsError } from '@adminsecops/core';
+import type { EvidenceBundle } from '@adminsecops/evidence/browser';
 import {
   ENTRA_DATASETS,
   GuidSchema,
@@ -19,29 +13,39 @@ import {
   entraSecurityDefaults,
   entraSubscribedSkus,
   entraUserRegistrationDetails,
-  type CollectionMessage,
   type DatasetDefinition,
-  type EvidenceEnvelope,
-  type EvidenceManifest,
-  type ManifestModule,
 } from '@adminsecops/schemas';
+import { GRAPH_BASE, GraphRequestError } from './graph-client.js';
 import {
-  DEFAULT_GRAPH_LIMITS,
-  GRAPH_BASE,
-  GraphClient,
-  GraphRequestError,
-  asRecord,
-  type GraphLimits,
-  type GraphPageResult,
-} from './graph-client.js';
+  HOSTED_COLLECTOR_NAME,
+  HOSTED_COLLECTOR_VERSION,
+  collectHostedEvidence,
+  type CollectionPlan,
+  type HostedCollectionOptions,
+  type HostedCollectionResult,
+} from './package.js';
+import {
+  arr,
+  getAll,
+  getOne,
+  graphPermissionsOf,
+  licensed,
+  message,
+  pick,
+  pickOrNull,
+  rec,
+  val,
+  type DatasetCollector,
+  type Rec,
+} from './runtime.js';
 
-export const HOSTED_COLLECTOR_NAME = 'AdminSecOps.HostedGraphCollector';
-export const HOSTED_COLLECTOR_VERSION = '0.1.0';
+export { HOSTED_COLLECTOR_NAME, HOSTED_COLLECTOR_VERSION };
 
 /**
- * Datasets this collector produces, in collection order. subscribedSkus is collected
- * before the licence-dependent datasets. Every other Entra dataset in the schema registry
- * is left out of the package (absent), so controls needing it are NOT_ASSESSED.
+ * Datasets the Entra-only collection (collectEntra) produces, in collection order.
+ * subscribedSkus is collected before the licence-dependent datasets. Every other Entra
+ * dataset in the schema registry is left out of the package (absent), so controls needing
+ * it are NOT_ASSESSED. The unified online collection (online.ts) adds entra.groupSettings.
  */
 export const HOSTED_ENTRA_DATASETS = [
   entraOrganization,
@@ -58,7 +62,7 @@ export const HOSTED_ENTRA_DATASETS = [
 
 const COLLECTED_IDS: ReadonlySet<string> = new Set(HOSTED_ENTRA_DATASETS.map((d) => d.id));
 
-/** Entra datasets defined by the schema registry that this hosted collector does not produce. */
+/** Entra datasets defined by the schema registry that collectEntra does not produce. */
 export const HOSTED_ENTRA_UNSUPPORTED_DATASETS: readonly string[] = ENTRA_DATASETS.map(
   (d) => d.id,
 ).filter((id) => !COLLECTED_IDS.has(id));
@@ -70,12 +74,31 @@ export interface GraphPermissionRequirement {
 }
 
 /**
- * Microsoft Graph permissions needed by this collector, derived from the `permissions`
+ * Microsoft Graph permissions needed by a set of datasets, derived from the `permissions`
  * of the dataset definitions (the single source of truth) - nothing is added here.
- * Entries that are not Graph permissions (e.g. directory-role requirements) are listed in
- * ENTRA_ADDITIONAL_REQUIREMENTS.
  */
-export const ENTRA_GRAPH_PERMISSIONS: readonly GraphPermissionRequirement[] = derivePermissions();
+export function derivePermissions(
+  definitions: readonly DatasetDefinition[],
+): GraphPermissionRequirement[] {
+  const byPermission = new Map<string, string[]>();
+  for (const definition of definitions) {
+    for (const permission of graphPermissionsOf(definition)) {
+      const list = byPermission.get(permission) ?? [];
+      list.push(definition.id);
+      byPermission.set(permission, list);
+    }
+  }
+  return [...byPermission.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([permission, datasets]) => ({ permission, datasets }));
+}
+
+/**
+ * Microsoft Graph permissions needed by collectEntra. Entries that are not Graph
+ * permissions (e.g. directory-role requirements) are listed in ENTRA_ADDITIONAL_REQUIREMENTS.
+ */
+export const ENTRA_GRAPH_PERMISSIONS: readonly GraphPermissionRequirement[] =
+  derivePermissions(HOSTED_ENTRA_DATASETS);
 export const ENTRA_REQUIRED_GRAPH_PERMISSIONS: readonly string[] = ENTRA_GRAPH_PERMISSIONS.map(
   (p) => p.permission,
 );
@@ -88,51 +111,18 @@ export const ENTRA_ADDITIONAL_REQUIREMENTS: readonly {
     .map((requirement) => ({ datasetId: d.id, requirement })),
 );
 
-function derivePermissions(): GraphPermissionRequirement[] {
-  const byPermission = new Map<string, string[]>();
-  for (const definition of HOSTED_ENTRA_DATASETS) {
-    for (const entry of definition.permissions) {
-      const match = /^Graph: ([A-Za-z]+(?:\.[A-Za-z]+)+)/.exec(entry);
-      if (match?.[1] === undefined) continue;
-      const list = byPermission.get(match[1]) ?? [];
-      list.push(definition.id);
-      byPermission.set(match[1], list);
-    }
-  }
-  return [...byPermission.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([permission, datasets]) => ({ permission, datasets }));
-}
-
 /** Service plans that license a feature (same plan names as the PowerShell collector). */
 const P1_PLANS = ['AAD_PREMIUM', 'AAD_PREMIUM_P2'];
 
-export interface CollectEntraOptions {
-  tenantId: string;
-  assessmentId: string;
-  /** Microsoft Graph access token. Used only in the Authorization header; never stored or logged. */
-  accessToken: string;
-  fetch?: typeof globalThis.fetch;
-  signal?: AbortSignal;
-  /** Override collection bounds (tests, smaller tenants). */
-  limits?: Partial<GraphLimits>;
-  /** Clock used for timestamps and budgets; injectable for reproducible tests. */
-  now?: () => Date;
-}
-
-export interface EntraCollectionResult {
-  /** Package files (manifest + evidence) suitable for storage or re-loading with loadEvidenceBundle. */
-  readonly files: PackageFiles;
-  readonly manifest: EvidenceManifest;
-  /** The verified bundle, usable with runAssessment(bundle, CONTROL_LIBRARY). */
-  readonly bundle: EvidenceBundle;
-}
+export type CollectEntraOptions = HostedCollectionOptions;
+export type EntraCollectionResult = HostedCollectionResult;
 
 /**
  * Collect Microsoft Entra evidence read-only through Microsoft Graph v1.0 and return a
  * verified evidence bundle. Datasets that cannot be read are reported with an honest
  * status (Unauthorized / Failed / Partial / NotApplicable) and never as passing data.
- * Throws CollectionCancelledError when `signal` aborts.
+ * Throws CollectionCancelledError when `signal` aborts. For the multi-workload online
+ * assessment use collectOnline (online.ts).
  */
 export async function collectEntra(options: CollectEntraOptions): Promise<EvidenceBundle> {
   return (await collectEntraEvidence(options)).bundle;
@@ -141,387 +131,23 @@ export async function collectEntra(options: CollectEntraOptions): Promise<Eviden
 export async function collectEntraEvidence(
   options: CollectEntraOptions,
 ): Promise<EntraCollectionResult> {
-  const { tenantId, assessmentId, accessToken } = validateOptions(options);
-  const clock = options.now ?? (() => new Date());
-  const overrides = Object.entries(options.limits ?? {}).filter(
-    ([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0,
-  );
-  const limits: GraphLimits = {
-    ...DEFAULT_GRAPH_LIMITS,
-    ...(Object.fromEntries(overrides) as Partial<GraphLimits>),
-  };
-  const fetchImpl = options.fetch ?? globalThis.fetch.bind(globalThis);
-  const client = new GraphClient({
-    accessToken,
-    fetch: fetchImpl,
-    signal: options.signal,
-    limits,
-    now: () => clock().getTime(),
-  });
-
-  const startedAt = clock().toISOString();
-  const context: CollectionContext = {
-    client,
-    clock,
-    tenantId,
-    servicePlans: undefined,
-    organization: undefined,
-  };
-  const outcomes: DatasetOutcome[] = [];
-  for (const definition of HOSTED_ENTRA_DATASETS) {
-    client.throwIfCancelled();
-    const outcome = await runDataset(definition, context);
-    outcomes.push(outcome);
-    if (definition.id === 'entra.organization' && outcome.status !== 'Success') {
-      throw new AdminSecOpsError(
-        'TENANT_NOT_VERIFIED',
-        'The organization could not be verified. No tenant evidence was produced.',
-        { statusCode: 403 },
-      );
-    }
-  }
-  client.throwIfCancelled();
-  const completedAt = clock().toISOString();
-
-  const moduleWarnings: CollectionMessage[] = [];
-  if (HOSTED_ENTRA_UNSUPPORTED_DATASETS.length > 0) {
-    moduleWarnings.push({
-      code: 'DATASETS_NOT_COLLECTED',
-      message: `The hosted collector does not collect these datasets; controls that need them are not assessed: ${HOSTED_ENTRA_UNSUPPORTED_DATASETS.join(', ')}.`,
-      target: null,
-    });
-  }
-  if (context.organization === undefined) {
-    moduleWarnings.push({
-      code: 'TENANT_NOT_VERIFIED',
-      message:
-        'The organization could not be read, so the tenant the token belongs to was not verified against the requested tenant.',
-      target: null,
-    });
-  }
-
-  const environment: EvidenceManifest['environment'] = {
-    label: null,
-    tenantId,
-    tenantDisplayName: context.organization?.displayName ?? null,
-    primaryDomain: context.organization?.primaryDomain ?? null,
-    adForestName: null,
-    adDomainName: null,
-  };
-  const module: ManifestModule = {
-    name: 'Entra',
-    version: HOSTED_COLLECTOR_VERSION,
-    status: moduleStatus(outcomes),
-    startedAt,
-    completedAt,
-    prerequisites: [],
-    errors: [],
-    warnings: moduleWarnings,
-  };
-  const manifestBase: Omit<EvidenceManifest, 'files'> = {
-    manifestVersion: '1.0',
-    product: 'AdminSecOps',
-    assessmentId,
-    createdAt: completedAt,
-    collector: {
-      name: HOSTED_COLLECTOR_NAME,
-      version: HOSTED_COLLECTOR_VERSION,
-      powershellVersion: null,
-      platform: 'MicrosoftGraph',
-    },
-    environment,
-    options: {
-      modules: ['Entra'],
-      collectionMode: 'hosted-graph',
-      datasets: outcomes.map((o) => o.definition.id),
-    },
-    modules: [module],
-  };
-
-  const { files, manifest } = buildEvidencePackage(
-    manifestBase,
-    outcomes.map((outcome) => ({
-      path: evidencePath(outcome.definition.id),
-      envelope: toEnvelope(outcome, assessmentId),
+  const plan: CollectionPlan = {
+    datasets: HOSTED_ENTRA_DATASETS.map((definition) => ({
+      definition,
+      collector: entraCollector(definition.id),
     })),
-  );
-  return { files, manifest, bundle: loadEvidenceBundle(files) };
-}
-
-// ---------------------------------------------------------------------------------------------
-// Dataset execution and status mapping
-// ---------------------------------------------------------------------------------------------
-
-interface CollectionContext {
-  readonly client: GraphClient;
-  readonly clock: () => Date;
-  readonly tenantId: string;
-  /** Enabled service plan names; null when licences could not be determined. */
-  servicePlans: ReadonlySet<string> | null | undefined;
-  organization: { displayName: string | null; primaryDomain: string | null } | undefined;
-}
-
-interface DatasetState {
-  readonly definition: DatasetDefinition;
-  readonly operations: string[];
-  readonly errors: CollectionMessage[];
-  readonly warnings: CollectionMessage[];
-  partial: boolean;
-  /** Set by a collector that decides the dataset does not apply (licence absent). */
-  notApplicable: boolean;
-}
-
-interface DatasetOutcome {
-  readonly definition: DatasetDefinition;
-  readonly status: CollectionStatus;
-  readonly data: unknown;
-  readonly operations: readonly string[];
-  readonly errors: readonly CollectionMessage[];
-  readonly warnings: readonly CollectionMessage[];
-  readonly collectedAt: string;
-}
-
-type DatasetCollector = (state: DatasetState, context: CollectionContext) => Promise<unknown>;
-
-async function runDataset(
-  definition: DatasetDefinition,
-  context: CollectionContext,
-): Promise<DatasetOutcome> {
-  const state: DatasetState = {
-    definition,
-    operations: [],
-    errors: [],
-    warnings: [],
-    partial: false,
-    notApplicable: false,
+    notCollected: new Map([['Entra', HOSTED_ENTRA_UNSUPPORTED_DATASETS]]),
+    skippedModules: [],
   };
-  const collector = COLLECTORS[definition.id];
-  const finish = (status: CollectionStatus, data: unknown): DatasetOutcome => ({
-    definition,
-    status,
-    data: status === 'Success' || status === 'Partial' ? data : null,
-    operations: state.operations.length > 0 ? state.operations : [...definition.operations],
-    errors: state.errors,
-    warnings: state.warnings,
-    collectedAt: context.clock().toISOString(),
-  });
-
-  if (collector === undefined) {
-    state.errors.push(
-      message('COLLECTOR_MISSING', 'No hosted collector is implemented for this dataset.'),
-    );
-    return finish('NotCollected', null);
-  }
-
-  let data: unknown;
-  try {
-    data = await collector(state, context);
-  } catch (error) {
-    if (!(error instanceof GraphRequestError)) throw error; // cancellation, tenant mismatch, programming errors
-    const status = statusForError(error);
-    state.errors.push(
-      message(codeForError(error, status), explainError(error, status, definition)),
-    );
-    return finish(status, null);
-  }
-  if (state.notApplicable) return finish('NotApplicable', null);
-
-  // Defence in depth: the payload must satisfy the dataset schema and contain no secret material.
-  const sensitive = findSensitiveContent(data);
-  if (sensitive.length > 0) {
-    state.errors.push(
-      message(
-        'SENSITIVE_CONTENT',
-        `Collected data contained ${sensitive.length} secret-like value(s) and was discarded.`,
-      ),
-    );
-    return finish('Failed', null);
-  }
-  const parsed = definition.schema.safeParse(data);
-  if (!parsed.success) {
-    const where = summarizeZodIssues(parsed.error).join('; ');
-    state.errors.push(
-      message(
-        'DATA_INVALID',
-        `The Microsoft Graph response did not match the ${definition.id} schema and was not used (${where}).`,
-      ),
-    );
-    return finish('Failed', null);
-  }
-  if (definition.id === 'entra.subscribedSkus' && !state.partial && Array.isArray(parsed.data)) {
-    context.servicePlans = enabledServicePlans(parsed.data.map(rec));
-  }
-  return finish(state.partial ? 'Partial' : 'Success', data);
+  return collectHostedEvidence(options, plan);
 }
 
-function statusForError(error: GraphRequestError): CollectionStatus {
-  if (error.kind !== 'http') return 'Failed';
-  if (error.licenceHint) return 'NotApplicable';
-  if (error.status === 401 || error.status === 403) return 'Unauthorized';
-  return 'Failed';
+/** The hosted collector for an Entra dataset; throws for datasets without one. */
+export function entraCollector(id: string): DatasetCollector {
+  const collector = ENTRA_COLLECTORS[id];
+  if (collector === undefined) throw new Error(`No hosted collector for ${id}`);
+  return collector;
 }
-
-function codeForError(error: GraphRequestError, status: CollectionStatus): string {
-  if (status === 'NotApplicable') return 'LICENSE_OR_FEATURE_NOT_AVAILABLE';
-  if (status === 'Unauthorized') return 'UNAUTHORIZED';
-  if (error.kind === 'http' && error.status !== null) return `HTTP_${error.status}`;
-  return error.kind.toUpperCase().replace(/-/g, '_');
-}
-
-function explainError(
-  error: GraphRequestError,
-  status: CollectionStatus,
-  definition: DatasetDefinition,
-): string {
-  if (status === 'NotApplicable')
-    return `${error.message} The service reported that the required licence or feature is not available.`;
-  if (status === 'Unauthorized') {
-    return `${error.message} The collecting identity is not authorised to read this data. Required: ${definition.permissions.join('; ')}.`;
-  }
-  return error.message;
-}
-
-function message(code: string, text: string, target: string | null = null): CollectionMessage {
-  return { code, message: text.slice(0, 4000), target };
-}
-
-function moduleStatus(outcomes: readonly DatasetOutcome[]): ManifestModule['status'] {
-  const bad = outcomes.filter((o) => o.status === 'Failed' || o.status === 'Unauthorized');
-  if (bad.length === outcomes.length) return 'Failed';
-  if (bad.length > 0 || outcomes.some((o) => o.status === 'Partial')) return 'CompletedWithErrors';
-  return 'Completed';
-}
-
-function toEnvelope(outcome: DatasetOutcome, assessmentId: string): EvidenceEnvelope {
-  return {
-    schemaVersion: '1.0',
-    datasetId: outcome.definition.id,
-    assessmentId,
-    collector: {
-      name: HOSTED_COLLECTOR_NAME,
-      version: HOSTED_COLLECTOR_VERSION,
-      module: 'Entra',
-      moduleVersion: HOSTED_COLLECTOR_VERSION,
-    },
-    collectedAt: outcome.collectedAt,
-    source: {
-      system: 'MicrosoftGraph',
-      operations: outcome.operations.slice(0, 200).map((o) => o.slice(0, 2000)),
-      apiVersion: 'v1.0',
-    },
-    status: outcome.status,
-    errors: [...outcome.errors],
-    warnings: [...outcome.warnings],
-    data: outcome.data,
-  };
-}
-
-function evidencePath(datasetId: string): string {
-  return `evidence/entra/${datasetId.slice(datasetId.indexOf('.') + 1)}.json`;
-}
-
-function validateOptions(options: CollectEntraOptions): {
-  tenantId: string;
-  assessmentId: string;
-  accessToken: string;
-} {
-  if (!GuidSchema.safeParse(options.tenantId).success) {
-    throw new AdminSecOpsError('INVALID_TENANT_ID', 'tenantId must be a tenant GUID.');
-  }
-  if (!GuidSchema.safeParse(options.assessmentId).success) {
-    throw new AdminSecOpsError('INVALID_ASSESSMENT_ID', 'assessmentId must be a GUID.');
-  }
-  const token = options.accessToken;
-  // Printable ASCII only: prevents header injection. The token value is never echoed.
-  if (
-    typeof token !== 'string' ||
-    token.length === 0 ||
-    token.length > 16_384 ||
-    !/^[\x21-\x7e]+$/.test(token)
-  ) {
-    throw new AdminSecOpsError('INVALID_ACCESS_TOKEN', 'accessToken is missing or malformed.');
-  }
-  return {
-    tenantId: options.tenantId.toLowerCase(),
-    assessmentId: options.assessmentId.toLowerCase(),
-    accessToken: token,
-  };
-}
-
-// ---------------------------------------------------------------------------------------------
-// Graph helpers
-// ---------------------------------------------------------------------------------------------
-
-async function getOne(
-  state: DatasetState,
-  context: CollectionContext,
-  url: string,
-): Promise<Record<string, unknown>> {
-  state.operations.push(`GET ${url}`);
-  const body = asRecord(await context.client.get(url));
-  if (body === undefined)
-    throw new GraphRequestError(
-      'invalid-response',
-      'Microsoft Graph returned a response that is not a JSON object.',
-    );
-  return body;
-}
-
-async function getAll(
-  state: DatasetState,
-  context: CollectionContext,
-  url: string,
-): Promise<unknown[]> {
-  state.operations.push(`GET ${url}`);
-  const result: GraphPageResult = await context.client.getAll(url);
-  if (result.incomplete !== null) {
-    state.errors.push(message(result.incomplete.code, result.incomplete.message));
-    state.partial = true;
-  }
-  return result.items;
-}
-
-/** Marks the dataset NotApplicable when subscribedSkus shows none of the plans; warns when licences are unknown. */
-function licensed(
-  state: DatasetState,
-  context: CollectionContext,
-  plans: readonly string[],
-  feature: string,
-): boolean {
-  const known = context.servicePlans;
-  if (known === null || known === undefined) {
-    state.warnings.push(
-      message(
-        'LICENSE_UNKNOWN',
-        `Licence information was not available; ${feature} availability is inferred from the service response.`,
-      ),
-    );
-    return true;
-  }
-  if (plans.some((p) => known.has(p.toUpperCase()))) return true;
-  state.warnings.push(
-    message(
-      'LICENSE_NOT_PRESENT',
-      `${feature} is not licensed in this tenant (none of the service plans ${plans.join(', ')} is present in subscribedSkus). The dataset does not apply.`,
-    ),
-  );
-  state.notApplicable = true;
-  return false;
-}
-
-// Field pickers: copy only declared properties, never coerce. Missing values become null so
-// the dataset schema - not this code - decides whether the evidence is acceptable.
-type Rec = Record<string, unknown>;
-const rec = (v: unknown): Rec | undefined => asRecord(v);
-const val = (o: Rec | undefined, key: string): unknown => o?.[key] ?? null;
-const arr = (v: unknown): unknown[] | null => (Array.isArray(v) ? v : null);
-const strings = (v: unknown): unknown[] | null => arr(v);
-const pick = (o: Rec | undefined, keys: readonly string[]): Rec =>
-  Object.fromEntries(keys.map((k) => [k, val(o, k)]));
-const pickOrNull = (v: unknown, keys: readonly string[]): Rec | null => {
-  const o = rec(v);
-  return o === undefined ? null : pick(o, keys);
-};
 
 function principalType(odataType: unknown): string {
   if (typeof odataType !== 'string') return 'other';
@@ -529,11 +155,36 @@ function principalType(odataType: unknown): string {
   return t === 'user' || t === 'group' || t === 'servicePrincipal' ? t : 'other';
 }
 
+const strings = (v: unknown): unknown[] | null => arr(v);
+
+/**
+ * Directory setting values that may be collected (same allowlist as the PowerShell
+ * collector). Anything else - for example custom banned password lists - is dropped.
+ */
+const GROUP_SETTING_ALLOWLIST: ReadonlySet<string> = new Set([
+  'EnableBannedPasswordCheckOnPremises',
+  'BannedPasswordCheckOnPremisesMode',
+  'EnableBannedPasswordCheck',
+  'LockoutThreshold',
+  'LockoutDurationInSeconds',
+  'EnableGroupCreation',
+  'AllowGuestsToAccessGroups',
+  'AllowGuestsToBeGroupOwner',
+  'AllowToAddGuests',
+  'EnableMIPLabels',
+  'EnableMSStandardBlockedWords',
+  'NewUnifiedGroupWritebackDefault',
+  'EnableGroupSpecificConsent',
+  'BlockUserConsentForRiskyApps',
+  'EnableAdminConsentRequests',
+  'ConstrainGroupSpecificConsentToMembersOfGroupId',
+]);
+
 // ---------------------------------------------------------------------------------------------
 // Dataset collectors
 // ---------------------------------------------------------------------------------------------
 
-const COLLECTORS: Record<string, DatasetCollector> = {
+const ENTRA_COLLECTORS: Record<string, DatasetCollector> = {
   'entra.organization': async (state, context) => {
     const orgs = await getAll(state, context, `${GRAPH_BASE}/organization`);
     const org = rec(orgs[0]);
@@ -930,20 +581,38 @@ const COLLECTORS: Record<string, DatasetCollector> = {
       };
     });
   },
-};
 
-function enabledServicePlans(skus: readonly (Rec | undefined)[]): Set<string> {
-  const names = new Set<string>();
-  for (const sku of skus) {
-    const status = val(sku, 'capabilityStatus');
-    if (typeof status === 'string' && !['Enabled', 'Warning', 'LockedOut'].includes(status))
-      continue;
-    for (const plan of arr(val(sku, 'servicePlans')) ?? []) {
-      const p = rec(plan);
-      if (val(p, 'provisioningStatus') === 'Disabled') continue;
-      const name = val(p, 'servicePlanName');
-      if (typeof name === 'string') names.add(name.toUpperCase());
+  'entra.groupSettings': async (state, context) => {
+    const items = await getAll(state, context, `${GRAPH_BASE}/groupSettings`);
+    let dropped = 0;
+    const out = items.map((raw) => {
+      const s = rec(raw);
+      const values: Rec[] = [];
+      const rawValues = arr(val(s, 'values'));
+      if (rawValues === null) {
+        state.partial = true;
+        state.errors.push(
+          message('SETTING_VALUES_MISSING', 'A directory settings object was returned without values.', typeof val(s, 'id') === 'string' ? (val(s, 'id') as string) : null),
+        );
+      }
+      for (const v of rawValues ?? []) {
+        const name = val(rec(v), 'name');
+        if (typeof name !== 'string' || !GROUP_SETTING_ALLOWLIST.has(name)) {
+          dropped += 1;
+          continue;
+        }
+        values.push({ name, value: val(rec(v), 'value') });
+      }
+      return { ...pick(s, ['id', 'displayName', 'templateId']), values };
+    });
+    if (dropped > 0) {
+      state.warnings.push(
+        message(
+          'SETTINGS_FILTERED',
+          `${dropped} setting value(s) not on the allow-list (for example custom banned password lists) were not collected.`,
+        ),
+      );
     }
-  }
-  return names;
-}
+    return out;
+  },
+};

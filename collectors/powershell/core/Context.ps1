@@ -1,7 +1,7 @@
 # Collection context, conversions and dataset status handling.
 
 $script:AsoCollectorName = 'AdminSecOps.Collector'
-$script:AsoCollectorVersion = '0.1.0'
+$script:AsoCollectorVersion = '0.2.0'
 $script:AsoSchemaVersion = '1.0'
 $script:AsoManifestVersion = '1.0'
 $script:AsoContext = $null

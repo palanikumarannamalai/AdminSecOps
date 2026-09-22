@@ -3,6 +3,8 @@ import { list, optBool, optNumber, optString, optTimestamp } from '../common.js'
 import { defineDataset } from './define.js';
 
 const GRAPH = 'https://graph.microsoft.com/v1.0';
+const INTUNE_ROLE =
+  'Directory role: Global Reader, Intune Administrator or another role with Intune read access (Intune licence required)';
 
 export const intuneSettings = defineDataset({
   id: 'intune.settings',
@@ -12,7 +14,7 @@ export const intuneSettings = defineDataset({
   description: 'Tenant-wide device compliance settings, including how devices without a compliance policy are treated.',
   source: 'MicrosoftGraph',
   operations: [`GET ${GRAPH}/deviceManagement?$select=settings`],
-  permissions: ['Graph: DeviceManagementConfiguration.Read.All'],
+  permissions: ['Graph: DeviceManagementConfiguration.Read.All', INTUNE_ROLE],
   prerequisites: ['Microsoft Intune'],
   personalData: 'none',
   schema: z.object({
@@ -30,7 +32,7 @@ export const intuneDeviceOverview = defineDataset({
   description: 'Counts of enrolled devices by platform. No per-device data is collected.',
   source: 'MicrosoftGraph',
   operations: [`GET ${GRAPH}/deviceManagement/managedDeviceOverview`],
-  permissions: ['Graph: DeviceManagementManagedDevices.Read.All'],
+  permissions: ['Graph: DeviceManagementManagedDevices.Read.All', INTUNE_ROLE],
   prerequisites: ['Microsoft Intune'],
   personalData: 'none',
   schema: z.object({
@@ -47,10 +49,11 @@ export const intuneCompliancePolicies = defineDataset({
   module: 'Intune',
   technology: 'intune',
   title: 'Device compliance policies',
-  description: 'Device compliance policies with selected security settings and assignment targets.',
+  description:
+    'Device compliance policies with selected security settings and assignment targets. Windows antivirus, firewall and TPM requirements are exposed only by the Microsoft Graph beta API, so collectors using v1.0 report them as null.',
   source: 'MicrosoftGraph',
   operations: [`GET ${GRAPH}/deviceManagement/deviceCompliancePolicies?$expand=assignments`],
-  permissions: ['Graph: DeviceManagementConfiguration.Read.All'],
+  permissions: ['Graph: DeviceManagementConfiguration.Read.All', INTUNE_ROLE],
   prerequisites: ['Microsoft Intune'],
   personalData: 'none',
   schema: z.array(

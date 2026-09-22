@@ -141,6 +141,186 @@ export const m365SharePointAnyoneLinks = defineControl({
   },
 });
 
+export const m365SharePointGuestResharing = defineControl({
+  id: 'M365-SPO-003',
+  version: '1.0.0',
+  lifecycle: 'stable',
+  title: 'SharePoint guests cannot reshare content they do not own',
+  technology: 'm365',
+  category: 'Data protection',
+  subcategory: 'External sharing',
+  description:
+    'Checks the organization-level SharePoint setting "Allow guests to share items they don\'t own" (isResharingByExternalUsersEnabled). When it is on, guests who were given edit access can share files, folders and sites with further people.',
+  rationale:
+    'When guests can reshare, the people who hold access to organization content are no longer chosen only by members; a guest can pass access on to people the organization never invited. Whether this is acceptable depends on how the organization collaborates with partners, so AdminSecOps asks for a decision rather than reporting a failure.',
+  severity: 'low',
+  confidence: 'high',
+  applicability: {
+    description:
+      'Microsoft 365 tenants with SharePoint Online. NOT_APPLICABLE when external sharing is set to "Only people in your organization".',
+  },
+  requiredEvidence: ['m365.sharePointSettings'],
+  optionalEvidence: [],
+  evaluation: {
+    logic:
+      'NOT_APPLICABLE when sharingCapability is disabled (no external sharing). PASS when isResharingByExternalUsersEnabled is false. REVIEW when it is true, because guest resharing is a collaboration design decision rather than a universal vulnerability. NOT_ASSESSED when Microsoft Graph did not return the value (null is never treated as off).',
+    parameters: {},
+  },
+  expectedState:
+    'Guests cannot share items they do not own, or the organization has documented why guest resharing is needed.',
+  remediation: {
+    summary: 'Turn off "Allow guests to share items they don\'t own" in the SharePoint admin center if guests do not need it.',
+    steps: [
+      'Confirm with site owners that no partner process depends on guests sharing content onward.',
+      'In the SharePoint admin center go to Policies > Sharing and expand More external sharing settings.',
+      'Clear "Allow guests to share items they don\'t own" and select Save.',
+    ],
+    scriptExample:
+      '# SharePoint Online Management Shell\nConnect-SPOService -Url https://contoso-admin.sharepoint.com\nSet-SPOTenant -PreventExternalUsersFromResharing $true\nGet-SPOTenant | Format-List PreventExternalUsersFromResharing',
+    effort: 'low',
+  },
+  implementationConsiderations: [
+    'Existing access granted by guests is not removed; review sharing reports for sites that are shared externally.',
+    'Members can still share with guests according to the organization and site sharing settings.',
+  ],
+  impact: 'Guests can no longer grant other people access to content they do not own.',
+  rollback: [
+    'Select "Allow guests to share items they don\'t own" again in Policies > Sharing, or run Set-SPOTenant -PreventExternalUsersFromResharing $false.',
+  ],
+  validation: [
+    'Re-run the AdminSecOps assessment and confirm M365-SPO-003 is PASS or that the REVIEW finding reflects a documented decision.',
+    'Run Get-SPOTenant | Format-List PreventExternalUsersFromResharing and confirm the value is True.',
+  ],
+  references: [M365_REF.manageSharing, M365_REF.sharingOverview, M365_REF.graphSharePointSettings],
+  frameworkMappings: [
+    { framework: 'NIST-800-53r5', id: 'AC-21' },
+    { framework: 'NIST-800-53r5', id: 'AC-3' },
+  ],
+  tags: ['external-sharing', 'sharepoint', 'onedrive', 'guest-access'],
+  applies: (ctx) =>
+    ctx.data('m365.sharePointSettings').sharingCapability.trim().toLowerCase() === 'disabled'
+      ? { applicable: false, reason: 'External sharing is set to "Only people in your organization".' }
+      : { applicable: true },
+  evaluate: (ctx) => {
+    const settings = ctx.data('m365.sharePointSettings');
+    const value = settings.isResharingByExternalUsersEnabled;
+    const facts = [
+      fact('Sharing capability', settings.sharingCapability),
+      fact('Guests can share items they do not own', value),
+    ];
+    if (value === null) {
+      return notAssessed({
+        reason: 'Microsoft Graph did not return isResharingByExternalUsersEnabled, so guest resharing could not be evaluated.',
+        summary: 'Guest resharing setting not available in the evidence.',
+        facts,
+      });
+    }
+    if (!value) {
+      return pass({
+        reason: 'Guests cannot share items they do not own.',
+        summary: 'Only members decide who else gets access to shared content.',
+        facts,
+      });
+    }
+    return review({
+      reason:
+        'Guests can share items they do not own (isResharingByExternalUsersEnabled is true). Confirm that partner collaboration requires this; otherwise turn it off.',
+      summary: 'Guests can extend access to content they do not own.',
+      facts,
+      affectedObjects: [
+        affected('tenantSetting', 'sharepoint.isResharingByExternalUsersEnabled', 'Allow guests to share items they don\'t own', 'isResharingByExternalUsersEnabled=true'),
+      ],
+    });
+  },
+});
+
+export const m365SharePointIdleSignOut = defineControl({
+  id: 'M365-SPO-004',
+  version: '1.0.0',
+  lifecycle: 'stable',
+  title: 'Idle session sign-out is configured for SharePoint and OneDrive',
+  technology: 'm365',
+  category: 'Data protection',
+  subcategory: 'Session management',
+  description:
+    'Checks whether idle session sign-out is turned on for SharePoint and OneDrive browser sessions (idleSessionSignOut.isEnabled). Microsoft applies it to browser sessions on unmanaged devices; users on managed devices are not signed out.',
+  rationale:
+    'Browser sessions left open on shared or personal computers give the next person at the device access to organization files. Signing out inactive browser sessions limits that exposure. The appropriate timeout depends on how people work, so a disabled setting is reported for review rather than as a failure.',
+  severity: 'low',
+  confidence: 'high',
+  applicability: {
+    description:
+      'Microsoft 365 tenants with SharePoint Online. Microsoft documents that the feature relies on Conditional Access (Microsoft Entra ID P1 or P2).',
+  },
+  requiredEvidence: ['m365.sharePointSettings'],
+  optionalEvidence: [],
+  evaluation: {
+    logic:
+      'PASS when idleSessionSignOut.isEnabled is true (the warning and sign-out times are reported as facts). REVIEW when it is false: whether to sign out idle browser sessions on unmanaged devices is an organizational decision. NOT_ASSESSED when Microsoft Graph did not return the setting.',
+    parameters: {},
+  },
+  expectedState:
+    'Idle session sign-out is on with warning and sign-out times that match the organization\'s policy, or the decision not to use it is documented.',
+  remediation: {
+    summary: 'Turn on idle session sign-out in the SharePoint admin center.',
+    steps: [
+      'In the SharePoint admin center go to Policies > Access control > Idle session sign-out.',
+      'Turn on "Sign out inactive users automatically", choose when to warn users and when to sign them out, and select Save.',
+      'Allow about 15 minutes for the policy to take effect; existing sessions are not affected.',
+    ],
+    scriptExample:
+      '# SharePoint Online Management Shell\nConnect-SPOService -Url https://contoso-admin.sharepoint.com\nSet-SPOBrowserIdleSignOut -Enabled $true -WarnAfter (New-TimeSpan -Seconds 2700) -SignOutAfter (New-TimeSpan -Seconds 3600)\nGet-SPOBrowserIdleSignOut',
+    effort: 'low',
+  },
+  implementationConsiderations: [
+    'Users inactive in SharePoint and OneDrive are signed out across Microsoft 365 in that browser, even if they are active in another service.',
+    'Users who chose to stay signed in, and users on managed devices, are not signed out. For finer control use Conditional Access sign-in frequency.',
+  ],
+  impact: 'Inactive browser sessions on unmanaged devices are warned and then signed out.',
+  rollback: [
+    'Turn off "Sign out inactive users automatically" in Policies > Access control > Idle session sign-out, or run Set-SPOBrowserIdleSignOut -Enabled $false.',
+  ],
+  validation: [
+    'Re-run the AdminSecOps assessment and confirm M365-SPO-004 is PASS.',
+    'Run Get-SPOBrowserIdleSignOut and confirm Enabled is True with the intended times.',
+  ],
+  references: [M365_REF.spoIdleSignOut, M365_REF.spoUnmanagedDevices, M365_REF.graphSharePointSettings],
+  frameworkMappings: [
+    { framework: 'NIST-800-53r5', id: 'AC-12' },
+    { framework: 'NIST-800-53r5', id: 'AC-11' },
+  ],
+  tags: ['session-management', 'sharepoint', 'onedrive', 'unmanaged-devices'],
+  evaluate: (ctx) => {
+    const idle = ctx.data('m365.sharePointSettings').idleSessionSignOut;
+    const enabled = idle?.isEnabled ?? null;
+    const facts = [
+      fact('Idle session sign-out enabled', enabled),
+      fact('Warn after (seconds)', idle?.warnAfterInSeconds ?? null),
+      fact('Sign out after (seconds)', idle?.signOutAfterInSeconds ?? null),
+    ];
+    if (enabled === null) {
+      return notAssessed({
+        reason: 'Microsoft Graph did not return the idle session sign-out setting, so it could not be evaluated.',
+        summary: 'Idle session sign-out setting not available in the evidence.',
+        facts,
+      });
+    }
+    if (enabled) {
+      return pass({
+        reason: 'Idle session sign-out is enabled for SharePoint and OneDrive browser sessions.',
+        summary: 'Inactive browser sessions on unmanaged devices are signed out.',
+        facts,
+      });
+    }
+    return review({
+      reason:
+        'Idle session sign-out is off, so SharePoint and OneDrive browser sessions on unmanaged devices stay signed in while idle. Decide whether a timeout is required for your organization.',
+      summary: 'Idle browser sessions are not signed out.',
+      facts,
+    });
+  },
+});
+
 export const m365SharePointLegacyAuth = defineControl({
   id: 'M365-SPO-002',
   version: '1.0.0',

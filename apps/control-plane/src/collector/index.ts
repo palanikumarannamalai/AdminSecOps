@@ -13,6 +13,17 @@ export {
   type GraphPermissionRequirement,
 } from './entra.js';
 export {
+  ONLINE_DATASETS_COLLECTED,
+  ONLINE_GRAPH_PERMISSIONS,
+  ONLINE_NOT_COLLECTED,
+  ONLINE_REQUIRED_GRAPH_PERMISSIONS,
+  ONLINE_SKIPPED_MODULES,
+  collectOnline,
+  collectOnlineEvidence,
+  type CollectOnlineOptions,
+  type OnlineCollectionResult,
+} from './online.js';
+export {
   CollectionCancelledError,
   DEFAULT_GRAPH_LIMITS,
   GRAPH_BASE,
