@@ -143,3 +143,9 @@ and online frontend builds passed. The new five delegated scopes were validated 
 the live Microsoft Graph service principal and added to the existing app registration.
 Each customer must grant consent and rerun an assessment; synthetic tests do not establish
 successful collection in a customer tenant. No tenant security settings were changed.
+
+Deployment completed on 22 September 2026: Azure deployment
+`d241c032-4dfa-46ac-b964-8c1947602688`, engine 0.3.0. A clean restart resolved
+an interrupted platform warm-up. Live checks passed: health 200, unauthenticated API 401,
+Microsoft consent redirect 302 with all five new scopes, and the updated frontend bundle.
+Customer workload collection still requires fresh consent and a new tenant assessment.
