@@ -76,8 +76,10 @@ dependency that required a limitation beyond those listed below.
   (blocks `fetch`, XHR, WebSocket, EventSource and `sendBeacon`), `form-action 'none'`,
   `frame-src 'none'` and `worker-src 'none'`. The browser tests assert that importing a
   package produces no request at all and that a scripted `fetch` POST is blocked.
-- **No analytics, telemetry, cookies or remote logging.** The only `localStorage` keys are
-  `theme` (shared with the rest of palanikumar.net) and the persistence preference.
+- **No analytics, telemetry, cookies or remote logging in this browser edition.** The only
+  `localStorage` keys are `theme` (shared with the rest of palanikumar.net) and the persistence
+  preference. The separate online service at app.adminsecops.com keeps anonymous aggregate
+  usage counts on its server; see [PRIVACY.md](PRIVACY.md#online-service).
 - **Reports** are generated in the tab and downloaded through `blob:` URLs, which are
   revoked when an assessment is cleared.
 - **No credentials.** The hosted build contains no client IDs, secrets, tenant IDs,

@@ -12,6 +12,8 @@ third-party service.
 The first release runs entirely on the administrator's machine: collectors write a
 ZIP, and the local API/CLI process it in memory. The API binds only to loopback and
 refuses other addresses. No telemetry, no external calls from the application.
+This applies to the local application; the later hosted online service keeps only anonymous
+aggregate usage counts on its own server (see PRIVACY.md, "Usage counts in the online service").
 
 ## Consequences
 - No authentication is implemented for the local API; it is protected by loopback

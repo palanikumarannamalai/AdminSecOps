@@ -28,7 +28,7 @@ export function HostedGuidancePage() {
             Evidence, results and reports are not uploaded to palanikumar.net or any other service. The application has no
             server component, and its security policy blocks it from making network connections.
           </li>
-          <li>There are no analytics, telemetry, cookies or remote logging.</li>
+          <li>This browser edition has no analytics, telemetry, cookies or remote logging.</li>
           <li>
             By default assessments exist only in memory and disappear when you refresh or close the page. If you choose
             &quot;Keep assessments on this device&quot;, processed results (not the evidence package) are stored in this

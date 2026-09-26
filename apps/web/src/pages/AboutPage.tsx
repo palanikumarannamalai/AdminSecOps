@@ -30,7 +30,7 @@ export function AboutPage() {
             reports are not uploaded anywhere.
           </li>
           <li>This dashboard only talks to the local service. It loads no external scripts, fonts or analytics.</li>
-          <li>There is no telemetry, usage tracking or crash reporting.</li>
+          <li>The local application has no telemetry, usage tracking or crash reporting.</li>
           <li>
             External reference links (for example to Microsoft Learn) open only when you select them, in a new tab without
             a referrer.

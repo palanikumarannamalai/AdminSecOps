@@ -228,6 +228,15 @@ export function SignInPage() {
               days and audit events for 90 days. Missing data is reported as not assessed, never as
               passing. This test release does not provide security certification.
             </p>
+            <p>
+              The service records anonymous daily usage counts on its server: assessments started,
+              completed and failed (by a fixed reason code), which collectors returned data,
+              controls evaluated, report downloads by format, and distinct organisations.
+              Organisations are counted as a salted one-way hash, so the same organisation counts
+              once per day. No tenant ID, domain, user ID or finding is stored with the counts,
+              nothing is sent to a third party, and the counts are deleted after about 13 months
+              (400 days).
+            </p>
           </details>
         </section>
       </main>

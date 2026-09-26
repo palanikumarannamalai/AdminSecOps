@@ -228,8 +228,8 @@ export function HomePage() {
           ))}
         </ol>
         <p className="how__note">
-          Evidence never leaves this machine. Processing, storage and reports are local; AdminSecOps makes no changes to
-          your environment and sends no telemetry.
+          Evidence never leaves this machine. Processing, storage and reports are local; the local application makes no
+          changes to your environment and sends no telemetry.
         </p>
       </section>
 
