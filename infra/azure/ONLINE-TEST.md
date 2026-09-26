@@ -44,7 +44,8 @@ Retail baseline checked 2026-09-21 in USD:
 - PostgreSQL storage: 0.1265/GB-month x 32 = 4.048/month.
 - Baseline total: approximately 30.33/month, before transfer, extra backup storage, taxes and
   subscription credits/discounts.
-- Resource-group budget: 50/month; email notifications at 50%, 80%, 100% to cloudadmin@palanilab.com.
+- Resource-group budget: 50/month; email notifications at 50%, 80%, 100% to `<admin-upn>`.
+  `<admin-upn>` is the administrator account that owns the test subscription and receives its budget alerts.
   Azure budgets notify; they do not cap or stop spending.
 
 No paid static frontend, Container Registry, AI API, Kubernetes or extra worker service is needed.

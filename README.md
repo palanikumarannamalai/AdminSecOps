@@ -38,9 +38,11 @@ Microsoft offers for this data requires a management-scoped permission, so it st
 there is a read-only path or an explicit opt-in. See
 [docs/ONLINE-CONNECTORS.md](docs/ONLINE-CONNECTORS.md#exchange-online-fixed-server-side-runner).
 
+Exchange Online and on-premises collection are available only in the local edition.
+
 Coverage depends on permissions, roles, licensing and successful collection. Teams tenant
-policies and on-premises AD, AD CS, Group Policy and Windows collection are not available
-online. The current connector release still needs end-to-end validation in authorised
+policies are not available online, and on-premises means AD, AD CS, Group Policy and
+Windows. The current connector release still needs end-to-end validation in authorised
 customer tenants; an implemented connector is not a claim that all live scenarios pass.
 
 Missing, failed or unauthorised evidence is **Not assessed**, never Pass. Coverage counts
