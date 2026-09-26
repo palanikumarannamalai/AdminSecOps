@@ -9,6 +9,7 @@
     { "path": "packages/engine" },
     { "path": "packages/reporting" },
     { "path": "apps/api" },
-    { "path": "apps/cli" }
+    { "path": "apps/cli" },
+    { "path": "apps/control-plane" }
   ]
 }
