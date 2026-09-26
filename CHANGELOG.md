@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- Hosted service usage counts: the control plane keeps anonymous aggregate daily counters on
+  the server (assessments started, completed and failed by fixed reason code; collectors that
+  returned data; controls evaluated; report downloads by format; distinct organisations as a
+  salted HMAC-SHA-256 hash). No tenant ID, domain, user ID, error text or finding is stored,
+  there is no client-side tracking, and counter failures never affect an assessment. Rows are
+  deleted after `USAGE_RETENTION_DAYS` (default 400). `GET /api/usage` returns the totals to a
+  caller holding `USAGE_API_SECRET` and is off (404) without it. `docs/PRIVACY.md`, the online
+  sign-in, home and about pages and the product page describe the counts; the "no telemetry"
+  statements now name the local application and the static browser edition they describe.
+  A weekly GitHub Actions workflow posts the repository's stars, forks, release downloads and
+  traffic to the author's site.
+
 - Launch review corrections:
   - The hosted service no longer offers the Exchange Online connector: its only supported
     connection needs the management-scoped `Exchange.Manage` permission. The README, landing

@@ -1,0 +1,87 @@
+name: GitHub metrics
+
+# Weekly snapshot of public repository metrics (stars, forks, watchers, release downloads,
+# traffic views and clones) posted to the author's site. Nothing is committed to the repository.
+# Repository secrets:
+#   METRICS_GITHUB_TOKEN   - fine-grained token for this repository with read access to
+#                            Administration (traffic API), Contents and Metadata.
+#   INSIGHTS_INGEST_SECRET - shared secret for https://www.palanikumar.net/api/insights-ingest.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-metrics
+  cancel-in-progress: false
+
+jobs:
+  post-metrics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Collect and post metrics
+        env:
+          GH_TOKEN: ${{ secrets.METRICS_GITHUB_TOKEN }}
+          INGEST_SECRET: ${{ secrets.INSIGHTS_INGEST_SECRET }}
+          repo: ${{ github.repository }}
+          INGEST_URL: https://www.palanikumar.net/api/insights-ingest
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN}" ] || [ -z "${INGEST_SECRET}" ]; then
+            echo "::notice::METRICS_GITHUB_TOKEN or INSIGHTS_INGEST_SECRET is not set; skipping the metrics post."
+            exit 0
+          fi
+
+          work="$(mktemp -d)"
+          gh api "repos/${repo}" > "${work}/repo.json"
+          gh api "repos/${repo}/releases?per_page=100" --paginate --slurp > "${work}/releases.json"
+          gh api "repos/${repo}/traffic/views" > "${work}/views.json"
+          gh api "repos/${repo}/traffic/clones" > "${work}/clones.json"
+
+          jq -n \
+            --arg repository "${repo}" \
+            --arg capturedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --slurpfile repo "${work}/repo.json" \
+            --slurpfile releases "${work}/releases.json" \
+            --slurpfile views "${work}/views.json" \
+            --slurpfile clones "${work}/clones.json" '
+            def traffic($t; $key): {
+              count: ($t.count // 0), uniques: ($t.uniques // 0),
+              days: [ ($t[$key] // [])[] | { day: (.timestamp[0:10]), count: .count, uniques: .uniques } ]
+            };
+            ([ $releases[0][][] | {
+                tag: .tag_name,
+                downloads: ([ .assets[]?.download_count ] | add // 0),
+                assets: [ .assets[]? | { name: .name, downloads: .download_count } ]
+              } ]) as $rel
+            | {
+                kind: "github",
+                repository: $repository,
+                capturedAt: $capturedAt,
+                stars: $repo[0].stargazers_count,
+                forks: $repo[0].forks_count,
+                watchers: $repo[0].subscribers_count,
+                releases: $rel,
+                releaseDownloads: ([ $rel[].downloads ] | add // 0),
+                views: traffic($views[0]; "views"),
+                clones: traffic($clones[0]; "clones")
+              }' > "${work}/payload.json"
+
+          jq -c '{ stars, forks, watchers, releaseDownloads, views: { count: .views.count, uniques: .views.uniques }, clones: { count: .clones.count, uniques: .clones.uniques }, releases: (.releases | length) }' "${work}/payload.json"
+
+          status="$(curl --silent --show-error --output "${work}/response.txt" --write-out '%{http_code}' \
+            --max-time 60 --retry 2 \
+            -X POST "${INGEST_URL}" \
+            -H 'Content-Type: application/json' \
+            -H "x-insights-secret: ${INGEST_SECRET}" \
+            --data-binary "@${work}/payload.json")"
+          echo "Ingest endpoint returned HTTP ${status}."
+          if [ "${status}" -lt 200 ] || [ "${status}" -ge 300 ]; then
+            echo "::error::The insights ingest endpoint returned HTTP ${status}."
+            exit 1
+          fi

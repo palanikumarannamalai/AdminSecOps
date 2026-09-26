@@ -23,7 +23,7 @@ relying on them.
 
 | Mode | Where assessment data is processed | Getting started |
 |---|---|---|
-| Online app | Hosted service; results retained 30 days and audit events 90 days | Sign in with Microsoft at app.adminsecops.com; grant the required tenant consent |
+| Online app | Hosted service; results retained 30 days and audit events 90 days; anonymous aggregate usage counts kept about 13 months ([privacy](docs/PRIVACY.md#usage-counts-in-the-online-service)) | Sign in with Microsoft at app.adminsecops.com; grant the required tenant consent |
 | Static browser edition | Your browser tab; no assessment API | [Explore fictional samples](https://www.palanikumar.net/tools/adminsecops/app/) — this is the older browser edition |
 | Local application / CLI | Your machine; you manage evidence and results | Build from source below; use the PowerShell collector for local evidence |
 

@@ -8,6 +8,7 @@ import { CONNECTOR_IDS, createAuth, decryptTokens, encryptConnectorTokens, encry
 import { ONLINE_REQUIRED_GRAPH_PERMISSIONS, type ExchangeRunner } from './collector/index.js';
 import { connectorLabel, describeConnectors, prepareJobConnectors } from './connectors.js';
 import type { Store, StoredSession } from './store.js';
+import { UsageCounters, usageSecretMatches } from './usage.js';
 
 const sessionName = '__Host-adminsecops';
 const transactionName = '__Host-adminsecops-login';
@@ -36,7 +37,7 @@ function connectorSignInError(error: unknown, description: unknown): string {
 
 const isConnectorId = (value: unknown): value is ConnectorId => typeof value === 'string' && (CONNECTOR_IDS as readonly string[]).includes(value);
 
-export async function buildServer({ config, store, exchangeRunner }: { config: Config; store: Store; exchangeRunner?: ExchangeRunner }) {
+export async function buildServer({ config, store, exchangeRunner, usage = new UsageCounters(store, config.usage) }: { config: Config; store: Store; exchangeRunner?: ExchangeRunner; usage?: UsageCounters }) {
   const app = Fastify({ logger: false, bodyLimit: 16_384, trustProxy: false });
   const auth = createAuth(config);
   const sessions = new WeakMap<FastifyRequest, StoredSession>();
@@ -60,7 +61,8 @@ export async function buildServer({ config, store, exchangeRunner }: { config: C
   app.addHook('onRequest', async (request, reply) => {
     reply.header('Cache-Control', 'no-store').header('X-Content-Type-Options', 'nosniff').header('Referrer-Policy', 'no-referrer').header('X-Frame-Options', 'DENY').header('Strict-Transport-Security', 'max-age=31536000');
     const route = request.url.split('?')[0] ?? '';
-    if (route === '/api/health' || !route.startsWith('/api/') && route !== '/auth/logout' && !route.startsWith('/auth/connect/')) return;
+    // /api/usage never uses the session: it checks its own bearer secret (USAGE_API_SECRET).
+    if (route === '/api/health' || route === '/api/usage' || !route.startsWith('/api/') && route !== '/auth/logout' && !route.startsWith('/auth/connect/')) return;
     const token = readCookie(request, sessionName);
     if (!token || !/^[\w-]{43}$/.test(token)) throw failure(401, 'Sign in required');
     const current = await store.getSession(hashToken(token));
@@ -73,6 +75,17 @@ export async function buildServer({ config, store, exchangeRunner }: { config: C
     if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && (request.headers.origin !== config.publicUrl || request.headers['x-adminsecops-client'] !== 'web')) throw failure(403, 'Invalid request origin');
   });
   app.get('/api/health', () => ({ status: 'ok' }));
+  // Aggregate usage counters for the author's insights page. Off (404) unless USAGE_API_SECRET is set.
+  app.get<{ Querystring: { days?: string } }>('/api/usage', async (request, reply) => {
+    const secret = config.usage.apiSecret;
+    if (!secret) throw failure(404, 'Not found');
+    if (!usageSecretMatches(request.headers.authorization, secret)) return reply.code(401).header('WWW-Authenticate', 'Bearer').send({ error: { code: 'UNAUTHENTICATED', message: 'A valid usage API secret is required' } });
+    const raw: unknown = request.query.days;
+    // Whole days from 0 (all retained days) to 400, e.g. 7, 30, 90 or the day of the month for month-to-date.
+    if (raw !== undefined && (typeof raw !== 'string' || !/^(0|[1-9][0-9]{0,2})$/.test(raw) || Number(raw) > 400)) throw failure(400, 'days must be a whole number from 0 to 400');
+    const days = raw === undefined ? 30 : Number(raw);
+    return reply.header('Cache-Control', 'no-store').send({ service: 'adminsecops', ...await store.usageSummary(days) });
+  });
   app.get<{ Querystring: { tenantId?: string; consent?: string } }>('/auth/login', async (request, reply) => {
     throttle(`login:${request.ip}`, 30);
     const requestedTenant = request.query.tenantId ?? (config.openTenantOnboarding ? 'organizations' : config.tenantId);
@@ -171,8 +184,11 @@ export async function buildServer({ config, store, exchangeRunner }: { config: C
     // Each connector is refreshed separately; an unusable one is recorded for the job instead of failing it.
     const connectors = await prepareJobConnectors(auth, config, current);
     await store.putSession({ ...current, encryptedTokens, encryptedConnectors: connectors.session });
-    try { return reply.code(202).send(await store.createJob(current.tenantId, current.userId, encryptedTokens, connectors.job)); }
-    catch (error) {
+    try {
+      const job = await store.createJob(current.tenantId, current.userId, encryptedTokens, connectors.job);
+      void usage.started(current.tenantId);
+      return reply.code(202).send(job);
+    } catch (error) {
       if ((error as { code?: string }).code === '23505') throw failure(409, 'An assessment is already queued or running for this tenant.');
       throw error;
     }
@@ -185,8 +201,16 @@ export async function buildServer({ config, store, exchangeRunner }: { config: C
     return result;
   }
   app.get<{ Params: { id: string } }>('/api/assessments/:id', request => assessment(request, request.params.id));
-  app.get<{ Params: { id: string } }>('/api/assessments/:id/report.json', async (request, reply) => reply.header('Content-Disposition', 'attachment; filename="assessment.json"').type('application/json').send(serializeJsonReport(buildJsonReport(await assessment(request, request.params.id)))));
-  app.get<{ Params: { id: string } }>('/api/assessments/:id/report.html', async (request, reply) => reply.header('Content-Disposition', 'attachment; filename="assessment.html"').header('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox").type('text/html').send(renderHtmlReport(await assessment(request, request.params.id))));
+  app.get<{ Params: { id: string } }>('/api/assessments/:id/report.json', async (request, reply) => {
+    const report = serializeJsonReport(buildJsonReport(await assessment(request, request.params.id)));
+    void usage.exported('json');
+    return reply.header('Content-Disposition', 'attachment; filename="assessment.json"').type('application/json').send(report);
+  });
+  app.get<{ Params: { id: string } }>('/api/assessments/:id/report.html', async (request, reply) => {
+    const report = renderHtmlReport(await assessment(request, request.params.id));
+    void usage.exported('html');
+    return reply.header('Content-Disposition', 'attachment; filename="assessment.html"').header('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox").type('text/html').send(report);
+  });
   app.get<{ Querystring: { baseline?: string; current?: string } }>('/api/compare', async request => {
     if (!request.query.baseline || !request.query.current) throw failure(400, 'Provide baseline and current assessment IDs');
     return compareAssessments(await assessment(request, request.query.baseline), await assessment(request, request.query.current));

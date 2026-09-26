@@ -32,13 +32,36 @@ and [connector permissions](ONLINE-CONNECTORS.md) before connecting a tenant, an
 app name and publisher on Microsoft's consent screen before granting (see
 [Customer activation](ONLINE-CONNECTORS.md#customer-activation)).
 
+### Usage counts in the online service
+
+The online service records anonymous aggregate usage counts, computed on its server. The
+browser sends nothing extra for this: there is no client-side tracking, no analytics script
+and no additional cookie. For each UTC day it keeps only these totals:
+
+- assessments started, completed and failed;
+- failed assessments by a fixed reason code (`NOT_APPROVED`, `CONSENT_OR_TOKEN`,
+  `COLLECTION_FAILED`, `TIMEOUT`, `QUEUE_EXPIRED`, `UNKNOWN`), never the error text;
+- completed assessments in which each collector returned data (Entra, Microsoft 365,
+  Intune, Azure, Exchange Online, DNS);
+- the number of controls evaluated;
+- report downloads by format (JSON, HTML);
+- the number of distinct organisations.
+
+No tenant identifier, domain, user identifier, display name or finding is stored with these
+counts. To count distinct organisations, the server stores a salted one-way hash
+(HMAC-SHA-256 with a secret server-side salt) of the tenant ID for the day, so the same
+organisation is counted once per day and the hash cannot be turned back into the tenant ID.
+The counts stay in the service's own database and are not sent to any third party; the
+author reads the totals through an authenticated server endpoint. They are kept for about
+13 months (400 days) and then deleted.
+
 ## Where data goes in the local application
 
 Nowhere, by default. The collector writes an evidence package to a folder you choose.
 The local application processes it in memory on your machine and stores only the
 processed result under `%LOCALAPPDATA%\AdminSecOps\data` (or `ADMINSECOPS_DATA_DIR`).
-The raw evidence package is not copied by the application. There is no telemetry and the
-application makes no outbound network calls.
+The raw evidence package is not copied by the application. The local application has no
+telemetry and makes no outbound network calls.
 
 ## Your control
 
