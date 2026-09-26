@@ -1,10 +1,20 @@
 # Online workload assessments
 
 The hosted control plane (`apps/control-plane`) collects evidence read-only through Microsoft
-Graph **v1.0** with the signed-in administrator's delegated token. Hosted collector version
-0.2.0 covers Microsoft Entra ID, SharePoint and OneDrive, Microsoft Teams (settings that
-delegated Graph exposes) and Microsoft Intune. Exchange Online and Defender for Office 365
-cannot be read this way and are always reported as **not assessed** online.
+Graph **v1.0** with the signed-in administrator's delegated token. Hosted collector 0.2.0
+covered Microsoft Entra ID, SharePoint and OneDrive, Microsoft Teams (the settings delegated
+Graph exposes) and Microsoft Intune.
+
+> **Hosted collector 0.3.0 adds more sources.** See [ONLINE-CONNECTORS.md](ONLINE-CONNECTORS.md)
+> for the current permission and runtime matrix. It adds:
+>
+> - the remaining six Entra datasets;
+> - an Intune settings fallback through one exact Graph beta path;
+> - public SPF/DMARC DNS checks;
+> - a separately consented Azure Resource Manager connector;
+> - an Exchange Online connector that is disabled until the owner approves it.
+>
+> Where this page and ONLINE-CONNECTORS.md disagree, ONLINE-CONNECTORS.md is current.
 
 The engine and control library are the same as for the PowerShell collector. A dataset that
 is missing, denied, unlicensed, partial or invalid never produces a PASS (see
@@ -93,19 +103,17 @@ reported as **REVIEW** (an administrator decision) and never as a universal FAIL
 
 ## Not available online, and why
 
-- **Exchange Online and Defender for Office 365.** This covers organization and transport
-  configuration, audit configuration, DKIM, anti-spam and outbound spam policies, remote
-  domains, mailbox forwarding, SMTP AUTH and Safe Attachments. Graph's `/admin/exchange`
-  exposes only mailboxes and message trace. The configuration is exposed only through
-  Tenant Configuration Management, which does not support delegated access, or through
-  Exchange Online PowerShell.
-  - The online manifest records the Exchange module as *Skipped*
-    (`NOT_AVAILABLE_ONLINE`), and all Exchange controls stay NOT_ASSESSED.
-  - Licence, domain and tenant data is never used as a substitute: email protection is not
-    claimed as checked.
-  - Use the PowerShell collector to assess these controls.
-- **Mail DNS records (SPF/DMARC).** They depend on Exchange accepted domains, which are
-  unavailable online.
+- **Exchange Online and Defender for Office 365.** Delegated Graph still cannot read them:
+  `/admin/exchange` exposes only mailboxes and message trace.
+  - Hosted collector 0.3.0 reads them only through the separate Exchange Online connector.
+    See [ONLINE-CONNECTORS.md](ONLINE-CONNECTORS.md); the connector is disabled until the
+    owner approves it.
+  - Without that connector, the Exchange datasets carry `CONNECTOR_NOT_CONNECTED` or
+    `CONNECTOR_UNAVAILABLE` and their controls stay NOT_ASSESSED.
+  - Licence, domain and tenant data is never used as a substitute.
+- **Mail DNS records (SPF/DMARC).** Since 0.3.0 these are checked from public DNS. The domain
+  list comes from the Exchange accepted domains, or else from verified domains with the Email
+  capability. DNS never establishes DKIM or accepted domains.
 - **Teams tenant-wide policies.** This covers meeting, messaging, external access
   (federation), client, guest meeting and app permission/setup policies. No v1.0 or beta
   delegated Graph resource returns them; Tenant Configuration Management is app-only.
@@ -117,12 +125,13 @@ reported as **REVIEW** (an administrator decision) and never as a universal FAIL
   beta-only properties of `windows10CompliancePolicy` (`defenderEnabled`, `rtpEnabled`,
   `antivirusRequired`, `activeFirewallRequired`, `tpmRequired`). From v1.0 they are `null`.
 - **Linux compliance** is configured in the settings catalog and is not evaluated.
-- **Entra datasets not collected online:** application registrations, service principals,
-  application permission grants, PIM schedules and directory synchronization settings. They
-  need scopes the online app does not request (for example `Application.Read.All`), or
-  roles the supported sign-in roles do not all hold.
-- **Azure, Active Directory, AD CS, Group Policy and Windows** are outside the online
-  collector.
+- **Entra datasets.** Since 0.3.0 all of them are collected online. Directory
+  synchronization settings need `OnPremDirectorySynchronization.Read.All`, and Microsoft
+  supports this read only for the Global Administrator role; other roles are reported
+  Unauthorized.
+- **Azure** is collected through the separate Azure Resource Manager connector (0.3.0).
+- **Active Directory, AD CS, Group Policy and Windows** remain outside the online collector.
+  The outbound-only agent is designed, not implemented, in ONLINE-CONNECTORS.md.
 
 ## Consent and reconnecting
 
@@ -130,7 +139,7 @@ The deployment's `GRAPH_SCOPES` decides what the app requests at sign-in. The fu
 set is:
 
 ```text
-User.Read Organization.Read.All Policy.Read.All RoleManagement.Read.Directory Directory.Read.All User.Read.All AuditLog.Read.All UserAuthenticationMethod.Read.All SharePointTenantSettings.Read.All TeamworkAppSettings.Read.All Team.ReadBasic.All DeviceManagementConfiguration.Read.All DeviceManagementManagedDevices.Read.All
+User.Read Organization.Read.All Policy.Read.All RoleManagement.Read.Directory Directory.Read.All User.Read.All AuditLog.Read.All UserAuthenticationMethod.Read.All OnPremDirectorySynchronization.Read.All SharePointTenantSettings.Read.All TeamworkAppSettings.Read.All Team.ReadBasic.All DeviceManagementConfiguration.Read.All DeviceManagementManagedDevices.Read.All
 ```
 
 1. The app registration must list the same Microsoft Graph delegated permissions.

@@ -10,7 +10,7 @@ import { M365_CONTROLS } from './m365/index.js';
 import { WINDOWS_CONTROLS } from './windows/index.js';
 
 /** Version of the control library as a whole; bump when controls are added or changed. */
-export const CONTROL_LIBRARY_VERSION = '0.3.0';
+export const CONTROL_LIBRARY_VERSION = '0.4.0';
 
 /** Every implemented control, validated for unique IDs at load time. */
 export const CONTROL_LIBRARY: readonly ControlDefinition[] = [

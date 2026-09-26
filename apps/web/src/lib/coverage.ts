@@ -39,9 +39,10 @@ export function workloadOfDataset(datasetId: string): WorkloadKey {
 }
 
 /** Why a dataset is not usable, in administrator terms. */
-export type GapReason = 'permission' | 'licence' | 'failed' | 'not-collected' | 'unsupported';
+export type GapReason = 'not-connected' | 'permission' | 'licence' | 'failed' | 'not-collected' | 'unsupported';
 
 export const GAP_LABELS: Record<GapReason, string> = {
+  'not-connected': 'Connector not connected or connection expired',
   permission: 'Missing permission or consent',
   licence: 'Not licensed or not applicable',
   failed: 'Collection failed or evidence was invalid',
@@ -49,13 +50,32 @@ export const GAP_LABELS: Record<GapReason, string> = {
   unsupported: 'Not available to this collection method',
 };
 
-export function gapReason(status: CollectionStatus | null, moduleSkipped: boolean): GapReason {
+/** Collector message codes of the online connectors (apps/control-plane CONNECTOR_GAP_OUTCOME). */
+const CONNECTOR_CODES: Readonly<Record<string, GapReason>> = {
+  CONNECTOR_NOT_CONNECTED: 'not-connected',
+  CONNECTOR_EXPIRED: 'not-connected',
+  CONNECTOR_CONSENT_REQUIRED: 'permission',
+  CONNECTOR_UNAVAILABLE: 'unsupported',
+};
+
+export function gapReason(status: CollectionStatus | null, moduleSkipped: boolean, codes: readonly string[] = []): GapReason {
+  for (const code of codes) {
+    const mapped = CONNECTOR_CODES[code];
+    if (mapped !== undefined) return mapped;
+  }
   if (status === 'Unauthorized') return 'permission';
   if (status === 'NotApplicable') return 'licence';
   if (status === 'Failed') return 'failed';
   if (status === null && moduleSkipped) return 'unsupported';
   return 'not-collected';
 }
+
+/** Order used to pick the reason shown for a workload with no usable evidence. */
+const BLOCKER_PRIORITY: readonly GapReason[] = ['permission', 'failed', 'not-connected', 'unsupported', 'not-collected', 'licence'];
+
+const ONLINE_COLLECTOR = 'AdminSecOps.HostedGraphCollector';
+const ONPREM_REASON =
+  'Active Directory, AD CS, Group Policy and Windows hosts are in private networks that the online service cannot reach. An outbound-only on-premises connector is designed but not available; these controls are not assessed online.';
 
 export interface DatasetGap {
   datasetId: string;
@@ -80,22 +100,31 @@ export interface WorkloadCoverage {
   errors: number;
   /** Assessed: every dataset usable; partial: some evidence; not-assessed: no usable evidence. */
   state: 'assessed' | 'partial' | 'not-assessed';
+  /** For a not-assessed workload: the main reason (not connected, consent, unsupported, failed...). */
+  blocker: GapReason | null;
   /** Reasons recorded by the collector for modules it skipped entirely (for example not available online). */
   skippedReasons: string[];
 }
 
 export function computeCoverage(result: AssessmentResult): WorkloadCoverage[] {
+  const online = result.collection.collector.name === ONLINE_COLLECTOR;
   const skippedModules = new Map(
     result.collection.modules.filter((m) => m.status === 'Skipped').map((m) => [m.name, m.warnings.map((w) => w.message)]),
   );
+  const codes = new Map<string, string[]>();
+  for (const issue of result.evidence.issues) {
+    if (issue.datasetId === null) continue;
+    codes.set(issue.datasetId, [...(codes.get(issue.datasetId) ?? []), issue.code]);
+  }
   const byKey = new Map<WorkloadKey, WorkloadCoverage>(
     WORKLOADS.map((w) => [
       w.key,
-      { key: w.key, label: w.label, collected: [], partial: [], gaps: [], catalogueControls: 0, assessed: 0, notAssessed: 0, notApplicable: 0, errors: 0, state: 'not-assessed', skippedReasons: [] },
+      { key: w.key, label: w.label, collected: [], partial: [], gaps: [], catalogueControls: 0, assessed: 0, notAssessed: 0, notApplicable: 0, errors: 0, state: 'not-assessed', blocker: null, skippedReasons: [] },
     ]),
   );
   for (const dataset of result.evidence.datasets) {
-    const entry = byKey.get(workloadOfDataset(dataset.datasetId));
+    const key = workloadOfDataset(dataset.datasetId);
+    const entry = byKey.get(key);
     if (entry === undefined) continue;
     if (dataset.state === 'available') entry.collected.push(dataset.datasetId);
     else if (dataset.state === 'partial') {
@@ -104,10 +133,13 @@ export function computeCoverage(result: AssessmentResult): WorkloadCoverage[] {
     } else {
       const skipped = skippedModules.get(dataset.module);
       if (skipped !== undefined) for (const reason of skipped) if (!entry.skippedReasons.includes(reason)) entry.skippedReasons.push(reason);
+      // The online service cannot reach private networks: on-premises evidence is unsupported, not merely missing.
+      const unreachable = online && key === 'onprem' && dataset.collectionStatus === null;
+      if (unreachable && !entry.skippedReasons.includes(ONPREM_REASON)) entry.skippedReasons.push(ONPREM_REASON);
       entry.gaps.push({
         datasetId: dataset.datasetId,
         title: dataset.title,
-        reason: gapReason(dataset.collectionStatus, skipped !== undefined),
+        reason: gapReason(dataset.collectionStatus, skipped !== undefined || unreachable, codes.get(dataset.datasetId) ?? []),
         detail: dataset.reason,
       });
     }
@@ -123,8 +155,10 @@ export function computeCoverage(result: AssessmentResult): WorkloadCoverage[] {
     else entry.notAssessed += 1;
   }
   for (const entry of byKey.values()) {
-    if (entry.collected.length === 0) entry.state = 'not-assessed';
-    else if (entry.gaps.length > 0 || entry.partial.length > 0 || entry.notAssessed > 0) entry.state = 'partial';
+    if (entry.collected.length === 0) {
+      entry.state = 'not-assessed';
+      entry.blocker = BLOCKER_PRIORITY.find((reason) => entry.gaps.some((g) => g.reason === reason)) ?? null;
+    } else if (entry.gaps.length > 0 || entry.partial.length > 0 || entry.notAssessed > 0) entry.state = 'partial';
     else entry.state = 'assessed';
   }
   return [...byKey.values()].filter((w) => w.catalogueControls > 0 || w.collected.length > 0);

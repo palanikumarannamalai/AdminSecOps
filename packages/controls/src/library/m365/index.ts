@@ -1,3 +1,4 @@
+import { m365SharePointInvitationIdentity, m365SharePointDomainRestrictions } from './sharepoint-governance.js';
 import type { ControlDefinition } from '../../define.js';
 import { m365MailboxAuditing, m365UnifiedAuditLog } from './audit.js';
 import { m365SafeAttachmentsSpo } from './defender.js';
@@ -21,6 +22,8 @@ import {
 import { m365TeamsGuestChannelManagement, m365TeamsPersonalScopeRsc } from './teams.js';
 
 export const M365_CONTROLS: readonly ControlDefinition[] = [
+  m365SharePointInvitationIdentity,
+  m365SharePointDomainRestrictions,
   m365UnifiedAuditLog,
   m365MailboxAuditing,
   m365SmtpAuthDisabled,

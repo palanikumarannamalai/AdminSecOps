@@ -1,13 +1,28 @@
 import { useAssessment } from '../app/AssessmentLayout';
 import { ToneBadge, type Tone } from '../components/Badges';
 import { PageHeader, Panel } from '../components/PageHeader';
-import { GAP_LABELS, computeCoverage, type WorkloadCoverage } from '../lib/coverage';
+import { GAP_LABELS, computeCoverage, type GapReason, type WorkloadCoverage } from '../lib/coverage';
 
 const STATE: Record<WorkloadCoverage['state'], { label: string; tone: Tone }> = {
   assessed: { label: 'Assessed', tone: 'ok' },
   partial: { label: 'Partially assessed', tone: 'warn' },
   'not-assessed': { label: 'Not assessed', tone: 'bad' },
 };
+
+/** Why a workload without usable evidence was not assessed. None of these ever counts as passing. */
+const BLOCKER: Record<GapReason, string> = {
+  'not-connected': 'not connected',
+  permission: 'consent or permission required',
+  unsupported: 'unsupported online',
+  failed: 'collection failed',
+  licence: 'not licensed',
+  'not-collected': 'not collected',
+};
+
+function stateOf(w: WorkloadCoverage): { label: string; detail: string | null; tone: Tone } {
+  const base = STATE[w.state];
+  return { ...base, detail: w.state === 'not-assessed' && w.blocker !== null ? BLOCKER[w.blocker] : null };
+}
 
 export function CoveragePage() {
   const result = useAssessment();
@@ -23,7 +38,8 @@ export function CoveragePage() {
           <p>
             Which Microsoft services this assessment actually examined. Catalogue controls are the checks AdminSecOps has
             for a workload; only controls with a Pass, Fail or Review result were assessed. Workloads without usable
-            evidence are not assessed and never count as passing.
+            evidence are not assessed and never count as passing, whether the connector was not connected, consent was
+            missing, the source is unsupported online or collection failed.
           </p>
         }
       />
@@ -48,7 +64,8 @@ export function CoveragePage() {
                 <tr key={w.key}>
                   <th scope="row">{w.label}</th>
                   <td>
-                    <ToneBadge tone={STATE[w.state].tone}>{STATE[w.state].label}</ToneBadge>
+                    <ToneBadge tone={stateOf(w).tone}>{stateOf(w).label}</ToneBadge>
+                    {stateOf(w).detail !== null ? <div className="muted small">{stateOf(w).detail}</div> : null}
                   </td>
                   <td className="num">
                     {w.collected.length} of {w.collected.length + w.gaps.length}

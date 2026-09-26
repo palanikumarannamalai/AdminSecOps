@@ -100,25 +100,91 @@ export class CollectionCancelledError extends AdminSecOpsError {
 }
 
 /**
- * Validate a Graph URL against the allowlist. Returns the normalised URL, or undefined when
- * the URL must not be requested (other host, scheme, port, credentials, API version...).
+ * Parse an absolute HTTPS URL on exactly `origin`, rejecting control characters, backslashes,
+ * credentials, fragments and explicit ports. Shared by the Graph and Azure Resource Manager
+ * allowlists; callers add their own path rules.
  */
-export function validateGraphUrl(raw: unknown): string | undefined {
+export function parseServiceUrl(raw: unknown, origin: string): URL | undefined {
   if (typeof raw !== 'string' || raw.length === 0 || raw.length > MAX_URL_LENGTH) return undefined;
-  // Control characters and backslashes have no place in a Graph URL and can confuse parsers.
+  // Control characters and backslashes have no place in a service URL and can confuse parsers.
   // eslint-disable-next-line no-control-regex -- Explicitly reject control characters before URL parsing.
   if (/[\u0000-\u001f\u007f\\]/.test(raw)) return undefined;
-  if (!raw.startsWith(`${GRAPH_BASE}/`)) return undefined;
+  if (!raw.startsWith(`${origin}/`)) return undefined;
+  // Dot segments (also percent-encoded) would be normalised by the URL parser into a different path.
+  if (/\/(?:\.|%2e){1,2}(?:[/?#]|$)/i.test(raw)) return undefined;
   let url: URL;
   try {
     url = new URL(raw);
   } catch {
     return undefined;
   }
-  if (url.protocol !== 'https:' || url.hostname !== 'graph.microsoft.com' || url.port !== '') return undefined;
+  if (url.protocol !== 'https:' || url.port !== '' || url.origin !== origin) return undefined;
   if (url.username !== '' || url.password !== '' || url.hash !== '') return undefined;
-  if (url.origin !== GRAPH_ORIGIN || !url.pathname.startsWith('/v1.0/')) return undefined;
+  return url;
+}
+
+/**
+ * Validate a Graph URL against the allowlist. Returns the normalised URL, or undefined when
+ * the URL must not be requested (other host, scheme, port, credentials, API version...).
+ */
+export function validateGraphUrl(raw: unknown): string | undefined {
+  const url = parseServiceUrl(raw, GRAPH_ORIGIN);
+  if (url === undefined || url.hostname !== 'graph.microsoft.com' || !url.pathname.startsWith('/v1.0/')) return undefined;
   return url.href;
+}
+
+/**
+ * Microsoft Graph beta requests the hosted collector is allowed to make. Beta is otherwise
+ * never requested: each entry is one exact path (no query string, no nextLink) with a
+ * documented reason, and the URL is built by the collector, never taken from a response.
+ */
+export const GRAPH_BETA_EXCEPTIONS: ReadonlySet<string> = new Set<string>([
+  // intune.settings: deviceManagementSettings (secureByDefault...) is a documented property of the
+  // deviceManagement singleton, but the v1.0 GET pages were withdrawn and live v1.0 responses
+  // omitted it. Used only after both v1.0 requests omit the settings (see intune.ts).
+  '/beta/deviceManagement/settings',
+]);
+
+/** Validate an exact Graph beta URL against GRAPH_BETA_EXCEPTIONS. */
+export function validateGraphBetaUrl(raw: unknown): string | undefined {
+  const url = parseServiceUrl(raw, GRAPH_ORIGIN);
+  if (url === undefined || url.search !== '' || !GRAPH_BETA_EXCEPTIONS.has(url.pathname)) return undefined;
+  return url.href;
+}
+
+/** URL rules of one service. The token of a client is only ever sent to URLs `validate` accepts. */
+export interface ServicePolicy {
+  /** Service name used in (secret-free) error messages. */
+  readonly service: string;
+  /** Description of the allowlist used when a URL is rejected. */
+  readonly allowlist: string;
+  readonly validate: (raw: unknown) => string | undefined;
+  /** Validates a next-page link given the (validated) URL of the first page. */
+  readonly validateNext: (raw: unknown, first: string) => string | undefined;
+  /** Name of the next-page property in collection responses. */
+  readonly nextLinkProperty: string;
+  readonly headers: Readonly<Record<string, string>>;
+}
+
+export const GRAPH_POLICY: ServicePolicy = {
+  service: 'Microsoft Graph',
+  allowlist: 'Microsoft Graph v1.0 allowlist',
+  validate: validateGraphUrl,
+  validateNext: (raw) => validateGraphUrl(raw),
+  nextLinkProperty: '@odata.nextLink',
+  headers: { Accept: 'application/json', Prefer: 'include-unknown-enum-members' },
+};
+
+/**
+ * Time and size budget shared by every client of one collection, so that adding a service
+ * (Azure Resource Manager, Graph beta exception) never extends the total collection budget.
+ */
+export class CollectionBudget {
+  readonly deadline: number;
+  totalBytes = 0;
+  constructor(now: number, limits: Pick<GraphLimits, 'totalTimeoutMs'>) {
+    this.deadline = now + limits.totalTimeoutMs;
+  }
 }
 
 export interface GraphClientOptions {
@@ -128,6 +194,10 @@ export interface GraphClientOptions {
   limits: GraphLimits;
   /** Monotonic-ish clock in ms; injectable for tests. */
   now?: () => number;
+  /** URL rules; Microsoft Graph v1.0 by default. */
+  policy?: ServicePolicy;
+  /** Shared collection budget; a private budget is created when absent. */
+  budget?: CollectionBudget;
 }
 
 export interface GraphPageResult {
@@ -142,8 +212,8 @@ export class GraphClient {
   private readonly signal: AbortSignal | undefined;
   private readonly limits: GraphLimits;
   private readonly now: () => number;
-  private readonly deadline: number;
-  private totalBytes = 0;
+  private readonly budget: CollectionBudget;
+  readonly policy: ServicePolicy;
   private requestCount = 0;
 
   constructor(options: GraphClientOptions) {
@@ -152,7 +222,12 @@ export class GraphClient {
     this.signal = options.signal;
     this.limits = options.limits;
     this.now = options.now ?? Date.now;
-    this.deadline = this.now() + options.limits.totalTimeoutMs;
+    this.policy = options.policy ?? GRAPH_POLICY;
+    this.budget = options.budget ?? new CollectionBudget(this.now(), options.limits);
+  }
+
+  private get deadline(): number {
+    return this.budget.deadline;
   }
 
   get requestsSent(): number {
@@ -163,11 +238,23 @@ export class GraphClient {
     if (this.signal?.aborted === true) throw new CollectionCancelledError();
   }
 
-  /** GET one Graph resource and return the parsed JSON body. */
+  /** GET one resource and return the parsed JSON body. The URL must pass the client's policy. */
   async get(url: string): Promise<unknown> {
-    const safeUrl = validateGraphUrl(url);
+    return this.getValidated(this.policy.validate(url));
+  }
+
+  /**
+   * GET one exact Microsoft Graph beta URL listed in GRAPH_BETA_EXCEPTIONS. Only available on
+   * the Graph client; never used for next-page links.
+   */
+  async getGraphBetaException(url: string): Promise<unknown> {
+    if (this.policy !== GRAPH_POLICY) return this.getValidated(undefined);
+    return this.getValidated(validateGraphBetaUrl(url));
+  }
+
+  private async getValidated(safeUrl: string | undefined): Promise<unknown> {
     if (safeUrl === undefined) {
-      throw new GraphRequestError('url-rejected', 'A request URL was outside the Microsoft Graph v1.0 allowlist and was not sent.');
+      throw new GraphRequestError('url-rejected', `A request URL was outside the ${this.policy.allowlist} and was not sent.`);
     }
     for (let attempt = 0; ; attempt += 1) {
       this.throwIfCancelled();
@@ -195,6 +282,7 @@ export class GraphClient {
    */
   async getAll(url: string): Promise<GraphPageResult> {
     const items: unknown[] = [];
+    const first = this.policy.validate(url);
     let next: string | undefined = url;
     let pages = 0;
     while (next !== undefined) {
@@ -208,20 +296,20 @@ export class GraphClient {
       const record = asRecord(body);
       const value = record?.['value'];
       if (record === undefined || !Array.isArray(value)) {
-        if (pages === 0) throw new GraphRequestError('invalid-response', 'Microsoft Graph returned a collection response without a value array.');
+        if (pages === 0) throw new GraphRequestError('invalid-response', `${this.policy.service} returned a collection response without a value array.`);
         return { items, incomplete: { code: 'INVALID_PAGE', message: `Result page ${pages + 1} was not a valid collection page; results are incomplete.` } };
       }
       pages += 1;
       items.push(...(value as unknown[]));
-      const rawNext = record['@odata.nextLink'];
+      const rawNext = record[this.policy.nextLinkProperty];
       if (rawNext === undefined || rawNext === null) break;
-      next = validateGraphUrl(rawNext);
+      next = first === undefined ? undefined : this.policy.validateNext(rawNext, first);
       if (next === undefined) {
         return {
           items,
           incomplete: {
             code: 'NEXT_LINK_REJECTED',
-            message: `The service returned a next-page link outside the Microsoft Graph v1.0 allowlist after ${pages} page(s). It was not followed and results are incomplete.`,
+            message: `The service returned a next-page link outside the ${this.policy.allowlist} after ${pages} page(s). It was not followed and results are incomplete.`,
           },
         };
       }
@@ -247,7 +335,7 @@ export class GraphClient {
     try {
       const response = await this.fetchImpl(url, {
         method: 'GET',
-        headers: { Authorization: `Bearer ${this.accessToken}`, Accept: 'application/json', Prefer: 'include-unknown-enum-members' },
+        headers: { ...this.policy.headers, Authorization: `Bearer ${this.accessToken}` },
         redirect: 'error',
         signal: controller.signal,
       });
@@ -260,18 +348,19 @@ export class GraphClient {
       clearTimeout(timer);
       this.signal?.removeEventListener('abort', onAbort);
       if (this.signal?.aborted === true) throw new CollectionCancelledError();
-      if (timedOut) throw new GraphRequestError('timeout', 'The Microsoft Graph request timed out.');
+      if (timedOut) throw new GraphRequestError('timeout', `The ${this.policy.service} request timed out.`);
       // The underlying error may echo request details; it is deliberately not retained.
-      throw new GraphRequestError('network', 'The Microsoft Graph request failed at the network level.');
+      throw new GraphRequestError('network', `The ${this.policy.service} request failed at the network level.`);
     }
   }
 
   private async readBody(response: Response, maxBytes: number): Promise<Uint8Array> {
     try {
       const declared = response.headers.get('content-length');
+      const tooLarge = `A ${this.policy.service} response exceeded the size limit and was not read.`;
       if (declared !== null && /^\d+$/.test(declared) && Number(declared) > maxBytes) {
         await discardBody(response);
-        throw new GraphRequestError('too-large', 'A Microsoft Graph response exceeded the size limit and was not read.');
+        throw new GraphRequestError('too-large', tooLarge);
       }
       const chunks: Uint8Array[] = [];
       let total = 0;
@@ -284,25 +373,25 @@ export class GraphClient {
         for (;;) {
           const { done, value } = await reader.read() as { done: boolean; value?: unknown };
           if (done) break;
-          if (!(value instanceof Uint8Array)) throw new GraphRequestError('invalid-response', 'The Microsoft Graph response stream was invalid.');
+          if (!(value instanceof Uint8Array)) throw new GraphRequestError('invalid-response', `The ${this.policy.service} response stream was invalid.`);
           total += value.byteLength;
           if (total > maxBytes) {
             await reader.cancel().catch(() => undefined);
-            throw new GraphRequestError('too-large', 'A Microsoft Graph response exceeded the size limit and was not read.');
+            throw new GraphRequestError('too-large', tooLarge);
           }
           chunks.push(value);
         }
       }
-      if (total > maxBytes) throw new GraphRequestError('too-large', 'A Microsoft Graph response exceeded the size limit and was not read.');
-      this.totalBytes += total;
-      if (this.totalBytes > this.limits.maxTotalBytes) {
+      if (total > maxBytes) throw new GraphRequestError('too-large', tooLarge);
+      this.budget.totalBytes += total;
+      if (this.budget.totalBytes > this.limits.maxTotalBytes) {
         throw new GraphRequestError('budget-exhausted', 'The collection exceeded its total response size budget.');
       }
       return concat(chunks, total);
     } catch (error) {
       if (error instanceof GraphRequestError) throw error;
       if (this.signal?.aborted === true) throw new CollectionCancelledError();
-      throw new GraphRequestError('timeout', 'Reading the Microsoft Graph response failed or timed out.');
+      throw new GraphRequestError('timeout', `Reading the ${this.policy.service} response failed or timed out.`);
     } finally {
       cleanupOf(response)?.();
     }
@@ -328,7 +417,7 @@ export class GraphClient {
       if (error instanceof CollectionCancelledError) throw error;
       // Unreadable error bodies are ignored; only the status code is used.
     }
-    return new GraphRequestError('http', `Microsoft Graph returned HTTP ${response.status}${graphCode !== null ? ` (${graphCode})` : ''}.`, {
+    return new GraphRequestError('http', `${this.policy.service} returned HTTP ${response.status}${graphCode !== null ? ` (${graphCode})` : ''}.`, {
       status: response.status,
       graphCode,
       licenceHint,
@@ -357,7 +446,7 @@ function parseJson(bytes: Uint8Array): unknown {
   try {
     return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
   } catch {
-    throw new GraphRequestError('invalid-json', 'Microsoft Graph returned a response that is not valid JSON.');
+    throw new GraphRequestError('invalid-json', 'The service returned a response that is not valid JSON.');
   }
 }
 

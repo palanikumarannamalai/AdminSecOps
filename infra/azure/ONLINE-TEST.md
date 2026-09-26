@@ -4,16 +4,16 @@ Status: multitenant administrator onboarding test release (21 September 2026).
 
 ## Test site and scope
 
-- URL: https://adminsecops-test-neu-palani.azurewebsites.net
+- URL: https://app.adminsecops.com (custom domain configured 24 September 2026; see CUSTOM-DOMAIN.md).
 - Registration home tenant: Palani Lab, c15f03d1-1adc-4b27-b475-c65192c029a7.
 - Open onboarding accepts Microsoft work accounts with a supported active tenant-wide directory role.
 - Entra app client ID: bb1cbc8b-51c1-472d-93a6-0476478eb71e.
-- Callback: https://adminsecops-test-neu-palani.azurewebsites.net/auth/callback.
+- Callback: https://app.adminsecops.com/auth/callback.
 - Multitenant test release; customer administrator consent is required in each organization.
 - Microsoft sign-in and delegated read-only Graph consent required. No administrator password stored.
 - No sample uploads or downloaded collectors required by the online flow.
 
-The current collector (hosted collector 0.2.0) supports these workloads:
+The current collector (hosted collector 0.3.0) supports these workloads:
 
 - **Entra:** organization, subscribed licences, guest users, security defaults, authorization
   policy, authentication methods policy, Conditional Access policies, MFA registration details,
@@ -22,8 +22,7 @@ The current collector (hosted collector 0.2.0) supports these workloads:
 - **Teams:** app settings and per-team member/guest settings.
 - **Intune:** compliance settings, device overview, and compliance policies with assignments.
 
-Exchange Online, Defender for Office 365, Teams tenant policies, PIM, app registrations, Azure
-resources and on-premises modules are not collected online. See docs/ONLINE-WORKLOADS.md for the
+The collector also implements PIM, application metadata, Azure and Exchange/Defender for Office 365 datasets. Azure and Exchange need separate connections. Teams tenant policies and on-premises modules remain unavailable online. See docs/ONLINE-CONNECTORS.md for current coverage and live-validation limitations. See docs/ONLINE-WORKLOADS.md for the
 endpoint/permission matrix, limitations and consent steps. Missing evidence is not a pass; each
 assessment's Coverage page shows what was and was not assessed.
 

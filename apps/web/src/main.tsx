@@ -10,6 +10,7 @@ import { IS_HOSTED, IS_ONLINE } from './mode';
 import { OnlineSession } from './app/OnlineSession';
 import './styles/tokens.css';
 import './styles/app.css';
+import './styles/product.css';
 
 applySavedTheme();
 

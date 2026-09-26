@@ -1,5 +1,5 @@
-import { PRODUCT_DESCRIPTION, PRODUCT_NAME, PRODUCT_TAGLINE } from '@adminsecops/core/version';
-import { type ChangeEvent } from 'react';
+import { PRODUCT_NAME } from '@adminsecops/core/version';
+import { useState, type ChangeEvent } from 'react';
 import { NavLink, Outlet, useLocation, useMatch, useNavigate } from 'react-router';
 import { environmentName, formatDate } from '../lib/format';
 import { IS_HOSTED, IS_ONLINE, OVERVIEW_URL } from '../mode';
@@ -76,11 +76,12 @@ function navClass({ isActive }: { isActive: boolean }): string {
 }
 
 export function Layout() {
+  const [menuOpen, setMenuOpen] = useState(false);
   const selectedId = useSelectedAssessmentId();
   const base = selectedId !== null ? `/assessments/${encodeURIComponent(selectedId)}` : null;
 
   return (
-    <div className="shell">
+    <div className={`shell${menuOpen ? ' shell--menu-open' : ''}`}>
       <a
         href="#main"
         className="skip-link"
@@ -104,13 +105,14 @@ export function Layout() {
             <span className="brand__name">{PRODUCT_NAME}</span>
           </NavLink>
           <span className="topbar__tagline">
-            <span className="topbar__tagline-main">{PRODUCT_TAGLINE}</span>
-            <span className="topbar__tagline-sub">{PRODUCT_DESCRIPTION}</span>
+            <span className="topbar__tagline-main">Security workspace</span>
+            <span className="topbar__tagline-sub">Clarity for your Microsoft environment</span>
           </span>
         </div>
         <div className="topbar__actions">
           <AssessmentSwitcher selectedId={selectedId} />
-          <ThemeToggle />
+          <span className="workspace-mode">Read-only</span><ThemeToggle />
+          <button className="button mobile-menu" aria-expanded={menuOpen} aria-controls="workspace-nav" onClick={() => setMenuOpen(!menuOpen)}>Menu</button>
           {IS_HOSTED ? (
             <a className="button button--small topbar__overview" href={OVERVIEW_URL}>
               Return to AdminSecOps overview
@@ -119,7 +121,7 @@ export function Layout() {
         </div>
       </header>
       <div className="shell__body">
-        <nav className="nav" aria-label="Main">
+        <nav className="nav" id="workspace-nav" aria-label="Main" onClick={(event) => { if ((event.target as HTMLElement).closest('a')) setMenuOpen(false); }}>
           <ul className="nav__list">
             <li>
               <NavLink to="/" end className={navClass}>

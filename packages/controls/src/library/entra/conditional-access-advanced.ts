@@ -219,7 +219,7 @@ function riskControl(kind: 'signIn' | 'user') {
   const signIn = kind === 'signIn';
   return defineControl({
     id: signIn ? 'ENTRA-CA-006' : 'ENTRA-CA-007',
-    version: '1.0.2',
+    version: '1.0.3',
     lifecycle: 'stable',
     title: signIn ? 'High-risk sign-ins are challenged or blocked' : 'High-risk users are remediated or blocked',
     technology: 'entra',
@@ -300,12 +300,12 @@ function riskControl(kind: 'signIn' | 'user') {
       const enforced = matching.filter((p) => ca.isEnabled(p) && freshChallenge(p) && ca.includesAllUsers(p) && ca.includesAllApps(p) && ca.includesAllClientApps(p) && ca.exclusions(p).total === 0 && ca.hasNoNarrowingConditions({ ...p, conditions: { ...p.conditions, ...(signIn ? { signInRiskLevels: [] } : { userRiskLevels: [] }) } }));
       const facts = [fact('Matching policies', matching.length), fact('Enabled matching policies', enforced.length)];
       if (enforced.length > 0) {
-        return pass({ reason: `High ${signIn ? 'sign-in' : 'user'} risk is handled by ${enforced.map((p) => `"${p.displayName}"`).join(', ')}.`, summary: 'An enabled risk-based policy covers high risk.', facts });
+        return pass({ reason: `High ${signIn ? 'sign-in' : 'user'} risk is handled by ${enforced.map((p) => `"${p.displayName}"`).join(', ')}.`, summary: 'An enabled policy covers high risk, either explicitly or by applying to all risk levels.', facts });
       }
       if (matching.length > 0) {
         return review({
-          reason: `Risk-related policies were found (${matching.map(p => p.displayName).join(', ')}), but enforcement, scope, exclusions or fresh sign-in frequency require validation.`,
-          summary: 'Risk-based policy needs enforcement or scope validation.',
+          reason: `Potentially protective policies were found (${matching.map(p => p.displayName).join(', ')}), but enforcement, scope, exclusions or fresh sign-in frequency require validation.`,
+          summary: 'Policy coverage of high risk needs enforcement or scope validation.',
           facts,
           affectedObjects: matching.map((p) => affected('conditionalAccessPolicy', p.id, p.displayName, `state=${p.state}`)),
         });

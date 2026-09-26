@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/unbound-method -- Store methods are Vitest spies, never detached calls. */
 import { describe, expect, it, vi } from 'vitest';
+import { UnsecuredJWT } from 'jose';
 import { buildServer } from './server.js';
-import { encryptTokens, hashToken } from './auth.js';
+import { encryptConnectorTokens, encryptTokens, hashToken, type ConnectorTokens } from './auth.js';
+import type { ExchangeRunner } from './collector/index.js';
 import { loadConfig } from './config.js';
 import type { Store, StoredSession } from './store.js';
 
@@ -48,7 +50,7 @@ describe('hosted HTTP boundary', () => {
     expect((await app.inject({ url: `/api/compare?baseline=${id}&current=${id}`, headers })).statusCode).toBe(404);
     expect(store.getAssessment).toHaveBeenCalledWith(tenant, id);
     expect((await app.inject({ method: 'POST', url: '/api/jobs', headers, payload: {} })).statusCode).toBe(202);
-    expect(store.createJob).toHaveBeenCalledWith(tenant, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', expect.any(String));
+    expect(store.createJob).toHaveBeenCalledWith(tenant, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', expect.any(String), null);
     await app.close();
   });
   it('rejects expired administrator authorization even with an unexpired session', async () => {
@@ -76,7 +78,7 @@ describe('hosted HTTP boundary', () => {
     expect((await app.inject({ method: 'POST', url: '/api/jobs', headers: { ...headers, origin: 'https://attacker.example' }, payload: {} })).statusCode).toBe(403);
     expect((await app.inject({ method: 'POST', url: '/api/jobs', headers, payload: { tenantId: 'foreign' } })).statusCode).toBe(400);
     expect((await app.inject({ method: 'POST', url: '/api/jobs', headers, payload: {} })).statusCode).toBe(202);
-    expect(store.createJob).toHaveBeenCalledWith(config.tenantId, config.allowedUserIds[0], expect.any(String));
+    expect(store.createJob).toHaveBeenCalledWith(config.tenantId, config.allowedUserIds[0], expect.any(String), null);
     await app.close();
   });
   it('scopes assessment reads and clears session on logout', async () => {
@@ -120,6 +122,113 @@ describe('hosted HTTP boundary', () => {
     expect(response.body).not.toContain('secret-access');
     await app.close();
   });
+  describe('resource connectors', () => {
+    const enabled = { ...config, connectors: { azure: true, exchange: true }, exchangePwshPath: '/usr/bin/pwsh' };
+    const armToken = (claims: Record<string, unknown> = {}) => new UnsecuredJWT({ aud: 'https://management.azure.com', tid: config.tenantId, oid: config.allowedUserIds[0], scp: 'user_impersonation', ...claims }).setExpirationTime('1h').encode();
+    const sealedArm = (overrides: Partial<ConnectorTokens> = {}) =>
+      encryptConnectorTokens({ connector: 'azure', tenantId: config.tenantId, userId: config.allowedUserIds[0]!, accessToken: armToken(), refreshToken: 'arm-refresh-secret', expiresAt: Date.now() + 600_000, connectedAt: Date.UTC(2026, 8, 22), ...overrides }, config.tokenEncryptionKey);
+    const runner = (available: boolean): ExchangeRunner => ({ status: () => Promise.resolve({ available, reason: available ? 'ready' : 'PowerShell is not installed or could not be started on this server.' }), run: vi.fn() });
+
+    it('requires a session and an enabled connector, and starts tenant-specific consent with only the resource scope', async () => {
+      const app = await buildServer({ config: enabled, store: fixture() });
+      expect((await app.inject({ url: '/auth/connect/azure' })).statusCode).toBe(401);
+      expect((await app.inject({ url: '/auth/connect/shell', headers })).statusCode).toBe(404);
+      expect((await app.inject({ url: '/auth/connect/azure?consent=admin', headers })).statusCode).toBe(400);
+      const response = await app.inject({ url: '/auth/connect/azure', headers });
+      expect(response.statusCode).toBe(302);
+      const location = new URL(response.headers.location as string);
+      expect(location.pathname).toBe(`/${config.tenantId}/oauth2/v2.0/authorize`);
+      expect(location.searchParams.get('scope')).toBe('https://management.azure.com/user_impersonation openid profile offline_access');
+      expect(String(response.headers['set-cookie'])).toContain('__Host-adminsecops-login=');
+      expect(new URL((await app.inject({ url: '/auth/connect/exchange?consent=true', headers })).headers.location as string).searchParams.get('prompt')).toBe('consent');
+      // Another site cannot start a connection for the signed-in administrator.
+      for (const site of ['cross-site', 'same-site']) expect((await app.inject({ url: '/auth/connect/azure', headers: { ...headers, 'sec-fetch-site': site } })).statusCode).toBe(403);
+      expect((await app.inject({ url: '/auth/connect/azure', headers: { ...headers, 'sec-fetch-site': 'same-origin' } })).statusCode).toBe(302);
+      await app.close();
+      const disabled = await buildServer({ config, store: fixture() });
+      expect((await disabled.inject({ url: '/auth/connect/azure', headers })).statusCode).toBe(404);
+      await disabled.close();
+    });
+
+    it('refuses connector sign-in when the one-hour administrator authorization has expired', async () => {
+      const app = await buildServer({ config: { ...enabled, openTenantOnboarding: true }, store: fixture({ encryptedTokens: encryptTokens({ accessToken: 'x', expiresAt: Date.now() + 600_000, authorizationExpiresAt: 0 }, config.tokenEncryptionKey) }) });
+      expect((await app.inject({ url: '/auth/connect/azure', headers })).statusCode).toBe(401);
+      await app.close();
+    });
+
+    it('does not attach a connector callback without the session that started it', async () => {
+      const app = await buildServer({ config: enabled, store: fixture() });
+      const start = await app.inject({ url: '/auth/connect/azure', headers });
+      const transaction = /__Host-adminsecops-login=([^;]+)/.exec(String(start.headers['set-cookie']))![1]!;
+      const state = new URL(start.headers.location as string).searchParams.get('state')!;
+      const noSession = await app.inject({ url: `/auth/callback?state=${state}&code=c`, headers: { cookie: `__Host-adminsecops-login=${transaction}` } });
+      expect(noSession.statusCode).toBe(401);
+      const declined = await app.inject({ url: '/auth/callback?error=consent_required&error_description=PRIVATE-DETAIL', headers: { cookie: `__Host-adminsecops-login=${transaction}; ${headers.cookie}` } });
+      expect(declined.statusCode).toBe(401);
+      expect(declined.body).toContain('connector');
+      expect(declined.body).not.toContain('PRIVATE-DETAIL');
+      const invalidScope = await app.inject({ url: '/auth/callback?' + new URLSearchParams({ error: 'invalid_scope', error_description: 'AADSTS70011: PRIVATE-TOKEN-DETAIL' }).toString(), headers: { cookie: `__Host-adminsecops-login=${transaction}; ${headers.cookie}` } });
+      expect(invalidScope.statusCode).toBe(401);
+      expect(invalidScope.body).toContain('AADSTS70011, invalid_scope');
+      expect(invalidScope.body).not.toContain('PRIVATE-TOKEN-DETAIL');
+      const untrusted = await app.inject({ url: '/auth/callback?' + new URLSearchParams({ error: 'SECRET-IN-ERROR', error_description: 'AADSTS70011 ' + 'x'.repeat(8192) }).toString(), headers: { cookie: `__Host-adminsecops-login=${transaction}; ${headers.cookie}` } });
+      expect(untrusted.body).not.toContain('SECRET-IN-ERROR');
+      expect(untrusted.body).not.toContain('AADSTS70011');
+      await app.close();
+    });
+
+    it('reports each connector state without exposing tokens', async () => {
+      const store = fixture({ encryptedConnectors: JSON.stringify({ azure: sealedArm() }) });
+      const app = await buildServer({ config: enabled, store, exchangeRunner: runner(false) });
+      const response = await app.inject({ url: '/api/me', headers });
+      const body = response.json<{ connectors: { id: string; state: string; connectUrl: string | null }[] }>();
+      expect(body.connectors.map((c) => [c.id, c.state])).toEqual([['azure', 'connected'], ['exchange', 'runtime-unavailable'], ['onPremises', 'unsupported']]);
+      expect(body.connectors.find((c) => c.id === 'exchange')?.connectUrl).toBeNull();
+      expect(response.body).not.toContain('arm-refresh-secret');
+      expect(response.body).not.toContain(armToken().split('.')[1]!);
+      await app.close();
+
+      const plain = await buildServer({ config, store: fixture() });
+      const states = (await plain.inject({ url: '/api/me', headers })).json<{ connectors: { id: string; state: string }[] }>().connectors.map((c) => c.state);
+      expect(states).toEqual(['disabled', 'disabled', 'unsupported']);
+      await plain.close();
+
+      // A connector sealed for another user of the tenant is ignored.
+      const foreign = encryptConnectorTokens({ connector: 'azure', tenantId: config.tenantId, userId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', accessToken: armToken(), expiresAt: Date.now() + 600_000, connectedAt: 1 }, config.tokenEncryptionKey);
+      const swapped = await buildServer({ config: enabled, store: fixture({ encryptedConnectors: JSON.stringify({ azure: foreign }) }), exchangeRunner: runner(true) });
+      const view = (await swapped.inject({ url: '/api/me', headers })).json<{ connectors: { id: string; state: string }[] }>().connectors;
+      expect(view.map((c) => c.state)).toEqual(['not-connected', 'not-connected', 'unsupported']);
+      await swapped.close();
+    });
+
+    it('disconnects a connector only with the CSRF-protected POST', async () => {
+      const store = fixture({ encryptedConnectors: JSON.stringify({ azure: sealedArm() }) });
+      const app = await buildServer({ config: enabled, store });
+      expect((await app.inject({ method: 'POST', url: '/api/connectors/azure/disconnect', headers: { cookie: headers.cookie } })).statusCode).toBe(403);
+      expect((await app.inject({ method: 'POST', url: '/api/connectors/azure/disconnect', headers, payload: {} })).statusCode).toBe(204);
+      expect(store.putSession).toHaveBeenCalledWith(expect.objectContaining({ encryptedConnectors: null }));
+      await app.close();
+    });
+
+    it('passes separately sealed connector tokens to the job and records unusable connectors', async () => {
+      const store = fixture({ encryptedConnectors: JSON.stringify({ azure: sealedArm() }) });
+      const app = await buildServer({ config: enabled, store });
+      expect((await app.inject({ method: 'POST', url: '/api/jobs', headers, payload: {} })).statusCode).toBe(202);
+      const jobConnectors = vi.mocked(store.createJob).mock.calls[0]?.[3];
+      expect(typeof jobConnectors).toBe('string');
+      expect(Object.keys(JSON.parse(jobConnectors as string) as object)).toEqual(['azure']);
+      expect(jobConnectors).not.toContain('arm-refresh-secret');
+      await app.close();
+
+      // An expired connector without a refresh token is recorded as expired, and the job still runs.
+      const expiredStore = fixture({ encryptedConnectors: JSON.stringify({ azure: sealedArm({ refreshToken: undefined, expiresAt: 0 }) }) });
+      const expiredApp = await buildServer({ config: enabled, store: expiredStore });
+      expect((await expiredApp.inject({ method: 'POST', url: '/api/jobs', headers, payload: {} })).statusCode).toBe(202);
+      expect(JSON.parse(vi.mocked(expiredStore.createJob).mock.calls[0]?.[3] as string)).toEqual({ gaps: { azure: 'expired' } });
+      await expiredApp.close();
+    });
+  });
+
   it('asks for reconnection when Graph credentials have expired', async () => {
     const store = fixture({ encryptedTokens: encryptTokens({ accessToken: 'expired', expiresAt: 0 }, config.tokenEncryptionKey) });
     const app = await buildServer({ config, store });

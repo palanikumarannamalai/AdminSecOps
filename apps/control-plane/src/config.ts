@@ -11,6 +11,10 @@ export interface Config {
   databaseUrl: string;
   sessionTtlSeconds: number;
   graphScopes: string[];
+  /** Optional connectors enabled on this deployment (ONLINE_CONNECTORS). Disabled connectors report "not available". */
+  connectors: { azure: boolean; exchange: boolean };
+  /** Absolute path of PowerShell 7 for the Exchange Online runner (EXCHANGE_PWSH_PATH). */
+  exchangePwshPath: string | null;
 }
 
 /**
@@ -26,6 +30,8 @@ export const READ_ONLY_GRAPH_SCOPES: readonly string[] = [
   'RoleManagement.Read.Directory',
   'User.Read.All',
   'UserAuthenticationMethod.Read.All',
+  // Directory synchronization settings (delegated only; Microsoft documents Global Administrator as the only supported role)
+  'OnPremDirectorySynchronization.Read.All',
   // Microsoft Intune
   'DeviceManagementConfiguration.Read.All',
   'DeviceManagementManagedDevices.Read.All',
@@ -71,11 +77,18 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const graphScopes = required('GRAPH_SCOPES').split(/\s+/).filter(scope => scope !== '');
   const readScopes = new Set(READ_ONLY_GRAPH_SCOPES);
   if (!graphScopes.every(scope => readScopes.has(scope.replace(/^https:\/\/graph\.microsoft\.com\//, '')))) throw new Error('GRAPH_SCOPES must contain only supported read-only Microsoft Graph scopes');
+  const connectorNames = (env.ONLINE_CONNECTORS ?? '').split(/[\s,]+/).filter(name => name !== '');
+  if (!connectorNames.every(name => name === 'azure' || name === 'exchange')) throw new Error('ONLINE_CONNECTORS may contain only "azure" and "exchange"');
+  const connectors = { azure: connectorNames.includes('azure'), exchange: connectorNames.includes('exchange') };
+  const pwsh = env.EXCHANGE_PWSH_PATH?.trim() || null;
+  // An absolute path only: the runner never resolves PowerShell through PATH.
+  if (pwsh !== null && !/^(\/[\w.@+-]+)+$|^[A-Za-z]:\\[\w .@+\\-]+$/.test(pwsh)) throw new Error('EXCHANGE_PWSH_PATH must be an absolute path');
+  if (connectors.exchange && pwsh === null) throw new Error('EXCHANGE_PWSH_PATH is required when the exchange connector is enabled');
   return {
     port, publicUrl: publicUrl.origin, tenantId, clientId,
     clientSecret: required('AZURE_CLIENT_SECRET'), allowedUserIds: allowedTenantUsers[tenantId] ?? [], allowedTenantUsers, openTenantOnboarding,
     tokenEncryptionKey, databaseUrl: required('DATABASE_URL'), sessionTtlSeconds: 3600,
-    graphScopes,
+    graphScopes, connectors, exchangePwshPath: pwsh,
   };
 }
 

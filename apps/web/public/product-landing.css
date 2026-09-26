@@ -1,0 +1,268 @@
+@font-face {
+  font-family: Manrope;
+  src: url('/fonts/Manrope.ttf') format('truetype');
+  font-weight: 200 800;
+  font-display: swap;
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  background: #f7faf8;
+  color: #16332f;
+  font:
+    16px/1.65 Manrope,
+    system-ui,
+    sans-serif;
+}
+a {
+  color: #17654e;
+  text-underline-offset: 4px;
+}
+a:focus-visible {
+  outline: 3px solid #17654e;
+  outline-offset: 5px;
+}
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+h1,
+h2,
+h3 {
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+}
+h1 {
+  font-size: clamp(48px, 6.5vw, 88px);
+  margin-bottom: 28px;
+}
+h2 {
+  font-size: clamp(30px, 4vw, 48px);
+}
+h3 {
+  font-size: 23px;
+}
+h1 em {
+  font-style: normal;
+  color: #278065;
+}
+.wrap {
+  max-width: 1200px;
+  margin: auto;
+  padding-inline: 32px;
+}
+.nav {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.brand {
+  font-size: 22px;
+  font-weight: 800;
+  text-decoration: none;
+  color: inherit;
+}
+.nav nav,
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+.nav nav a {
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+.button {
+  display: inline-block;
+  background: #17654e;
+  color: #fff;
+  padding: 13px 22px;
+  border-radius: 8px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.hero {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 80px;
+  align-items: center;
+  padding-block: 76px 96px;
+}
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  font-size: 11px;
+  font-weight: 800;
+  color: #386b5e;
+}
+.lead {
+  font-size: 20px;
+  max-width: 510px;
+  color: #47615c;
+}
+.small {
+  font-size: 13px;
+  color: #536c64;
+  margin-top: 24px;
+}
+.preview {
+  background: #fff;
+  border: 1px solid #dce8e0;
+  border-radius: 20px;
+  padding: 34px;
+  box-shadow: 0 20px 60px #16332f0c;
+}
+.preview h2 {
+  font-size: 29px;
+}
+.stats {
+  display: flex;
+  gap: 32px;
+  padding-block: 10px 28px;
+}
+.stats strong {
+  display: block;
+  font-size: 36px;
+  line-height: 1.2;
+}
+.stats span {
+  font-size: 12px;
+  color: #536c64;
+}
+.preview ul {
+  list-style: none;
+  padding: 0;
+}
+.preview li {
+  padding: 14px 0;
+  border-top: 1px solid #dce8e0;
+  font-size: 14px;
+}
+.section {
+  padding-block: 76px;
+  border-top: 1px solid #dce8e0;
+  scroll-margin-top: 24px;
+}
+.workloads {
+  font-weight: 700;
+  color: #47615c;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 36px;
+  margin-top: 40px;
+}
+.number {
+  display: block;
+  color: #39795f;
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 800;
+}
+.grid p {
+  color: #47615c;
+}
+.trust {
+  background: #102f2b;
+  color: #e8f4ef;
+  padding-block: 64px;
+}
+.trust a {
+  color: #a8e4cb;
+}
+.trust .eyebrow {
+  color: #a8e4cb;
+}
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+}
+.footer {
+  border-top: 1px solid #dce8e0;
+  padding-block: 32px;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  font-size: 12px;
+}
+.footer p {
+  max-width: 450px;
+  margin: 0;
+}
+.footer .brand {
+  white-space: nowrap;
+}
+.skip {
+  position: absolute;
+  left: 16px;
+  top: -100px;
+  background: white;
+  padding: 12px;
+}
+.skip:focus {
+  top: 12px;
+}
+@media (max-width: 800px) {
+  .wrap {
+    padding-inline: 22px;
+  }
+  .nav {
+    flex-wrap: wrap;
+    padding-block: 20px;
+    gap: 18px;
+  }
+  .nav nav {
+    order: 3;
+    width: 100%;
+    gap: 22px;
+  }
+  .nav .button {
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 42px;
+    padding-block: 44px;
+  }
+  .hero h1 {
+    font-size: 60px;
+  }
+  .section {
+    padding-block: 48px;
+  }
+  .grid,
+  .split {
+    grid-template-columns: 1fr;
+    gap: 26px;
+  }
+  .preview {
+    padding: 24px;
+  }
+  .footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .stats {
+    gap: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

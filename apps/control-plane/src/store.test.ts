@@ -12,6 +12,18 @@ describe('Postgres tenant boundary', () => {
     expect(connect).not.toHaveBeenCalled();
   });
 
+  it('adds the connector column only when it is missing and clears connector tokens with the job', async () => {
+    const present = vi.fn().mockResolvedValue({ rows: [{ table_name: 'aso_sessions' }, { table_name: 'aso_jobs' }] });
+    await new PostgresStore({ query: present } as unknown as Pool).initialize();
+    expect(present.mock.calls.some(([sql]) => String(sql).startsWith('ALTER TABLE'))).toBe(false);
+    const missing = vi.fn().mockResolvedValue({ rows: [{ table_name: 'aso_sessions' }] });
+    await new PostgresStore({ query: missing } as unknown as Pool).initialize();
+    expect(missing.mock.calls.filter(([sql]) => String(sql).startsWith('ALTER TABLE')).map(([sql]) => String(sql))).toEqual(['ALTER TABLE aso_jobs ADD COLUMN IF NOT EXISTS encrypted_connectors text']);
+    const query = vi.fn().mockResolvedValue({ rows: [] });
+    await new PostgresStore({ query } as unknown as Pool).fail({ id: 'job', tenantId: 'tenant-a', userId: 'u', encryptedTokens: 'e' }, 'failed');
+    expect(query).toHaveBeenCalledWith(expect.stringContaining('encrypted_tokens=NULL,encrypted_connectors=NULL'), ['job', 'tenant-a', 'failed']);
+  });
+
   it('binds tenant identity separately from a supplied report ID in database reads', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [] });
     const store = new PostgresStore({ query } as unknown as Pool);

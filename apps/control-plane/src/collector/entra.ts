@@ -25,17 +25,21 @@ import {
   type HostedCollectionResult,
 } from './package.js';
 import {
+  HOSTED_PERMISSION_OVERRIDES,
   arr,
   getAll,
   getOne,
-  graphPermissionsOf,
+  hostedGraphPermissionsOf,
   licensed,
+  safeId,
   message,
+  firstOf,
   pick,
   pickOrNull,
   rec,
   val,
   type DatasetCollector,
+  type DatasetState,
   type Rec,
 } from './runtime.js';
 
@@ -67,6 +71,8 @@ export const HOSTED_ENTRA_UNSUPPORTED_DATASETS: readonly string[] = ENTRA_DATASE
   (d) => d.id,
 ).filter((id) => !COLLECTED_IDS.has(id));
 
+export { HOSTED_PERMISSION_OVERRIDES };
+
 export interface GraphPermissionRequirement {
   /** Microsoft Graph permission name, e.g. Policy.Read.All. */
   readonly permission: string;
@@ -82,7 +88,7 @@ export function derivePermissions(
 ): GraphPermissionRequirement[] {
   const byPermission = new Map<string, string[]>();
   for (const definition of definitions) {
-    for (const permission of graphPermissionsOf(definition)) {
+    for (const permission of hostedGraphPermissionsOf(definition)) {
       const list = byPermission.get(permission) ?? [];
       list.push(definition.id);
       byPermission.set(permission, list);
@@ -113,6 +119,11 @@ export const ENTRA_ADDITIONAL_REQUIREMENTS: readonly {
 
 /** Service plans that license a feature (same plan names as the PowerShell collector). */
 const P1_PLANS = ['AAD_PREMIUM', 'AAD_PREMIUM_P2'];
+/** Privileged Identity Management: Microsoft Entra ID P2 or Microsoft Entra ID Governance. */
+const PIM_PLANS = ['AAD_PREMIUM_P2', 'Entra_Identity_Governance', 'ENTRA_IDENTITY_GOVERNANCE'];
+
+/** Resource applications whose app-only grants are collected (same as the PowerShell collector). */
+const GRANT_RESOURCE_APP_IDS = ['00000003-0000-0000-c000-000000000000', '00000002-0000-0ff1-ce00-000000000000'] as const;
 
 export type CollectEntraOptions = HostedCollectionOptions;
 export type EntraCollectionResult = HostedCollectionResult;
@@ -156,6 +167,36 @@ function principalType(odataType: unknown): string {
 }
 
 const strings = (v: unknown): unknown[] | null => arr(v);
+
+/** onPremisesDirectorySynchronizationFeature properties declared by the dataset schema. */
+const SYNC_FEATURES = [
+  'passwordSyncEnabled',
+  'passwordWritebackEnabled',
+  'blockSoftMatchEnabled',
+  'blockCloudObjectTakeoverThroughHardMatchEnabled',
+  'softMatchOnUpnEnabled',
+  'userWritebackEnabled',
+  'deviceWritebackEnabled',
+  'passThroughAuthenticationEnabled',
+  'synchronizeUpnForManagedUsersEnabled',
+];
+
+/**
+ * Credential metadata only (key ID, name, validity, and key type/usage). Secret text, hints
+ * and key material are never copied. A credential list that was not returned makes the
+ * dataset Partial rather than looking like "no credentials".
+ */
+function credentials(state: DatasetState, owner: Rec | undefined, property: 'passwordCredentials' | 'keyCredentials', key: boolean): Rec[] {
+  const list = arr(val(owner, property));
+  if (list === null) {
+    state.partial = true;
+    state.errors.push(
+      message('CREDENTIALS_MISSING', `The ${property} of an application object were not returned; credential coverage is incomplete.`, typeof owner?.['id'] === 'string' ? owner['id'] : null),
+    );
+    return [];
+  }
+  return list.map((c) => pick(rec(c), key ? ['keyId', 'displayName', 'startDateTime', 'endDateTime', 'type', 'usage'] : ['keyId', 'displayName', 'startDateTime', 'endDateTime']));
+}
 
 /**
  * Directory setting values that may be collected (same allowlist as the PowerShell
@@ -216,6 +257,11 @@ const ENTRA_COLLECTORS: Record<string, DatasetCollector> = {
       displayName: typeof displayName === 'string' ? displayName.slice(0, 500) : null,
       primaryDomain: typeof primary === 'string' ? primary.slice(0, 500) : null,
     };
+    context.verifiedDomains = (verifiedDomains ?? []).flatMap((d) =>
+      typeof d['name'] === 'string'
+        ? [{ name: d['name'], capabilities: typeof d['capabilities'] === 'string' ? d['capabilities'] : null }]
+        : [],
+    );
     return {
       id,
       displayName,
@@ -578,6 +624,133 @@ const ENTRA_COLLECTORS: Record<string, DatasetCollector> = {
         ]),
         lastSignInDateTime: val(activity, 'lastSignInDateTime'),
         lastNonInteractiveSignInDateTime: val(activity, 'lastNonInteractiveSignInDateTime'),
+      };
+    });
+  },
+
+  'entra.roleAssignmentScheduleInstances': async (state, context) => {
+    if (!licensed(state, context, PIM_PLANS, 'Privileged Identity Management (Microsoft Entra ID P2 or ID Governance)')) return null;
+    const items = await getAll(state, context, `${GRAPH_BASE}/roleManagement/directory/roleAssignmentScheduleInstances`);
+    return items.map((raw) =>
+      pick(rec(raw), ['id', 'roleDefinitionId', 'principalId', 'directoryScopeId', 'assignmentType', 'memberType', 'startDateTime', 'endDateTime']),
+    );
+  },
+
+  'entra.roleEligibilitySchedules': async (state, context) => {
+    if (!licensed(state, context, PIM_PLANS, 'Privileged Identity Management (Microsoft Entra ID P2 or ID Governance)')) return null;
+    const items = await getAll(state, context, `${GRAPH_BASE}/roleManagement/directory/roleEligibilitySchedules`);
+    return items.map((raw) => {
+      const s = rec(raw);
+      // v1.0 reports the schedule in scheduleInfo; a missing expiration end means "no expiration".
+      const schedule = rec(val(s, 'scheduleInfo'));
+      return {
+        ...pick(s, ['id', 'roleDefinitionId', 'principalId', 'directoryScopeId', 'memberType']),
+        startDateTime: firstOf(s, ['startDateTime']) ?? val(schedule, 'startDateTime'),
+        endDateTime: firstOf(s, ['endDateTime']) ?? val(rec(val(schedule, 'expiration')), 'endDateTime'),
+      };
+    });
+  },
+
+  'entra.applications': async (state, context) => {
+    const items = await getAll(
+      state,
+      context,
+      `${GRAPH_BASE}/applications?$select=id,appId,displayName,signInAudience,createdDateTime,passwordCredentials,keyCredentials&$top=999`,
+    );
+    return items.map((raw) => {
+      const app = rec(raw);
+      return {
+        ...pick(app, ['id', 'appId', 'displayName', 'signInAudience', 'createdDateTime']),
+        passwordCredentials: credentials(state, app, 'passwordCredentials', false),
+        keyCredentials: credentials(state, app, 'keyCredentials', true),
+      };
+    });
+  },
+
+  'entra.servicePrincipals': async (state, context) => {
+    // The maximum page size of this list is 100, which is also the default.
+    const items = await getAll(
+      state,
+      context,
+      `${GRAPH_BASE}/servicePrincipals?$select=id,appId,displayName,servicePrincipalType,appOwnerOrganizationId,accountEnabled,passwordCredentials,keyCredentials`,
+    );
+    return items.map((raw) => {
+      const sp = rec(raw);
+      return {
+        ...pick(sp, ['id', 'appId', 'displayName', 'servicePrincipalType', 'appOwnerOrganizationId', 'accountEnabled']),
+        passwordCredentials: credentials(state, sp, 'passwordCredentials', false),
+        keyCredentials: credentials(state, sp, 'keyCredentials', true),
+      };
+    });
+  },
+
+  'entra.apiPermissionGrants': async (state, context) => {
+    const out: Rec[] = [];
+    let readable = 0;
+    for (const appId of GRANT_RESOURCE_APP_IDS) {
+      context.client.throwIfCancelled();
+      let resource: Rec;
+      try {
+        resource = await getOne(state, context, `${GRAPH_BASE}/servicePrincipals(appId='${appId}')?$select=id,appId,displayName,appRoles`);
+      } catch (error) {
+        if (!(error instanceof GraphRequestError)) throw error;
+        // Denied access applies to the whole dataset; it is reported Unauthorized, not empty.
+        if (error.kind === 'http' && (error.status === 401 || error.status === 403)) throw error;
+        if (error.kind === 'http' && error.status === 404) {
+          state.warnings.push(message('RESOURCE_NOT_PRESENT', 'The resource service principal does not exist in this tenant, so no application can hold its permissions.', appId));
+          readable += 1;
+        } else {
+          state.partial = true;
+          state.errors.push(message('RESOURCE_UNREADABLE', `The resource service principal could not be read; its grants are not included. ${error.message}`, appId));
+        }
+        continue;
+      }
+      const resourceId = safeId(val(resource, 'id'));
+      if (resourceId === undefined) {
+        state.partial = true;
+        state.errors.push(message('RESOURCE_UNREADABLE', 'The resource service principal was returned without a valid identifier.', appId));
+        continue;
+      }
+      readable += 1;
+      const assignments = await getAll(
+        state,
+        context,
+        `${GRAPH_BASE}/servicePrincipals/${encodeURIComponent(resourceId)}/appRoleAssignedTo`,
+        context.client,
+        `${GRAPH_BASE}/servicePrincipals/{resourceId}/appRoleAssignedTo`,
+      );
+      const roles = arr(val(resource, 'appRoles'));
+      if (roles === null) {
+        state.partial = true;
+        state.errors.push(message('APP_ROLES_MISSING', 'The application roles of a resource were not returned; permission names cannot be resolved.', appId));
+      }
+      out.push({
+        resourceAppId: appId,
+        resourceDisplayName: val(resource, 'displayName'),
+        appRoles: (roles ?? []).map((r) => pick(rec(r), ['id', 'value'])),
+        assignments: assignments.map((a) =>
+          pick(rec(a), ['id', 'principalId', 'principalType', 'principalDisplayName', 'appRoleId', 'createdDateTime']),
+        ),
+      });
+    }
+    if (readable === 0) {
+      throw new GraphRequestError('invalid-response', 'None of the resource service principals could be read; application permission grants are unknown.');
+    }
+    return out;
+  },
+
+  'entra.onPremisesSynchronization': async (state, context) => {
+    // Delegated only; Microsoft documents Global Administrator as the only supported role. Other
+    // roles receive 403, which is reported Unauthorized (never as a passing configuration).
+    const body = await getOne(state, context, `${GRAPH_BASE}/directory/onPremisesSynchronization`);
+    const list = arr(body['value']) ?? [body];
+    return list.map((raw) => {
+      const item = rec(raw);
+      const features = rec(val(item, 'features'));
+      return {
+        id: val(item, 'id'),
+        // passThroughAuthenticationEnabled is not a property of this resource and stays null.
+        features: features === undefined ? null : pick(features, SYNC_FEATURES),
       };
     });
   },

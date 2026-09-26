@@ -143,6 +143,7 @@ export function FindingDetail({ finding, assessmentId }: { finding: Finding; ass
       <PageHeader
         eyebrow={`Priority rank ${finding.priority.rank} - ${moduleLabel(moduleForTechnology(finding.technology))}`}
         title={finding.title}
+        titleId="finding-title"
       />
       <div className="finding__badges">
         <StatusBadge status={finding.status} />
@@ -156,7 +157,7 @@ export function FindingDetail({ finding, assessmentId }: { finding: Finding; ass
         <ul>
           {FINDING_SECTIONS.map((s) => (
             <li key={s.id}>
-              <a href={`#section-${s.id}`}>{s.title}</a>
+              <a href={`#section-${s.id}`} onClick={event => { event.preventDefault(); const section = document.getElementById(`section-${s.id}`); if (section) { section.tabIndex = -1; section.focus({ preventScroll: true }); section.scrollIntoView({ block: 'start' }); } }}>{s.title}</a>
             </li>
           ))}
         </ul>
@@ -297,7 +298,7 @@ export function FindingDetail({ finding, assessmentId }: { finding: Finding; ass
               Example for you to review, adapt and run yourself. AdminSecOps never runs scripts or changes your
               environment. Test in a non-production environment first.
             </p>
-            <pre className="code">
+            <pre className="code" tabIndex={0} aria-label="Script example">
               <code>{script}</code>
             </pre>
           </div>

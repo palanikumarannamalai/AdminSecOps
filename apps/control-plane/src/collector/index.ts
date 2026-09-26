@@ -27,7 +27,19 @@ export {
   CollectionCancelledError,
   DEFAULT_GRAPH_LIMITS,
   GRAPH_BASE,
+  GRAPH_BETA_EXCEPTIONS,
   GraphRequestError,
+  validateGraphBetaUrl,
   validateGraphUrl,
   type GraphLimits,
 } from './graph-client.js';
+export { ARM_OPERATIONS, validateArmNextLink, validateArmUrl } from './arm-client.js';
+export {
+  EXCHANGE_MODULE_VERSION,
+  EXCHANGE_OPERATIONS,
+  PowerShellExchangeRunner,
+  type ExchangeRunner,
+  type ExchangeRuntimeStatus,
+} from './exchange-runner.js';
+export { NOT_CONNECTED, type ConnectorInput } from './package.js';
+export type { ConnectorGap, ConnectorGapState } from './runtime.js';

@@ -1,12 +1,23 @@
 import type { CollectorModule } from '@adminsecops/core';
 import type { EvidenceBundle } from '@adminsecops/evidence/browser';
-import { entraGroupSettings, listDatasetDefinitions } from '@adminsecops/schemas';
+import {
+  entraApiPermissionGrants,
+  entraApplications,
+  entraGroupSettings,
+  entraOnPremisesSynchronization,
+  entraRoleAssignmentScheduleInstances,
+  entraRoleEligibilitySchedules,
+  entraServicePrincipals,
+  listDatasetDefinitions,
+} from '@adminsecops/schemas';
+import { AZURE_PLAN } from './azure.js';
 import {
   HOSTED_ENTRA_DATASETS,
   derivePermissions,
   entraCollector,
   type GraphPermissionRequirement,
 } from './entra.js';
+import { EXCHANGE_PLAN } from './exchange.js';
 import { INTUNE_PLAN } from './intune.js';
 import { M365_PLAN } from './m365.js';
 import {
@@ -19,17 +30,34 @@ import {
 } from './package.js';
 
 /**
- * Unified online collection: Microsoft Entra ID, Microsoft 365 (SharePoint/OneDrive and
- * the Teams settings delegated Graph exposes) and Microsoft Intune, read-only through
- * Microsoft Graph v1.0 with one bounded client, one time/size budget and tenant
- * verification before any other customer data is requested.
+ * Unified online collection with one bounded budget and tenant verification before any other
+ * customer data is requested:
+ * - Microsoft Graph v1.0 (delegated): Entra ID, SharePoint/OneDrive, Teams settings, Intune
+ *   (plus one exact Graph beta exception for Intune tenant compliance settings).
+ * - Azure Resource Manager (separate delegated ARM token): Azure subscriptions of the tenant.
+ * - Exchange Online (separate delegated Exchange Online token, fixed server-side runner).
+ * - Public DNS: SPF and DMARC records of the tenant's mail domains.
+ * A connector that is not connected, not consented or not available on the server produces
+ * datasets with an explicit status and code, never passing evidence.
  */
+
+const ADDITIONAL_ENTRA = [
+  entraGroupSettings,
+  entraRoleAssignmentScheduleInstances,
+  entraRoleEligibilitySchedules,
+  entraApplications,
+  entraServicePrincipals,
+  entraApiPermissionGrants,
+  entraOnPremisesSynchronization,
+];
 
 const ONLINE_DATASETS: readonly PlannedDataset[] = [
   ...HOSTED_ENTRA_DATASETS.map((definition) => ({ definition, collector: entraCollector(definition.id) })),
-  { definition: entraGroupSettings, collector: entraCollector(entraGroupSettings.id) },
+  ...ADDITIONAL_ENTRA.map((definition) => ({ definition, collector: entraCollector(definition.id) })),
   ...M365_PLAN,
   ...INTUNE_PLAN,
+  ...AZURE_PLAN,
+  ...EXCHANGE_PLAN,
 ];
 
 /** Dataset definitions the online collector produces, in collection order. */
@@ -39,20 +67,11 @@ const COLLECTED: ReadonlySet<string> = new Set(ONLINE_DATASETS_COLLECTED.map((d)
 const COLLECTED_MODULES: ReadonlySet<CollectorModule> = new Set(ONLINE_DATASETS_COLLECTED.map((d) => d.module));
 
 /**
- * Modules the online collector cannot read at all. Exchange Online organization,
- * transport, anti-spam and Defender for Office 365 settings are exposed through Exchange
- * Online PowerShell; Microsoft Graph offers them only through Tenant Configuration
- * Management, which does not support delegated access. Licence, domain or tenant data
- * is never used as a substitute, so the email-protection controls stay NOT_ASSESSED.
+ * Modules the online collector cannot read at all. Active Directory, AD CS, Group Policy and
+ * Windows hosts are in private customer networks; see docs/ONLINE-CONNECTORS.md for the
+ * on-premises connector design. They are not part of the online manifest.
  */
-export const ONLINE_SKIPPED_MODULES: readonly SkippedModule[] = [
-  {
-    name: 'Exchange',
-    code: 'NOT_AVAILABLE_ONLINE',
-    reason:
-      'Exchange Online and Defender for Office 365 configuration (organization, transport, audit, DKIM, anti-spam, forwarding, SMTP AUTH, Safe Attachments) is not available through delegated Microsoft Graph. These controls are not assessed online; use the AdminSecOps PowerShell collector with Exchange Online PowerShell to assess them.',
-  },
-];
+export const ONLINE_SKIPPED_MODULES: readonly SkippedModule[] = [];
 
 /** Registry datasets of collected modules that the online collector does not produce, per module. */
 export const ONLINE_NOT_COLLECTED: ReadonlyMap<CollectorModule, readonly string[]> = (() => {
@@ -65,8 +84,9 @@ export const ONLINE_NOT_COLLECTED: ReadonlyMap<CollectorModule, readonly string[
 })();
 
 /** Microsoft Graph delegated permissions the online collector uses, derived from the dataset definitions. */
-export const ONLINE_GRAPH_PERMISSIONS: readonly GraphPermissionRequirement[] =
-  derivePermissions(ONLINE_DATASETS_COLLECTED);
+export const ONLINE_GRAPH_PERMISSIONS: readonly GraphPermissionRequirement[] = derivePermissions(
+  ONLINE_DATASETS_COLLECTED.filter((d) => d.source === 'MicrosoftGraph' || d.source === 'AzureResourceManager'),
+);
 export const ONLINE_REQUIRED_GRAPH_PERMISSIONS: readonly string[] = ONLINE_GRAPH_PERMISSIONS.map(
   (p) => p.permission,
 );

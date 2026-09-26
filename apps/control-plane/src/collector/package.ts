@@ -13,17 +13,25 @@ import {
   type EvidenceManifest,
   type ManifestModule,
 } from '@adminsecops/schemas';
-import { DEFAULT_GRAPH_LIMITS, GraphClient, type GraphLimits } from './graph-client.js';
+import { createArmClient } from './arm-client.js';
+import type { TxtResolver } from './dns.js';
+import type { ExchangeRunner } from './exchange.js';
+import { CollectionBudget, DEFAULT_GRAPH_LIMITS, GraphClient, type GraphLimits } from './graph-client.js';
 import {
   message,
   runDataset,
+  type ArmRuntime,
   type CollectionContext,
+  type ConnectorGap,
   type DatasetCollector,
   type DatasetOutcome,
 } from './runtime.js';
 
 export const HOSTED_COLLECTOR_NAME = 'AdminSecOps.HostedGraphCollector';
-export const HOSTED_COLLECTOR_VERSION = '0.2.0';
+export const HOSTED_COLLECTOR_VERSION = '0.3.0';
+
+/** A delegated connector token for one resource, or why the connector cannot be used. */
+export type ConnectorInput<T> = ({ readonly state: 'connected' } & T) | ConnectorGap;
 
 export interface HostedCollectionOptions {
   tenantId: string;
@@ -35,6 +43,15 @@ export interface HostedCollectionOptions {
    * explain Unauthorized results (missing consent); requests are made regardless.
    */
   grantedScopes?: readonly string[];
+  /**
+   * Azure Resource Manager connector. Its token is separate from the Graph token and is only
+   * ever sent to Azure Resource Manager. Absent: not connected.
+   */
+  azure?: ConnectorInput<{ readonly accessToken: string }>;
+  /** Exchange Online connector (server-side runner). Absent: not connected. */
+  exchange?: ConnectorInput<{ readonly accessToken: string; readonly userPrincipalName: string; readonly runner: ExchangeRunner }>;
+  /** Public DNS TXT resolver for mail authentication records; injectable for tests. */
+  dnsResolver?: TxtResolver;
   fetch?: typeof globalThis.fetch;
   signal?: AbortSignal;
   /** Override collection bounds (tests, smaller tenants). */
@@ -94,13 +111,11 @@ export async function collectHostedEvidence(
     ...(Object.fromEntries(overrides) as Partial<GraphLimits>),
   };
   const fetchImpl = options.fetch ?? globalThis.fetch.bind(globalThis);
-  const client = new GraphClient({
-    accessToken,
-    fetch: fetchImpl,
-    signal: options.signal,
-    limits,
-    now: () => clock().getTime(),
-  });
+  const now = (): number => clock().getTime();
+  // One time and size budget for every service of this collection.
+  const budget = new CollectionBudget(now(), limits);
+  const client = new GraphClient({ accessToken, fetch: fetchImpl, signal: options.signal, limits, now, budget });
+  const arm = armRuntime(options, { fetch: fetchImpl, signal: options.signal, limits, now, budget });
 
   const startedAt = clock().toISOString();
   const context: CollectionContext = {
@@ -111,6 +126,12 @@ export async function collectHostedEvidence(
     grantedScopes: normalizeScopes(options.grantedScopes),
     servicePlans: undefined,
     organization: undefined,
+    arm,
+    shared: new Map<string, unknown>([
+      ['exchange', options.exchange ?? NOT_CONNECTED.exchange],
+      ['signal', options.signal],
+      ...(options.dnsResolver !== undefined ? [['dnsResolver', options.dnsResolver] as [string, unknown]] : []),
+    ]),
   };
   const outcomes: DatasetOutcome[] = [];
   for (const { definition, collector } of plan.datasets) {
@@ -141,10 +162,16 @@ export async function collectHostedEvidence(
         ),
       );
     }
+    const status = moduleStatus(own);
+    if (status === 'Skipped') {
+      // Every dataset of the module was not collected for the same connector reason; surface it once.
+      const first = own[0]?.errors[0];
+      if (first !== undefined) warnings.push(message(first.code, first.message));
+    }
     return {
       name,
       version: HOSTED_COLLECTOR_VERSION,
-      status: moduleStatus(own),
+      status,
       startedAt,
       completedAt,
       prerequisites: [],
@@ -189,6 +216,11 @@ export async function collectHostedEvidence(
       modules: collectedModules,
       collectionMode: 'hosted-graph',
       datasets: outcomes.map((o) => o.definition.id),
+      connectors: [
+        'MicrosoftGraph',
+        ...(arm.state === 'connected' ? ['AzureResourceManager'] : []),
+        ...(options.exchange?.state === 'connected' ? ['ExchangeOnline'] : []),
+      ],
     },
     modules,
   };
@@ -203,11 +235,43 @@ export async function collectHostedEvidence(
   return { files, manifest, bundle: loadEvidenceBundle(files) };
 }
 
+export const NOT_CONNECTED: Readonly<Record<'azure' | 'exchange', ConnectorGap>> = {
+  azure: {
+    state: 'not-connected',
+    reason: 'Azure Resource Manager is not connected for this session. Connect Azure on the online home page (a separate Microsoft consent) to assess Azure subscriptions.',
+  },
+  exchange: {
+    state: 'not-connected',
+    reason: 'Exchange Online is not connected for this session. Exchange Online settings are read only through the separate Exchange Online connector.',
+  },
+};
+
+function armRuntime(
+  options: HostedCollectionOptions,
+  shared: { fetch: typeof globalThis.fetch; signal: AbortSignal | undefined; limits: GraphLimits; now: () => number; budget: CollectionBudget },
+): ArmRuntime | ConnectorGap {
+  const input = options.azure ?? NOT_CONNECTED.azure;
+  if (input.state !== 'connected') return input;
+  const token = input.accessToken;
+  if (typeof token !== 'string' || token.length === 0 || token.length > 16_384 || !/^[\x21-\x7e]+$/.test(token) || token === options.accessToken) {
+    // A Graph token must never be used for ARM (and the reverse); a reused or malformed value is refused.
+    return { state: 'unavailable', reason: 'The Azure Resource Manager token was missing, malformed or not separate from the Microsoft Graph token, and was not used.' };
+  }
+  return { state: 'connected', client: createArmClient({ ...shared, accessToken: token }), subscriptions: undefined };
+}
+
 function moduleStatus(outcomes: readonly DatasetOutcome[]): ManifestModule['status'] {
+  if (outcomes.length > 0 && outcomes.every((o) => o.status === 'NotCollected')) return 'Skipped';
   const bad = outcomes.filter((o) => o.status === 'Failed' || o.status === 'Unauthorized');
   if (bad.length === outcomes.length) return 'Failed';
-  if (bad.length > 0 || outcomes.some((o) => o.status === 'Partial')) return 'CompletedWithErrors';
+  if (bad.length > 0 || outcomes.some((o) => o.status === 'Partial' || o.status === 'NotCollected')) return 'CompletedWithErrors';
   return 'Completed';
+}
+
+function sourceApiVersion(definition: DatasetDefinition): string | null {
+  if (definition.source === 'MicrosoftGraph') return 'v1.0';
+  if (definition.source === 'AzureResourceManager') return 'per-operation';
+  return null;
 }
 
 function toEnvelope(outcome: DatasetOutcome, assessmentId: string): EvidenceEnvelope {
@@ -223,9 +287,9 @@ function toEnvelope(outcome: DatasetOutcome, assessmentId: string): EvidenceEnve
     },
     collectedAt: outcome.collectedAt,
     source: {
-      system: 'MicrosoftGraph',
+      system: outcome.definition.source,
       operations: outcome.operations.slice(0, 200).map((o) => o.slice(0, 2000)),
-      apiVersion: 'v1.0',
+      apiVersion: sourceApiVersion(outcome.definition),
     },
     status: outcome.status,
     errors: [...outcome.errors],

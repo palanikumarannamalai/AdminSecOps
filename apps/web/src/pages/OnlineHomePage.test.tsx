@@ -88,6 +88,45 @@ describe('online assessment flow', () => {
     expect(screen.queryByRole('link', { name: 'Reconnect and review Microsoft consent' })).toBeNull();
   });
 
+  it('shows each data source with honest connect, reconnect and unavailable states', async () => {
+    const connector = (id: string, state: string, links: boolean) => ({
+      id, label: id === 'azure' ? 'Azure Resource Manager' : id === 'exchange' ? 'Exchange Online' : 'On-premises Active Directory, AD CS, Group Policy and Windows',
+      state, reason: `${id} ${state} reason`, permission: 'perm', role: 'role',
+      connectUrl: links ? `/auth/connect/${id}` : null, reconnectUrl: links ? `/auth/connect/${id}?consent=true` : null,
+      connectedAt: state === 'connected' ? '2026-09-22T08:00:00Z' : null,
+    });
+    const withConnectors = { ...session, connectors: [connector('azure', 'not-connected', true), connector('exchange', 'runtime-unavailable', false), connector('onPremises', 'unsupported', false)] };
+    vi.stubGlobal('fetch', vi.fn((path: string) => Promise.resolve(json(path === '/api/me' ? withConnectors : { jobs: [] }))));
+    const first = mount();
+    expect((await screen.findByRole('link', { name: 'Connect Azure Resource Manager' })).getAttribute('href')).toBe('/auth/connect/azure');
+    // No fake ready button for sources the server cannot use.
+    expect(screen.queryByRole('link', { name: 'Connect Exchange Online' })).toBeNull();
+    expect(screen.getByText('Not available on this server')).toBeTruthy();
+    expect(screen.getByText('Not supported online')).toBeTruthy();
+    first.unmount();
+
+    const connected = { ...session, connectors: [connector('azure', 'connected', true)] };
+    const fetcher = vi.fn((path: string, init?: RequestInit) => {
+      if (path === '/api/me') return Promise.resolve(json(connected));
+      if (init?.method === 'POST') return Promise.resolve(json({ error: { message: 'Could not disconnect' } }, 500));
+      return Promise.resolve(json({ jobs: [] }));
+    });
+    vi.stubGlobal('fetch', fetcher);
+    mount();
+    expect((await screen.findByRole('link', { name: 'Reconnect Azure Resource Manager' })).getAttribute('href')).toBe('/auth/connect/azure?consent=true');
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Disconnect' }));
+    expect(fetcher).toHaveBeenCalledWith('/api/connectors/azure/disconnect', expect.objectContaining({ method: 'POST', headers: expect.objectContaining({ 'X-AdminSecOps-Client': 'web' }) }));
+    expect(await screen.findByRole('alert')).toHaveProperty('textContent', 'Could not disconnect');
+  });
+
+  it('rejects connector links that do not point at the connect endpoints', async () => {
+    const bad = { ...session, connectors: [{ id: 'azure', label: 'Azure', state: 'not-connected', reason: 'r', permission: 'p', role: 'r', connectUrl: 'https://attacker.example/', reconnectUrl: null, connectedAt: null }] };
+    vi.stubGlobal('fetch', vi.fn((path: string) => Promise.resolve(json(path === '/api/me' ? bad : { jobs: [] }))));
+    mount();
+    expect(await screen.findByText('Sign-in service unavailable')).toBeTruthy();
+    expect(screen.queryByRole('link', { name: /Connect Azure/ })).toBeNull();
+  });
+
   it('refreshes completed history and cancels polling when unmounted', async () => {
     let calls = 0;
     let signal: AbortSignal | null | undefined;

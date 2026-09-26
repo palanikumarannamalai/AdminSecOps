@@ -1,5 +1,5 @@
 import { intuneCompliancePolicies, intuneDeviceOverview, intuneSettings } from '@adminsecops/schemas';
-import { GRAPH_BASE, GraphRequestError } from './graph-client.js';
+import { GRAPH_BASE, GRAPH_ORIGIN, GraphRequestError } from './graph-client.js';
 import type { PlannedDataset } from './package.js';
 import {
   arr,
@@ -36,6 +36,16 @@ export const INTUNE_PLANS = [
 ];
 const FEATURE = 'Microsoft Intune';
 
+/** Exact Graph beta URL of the one allowed beta exception (GRAPH_BETA_EXCEPTIONS). */
+export const INTUNE_SETTINGS_BETA_URL = `${GRAPH_ORIGIN}/beta/deviceManagement/settings`;
+
+/**
+ * deviceManagementSettings is a documented complex property of the deviceManagement singleton
+ * (v1.0 and beta resource pages). Live v1.0 responses omitted it with and without $select, and
+ * the v1.0 "Get deviceManagement" pages were withdrawn, so after two v1.0 attempts the settings
+ * are read once from the beta property path. Beta is used for this single path only; a missing
+ * property is never replaced by a default (the schema then rejects the evidence).
+ */
 const settings: DatasetCollector = async (state, context) => {
   if (!licensed(state, context, INTUNE_PLANS, FEATURE)) return null;
   let dm = await getOne(state, context, `${GRAPH_BASE}/deviceManagement?$select=settings`);
@@ -45,10 +55,27 @@ const settings: DatasetCollector = async (state, context) => {
     dm = await getOne(state, context, `${GRAPH_BASE}/deviceManagement`);
     s = rec(val(dm, 'settings'));
   }
+  if (s === undefined) {
+    state.operations.push(`GET ${INTUNE_SETTINGS_BETA_URL}`);
+    const body = rec(await context.client.getGraphBetaException(INTUNE_SETTINGS_BETA_URL));
+    // A complex-property response carries the properties at the top level; tolerate a "value" wrapper.
+    const beta = rec(val(body, 'value')) ?? body;
+    s = beta;
+    if (beta !== undefined && ['secureByDefault', 'deviceComplianceCheckinThresholdDays', 'isScheduledActionEnabled'].some((k) => k in beta)) {
+      state.warnings.push(
+        message(
+          'GRAPH_BETA_SOURCE',
+          'Microsoft Graph v1.0 did not return deviceManagement settings; they were read from the Microsoft Graph beta property /beta/deviceManagement/settings. Beta APIs can change without notice.',
+        ),
+      );
+    } else {
+      s = undefined;
+    }
+  }
   if (s === undefined)
     throw new GraphRequestError(
       'invalid-response',
-      'deviceManagement did not return settings (with or without $select).',
+      'Microsoft Graph did not return the Intune deviceManagement settings (v1.0 with and without $select, and the beta settings property). This is a service response gap, not a missing consent; the setting is not assessed.',
     );
   return {
     secureByDefault: val(s, 'secureByDefault'),

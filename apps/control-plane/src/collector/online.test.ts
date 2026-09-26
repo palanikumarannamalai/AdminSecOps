@@ -5,6 +5,7 @@ import { runAssessment } from '@adminsecops/engine/browser';
 import type { EvidenceBundle } from '@adminsecops/evidence/browser';
 import type { AssessmentResult } from '@adminsecops/schemas';
 import { READ_ONLY_GRAPH_SCOPES } from '../config.js';
+import type { TxtResolver } from './dns.js';
 import { GRAPH_BASE } from './graph-client.js';
 import {
   ONLINE_DATASETS_COLLECTED,
@@ -93,7 +94,7 @@ function defaultRoutes(): Record<string, Handler> {
             capabilityStatus: 'Enabled',
             consumedUnits: 10,
             prepaidUnits: { enabled: 25, suspended: 0, warning: 0 },
-            servicePlans: [plan('AAD_PREMIUM'), plan('INTUNE_A'), plan('SHAREPOINTENTERPRISE'), plan('TEAMS1')],
+            servicePlans: [plan('AAD_PREMIUM'), plan('AAD_PREMIUM_P2'), plan('INTUNE_A'), plan('SHAREPOINTENTERPRISE'), plan('TEAMS1')],
           },
         ],
       }),
@@ -162,8 +163,29 @@ function defaultRoutes(): Record<string, Handler> {
         deviceOperatingSystemSummary: { androidCount: 0, iosCount: 2, macOSCount: 0, windowsMobileCount: 0, windowsCount: 10, unknownCount: 0 },
       }),
     '/deviceManagement/deviceCompliancePolicies': () => json({ value: [windowsPolicy(allDevices), iosPolicy(allDevices)] }),
+    '/roleManagement/directory/roleAssignmentScheduleInstances': () => json({ value: [] }),
+    '/roleManagement/directory/roleEligibilitySchedules': () => json({ value: [] }),
+    '/applications': () => json({ value: [] }),
+    '/servicePrincipals': () => json({ value: [] }),
+    "/servicePrincipals(appId='00000003-0000-0000-c000-000000000000')": () =>
+      json({ id: 'ffff0001-0000-4000-8000-000000000001', appId: '00000003-0000-0000-c000-000000000000', displayName: 'Microsoft Graph', appRoles: [] }),
+    "/servicePrincipals(appId='00000002-0000-0ff1-ce00-000000000000')": () =>
+      json({ id: 'ffff0001-0000-4000-8000-000000000002', appId: '00000002-0000-0ff1-ce00-000000000000', displayName: 'Office 365 Exchange Online', appRoles: [] }),
+    '/servicePrincipals/ffff0001-0000-4000-8000-000000000001/appRoleAssignedTo': () => json({ value: [] }),
+    '/servicePrincipals/ffff0001-0000-4000-8000-000000000002/appRoleAssignedTo': () => json({ value: [] }),
+    '/directory/onPremisesSynchronization': () => json({ value: [] }),
   };
 }
+
+/** Synthetic public DNS: every domain publishes SPF -all and DMARC p=reject. No real DNS is queried. */
+const fakeDns: TxtResolver = {
+  resolveTxt: (name) =>
+    Promise.resolve(
+      name.startsWith('_dmarc.')
+        ? { status: 'Found', records: ['v=DMARC1; p=reject; rua=mailto:dmarc@contoso.example'] }
+        : { status: 'Found', records: ['v=spf1 include:spf.protection.outlook.com -all', 'unrelated-verification=abc'] },
+    ),
+};
 
 function mockGraph(overrides: Record<string, Handler> = {}) {
   const routes = { ...defaultRoutes(), ...overrides };
@@ -183,7 +205,7 @@ function mockGraph(overrides: Record<string, Handler> = {}) {
 }
 
 function options(fetch: typeof globalThis.fetch, extra: Partial<CollectOnlineOptions> = {}): CollectOnlineOptions {
-  return { tenantId: TENANT_ID, assessmentId: ASSESSMENT_ID, accessToken: TOKEN, fetch, now: () => FIXED_NOW, ...extra };
+  return { tenantId: TENANT_ID, assessmentId: ASSESSMENT_ID, accessToken: TOKEN, fetch, now: () => FIXED_NOW, dnsResolver: fakeDns, ...extra };
 }
 
 function dataset(bundle: EvidenceBundle, id: string) {
@@ -208,12 +230,15 @@ describe('collectOnline across workloads', () => {
     const graph = mockGraph();
     const bundle = await collectOnline(options(graph.fetch, { limits: { maxRetryDelayMs: 5 } }));
     expect(bundle.integrityVerified).toBe(true);
-    for (const definition of ONLINE_DATASETS_COLLECTED) expect(dataset(bundle, definition.id).state, definition.id).toBe('available');
+    for (const definition of ONLINE_DATASETS_COLLECTED.filter((d) => d.source === 'MicrosoftGraph' || d.source === 'DNS')) {
+      expect(dataset(bundle, definition.id).state, definition.id).toBe('available');
+    }
     expect(bundle.manifest.modules.map((m) => [m.name, m.status])).toEqual([
       ['Entra', 'Completed'],
       ['M365', 'Completed'],
       ['Intune', 'Completed'],
-      ['Exchange', 'Skipped'],
+      ['Azure', 'Skipped'],
+      ['Exchange', 'CompletedWithErrors'],
     ]);
     expect(bundle.manifest.files.map((f) => f.path)).toContain('evidence/m365/teamsTeamSettings.json');
     expect(bundle.manifest.files.map((f) => f.path)).toContain('evidence/intune/compliancePolicies.json');
@@ -230,13 +255,27 @@ describe('collectOnline across workloads', () => {
     expect(status(result, 'INTUNE-CMP-003')).toBe('PASS');
   });
 
-  it('keeps Exchange and email-protection controls NOT_ASSESSED; licence and domain data never substitute', async () => {
-    const result = assess(await collectOnline(options(mockGraph().fetch)));
-    const exchange = CONTROL_LIBRARY.filter((c) => c.metadata.requiredEvidence.some((id) => id.startsWith('exchange.')));
+  it('keeps Exchange controls NOT_ASSESSED without the Exchange connector; only public DNS controls run', async () => {
+    const bundle = await collectOnline(options(mockGraph().fetch));
+    const result = assess(bundle);
+    const exchange = CONTROL_LIBRARY.filter((c) => c.metadata.requiredEvidence.some((id) => id.startsWith('exchange.') && id !== 'exchange.mailDnsRecords'));
     expect(exchange.length).toBeGreaterThan(5);
-    for (const control of exchange) expect(status(result, control.metadata.id), control.metadata.id).toBe('NOT_ASSESSED');
-    const skipped = result.collection.modules.find((m) => m.name === 'Exchange');
-    expect(skipped?.warnings[0]?.code).toBe('NOT_AVAILABLE_ONLINE');
+    for (const control of exchange) {
+      // Defender for Office 365 is not licensed in this synthetic tenant, so its control does not apply.
+      const expected = control.metadata.id === 'M365-MDO-001' ? 'NOT_APPLICABLE' : 'NOT_ASSESSED';
+      expect(status(result, control.metadata.id), control.metadata.id).toBe(expected);
+    }
+    expect(dataset(bundle, 'exchange.organizationConfig').collectionStatus).toBe('NotCollected');
+    expect(issue(bundle, 'exchange.organizationConfig', 'CONNECTOR_NOT_CONNECTED')).toBeDefined();
+    // DNS never establishes accepted domains or DKIM: M365-MAIL-001 stays NOT_ASSESSED, SPF/DMARC are checked.
+    expect(status(result, 'M365-MAIL-001')).toBe('NOT_ASSESSED');
+    expect(status(result, 'M365-MAIL-002')).toBe('PASS');
+    expect(status(result, 'M365-MAIL-003')).toBe('PASS');
+    expect(issue(bundle, 'exchange.mailDnsRecords', 'DOMAINS_FROM_VERIFIED_DOMAINS')).toBeDefined();
+    expect(issue(bundle, 'exchange.mailDnsRecords', 'DNS_PROVENANCE')).toBeDefined();
+    // Azure is not connected: Azure controls are NOT_ASSESSED with the reason recorded.
+    for (const id of ['AZ-DEF-001', 'AZ-RBAC-001', 'AZ-STG-001']) expect(status(result, id)).toBe('NOT_ASSESSED');
+    expect(issue(bundle, 'azure.subscriptions', 'CONNECTOR_NOT_CONNECTED')).toBeDefined();
     // Missing services lower coverage instead of inflating it.
     expect(result.summary.assessmentCoverage.assessed).toBeLessThan(result.summary.assessmentCoverage.applicable);
   });
@@ -445,6 +484,7 @@ describe('online permissions', () => {
         'DeviceManagementConfiguration.Read.All',
         'DeviceManagementManagedDevices.Read.All',
         'Directory.Read.All',
+        'OnPremDirectorySynchronization.Read.All',
         'Organization.Read.All',
         'Policy.Read.All',
         'RoleManagement.Read.Directory',
@@ -462,10 +502,8 @@ describe('online permissions', () => {
     }
   });
 
-  it('lists registry datasets the online collector does not produce', () => {
-    expect(ONLINE_NOT_COLLECTED.get('Entra')).toContain('entra.applications');
-    expect(ONLINE_NOT_COLLECTED.has('Intune')).toBe(false);
-    expect(ONLINE_NOT_COLLECTED.has('M365')).toBe(false);
+  it('collects every Entra, M365, Intune, Azure and Exchange dataset of the registry', () => {
+    for (const module of ['Entra', 'M365', 'Intune', 'Azure', 'Exchange'] as const) expect(ONLINE_NOT_COLLECTED.has(module), module).toBe(false);
   });
 });
 

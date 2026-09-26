@@ -6,69 +6,49 @@ Security assessment and remediation guidance for Microsoft administrators.
 AdminSecOps is a free, independent community project by Palanikumar Annamalai. It is not
 affiliated with or endorsed by Microsoft, QatarEnergy or the author's employer.
 
-AdminSecOps answers: *Is my Microsoft environment secure, what have I missed, and what
-should I fix first?* It collects configuration evidence with read-only PowerShell
-collectors, verifies it, evaluates it with deterministic and tested controls, prioritizes
-the findings, and tells you how to fix, roll back and verify each one - all on your own
-machine.
+AdminSecOps collects configuration evidence through fixed read operations, evaluates it
+with deterministic controls and explains findings, remediation, rollback and verification.
+It does not automatically remediate your environment.
 
-> Status: **0.1.0 public beta** (free, local-only). Test in a non-production environment
-> first and review all requested permissions before signing in. See
-> [KNOWN-LIMITATIONS](docs/KNOWN-LIMITATIONS.md) before relying on results.
+**Status: online test release.** Implemented connectors are not a guarantee of complete
+coverage. Validate results in an authorised test environment before relying on them.
 
-AdminSecOps performs a point-in-time configuration assessment. It is not a penetration
-test, compliance certification or guarantee of security. The collectors are read-only;
-remediation guidance may contain commands that change configuration and must be reviewed,
-approved and tested separately before use.
+- [Launch the online app](https://app.adminsecops.com)
+- [About the project and author](https://www.palanikumar.net/tools/adminsecops)
+- [Contribute](CONTRIBUTING.md) · [Roadmap](docs/ROADMAP.md) · [Changes](CHANGELOG.md)
 
-## How it works
+## Choose how to use it
 
-```
-Administrator -> PowerShell collector (read-only) -> adminsecops-assessment.zip
-      -> AdminSecOps local app (evidence verification -> normalized inventory
-         -> deterministic controls -> findings -> prioritization)
-      -> dashboard + HTML/JSON reports
-```
-
-- **Collectors collect facts. Controls evaluate facts. The UI displays results.**
-- Evidence is hashed (SHA-256) in `evidence-manifest.json` and verified before use.
-- Missing, failed or unauthorized evidence is reported as **Not assessed** - never Pass.
-- No AI decides results. No composite "security score" - counts, coverage and a
-  documented "What should I fix first?" order instead.
-- Nothing is sent to any cloud service. The local API only listens on 127.0.0.1; the
-  hosted browser build has no API at all and processes evidence in the browser tab.
-
-## What it covers today
-
-| Module | Implemented controls | Collector |
+| Mode | Where assessment data is processed | Getting started |
 |---|---|---|
-| Entra ID (incl. hybrid identity) | 27 | Microsoft Graph (read scopes) |
-| Microsoft 365 (Exchange Online, mail DNS, SharePoint, Defender for Office 365) | 14 | Exchange Online PowerShell, Graph, DNS |
-| Intune | 4 | Microsoft Graph |
-| Azure | 12 | Azure Resource Manager (Reader) |
-| Active Directory | 23 | ActiveDirectory module (domain user) |
-| AD CS / PKI | 4 | Active Directory configuration partition |
-| Group Policy | 4 | GroupPolicy module, SYSVOL |
-| Windows host | 11 | Local registry/CIM (local admin) |
-| **Total** | **99** | |
+| Online app | Hosted service; results retained 30 days and audit events 90 days | Sign in with Microsoft at app.adminsecops.com; grant the required tenant consent |
+| Static browser edition | Your browser tab; no assessment API | [Explore fictional samples](https://www.palanikumar.net/tools/adminsecops/app/) — this is the older browser edition |
+| Local application / CLI | Your machine; you manage evidence and results | Build from source below; use the PowerShell collector for local evidence |
 
-The full list with severities and framework mappings is in
-[docs/CONTROL-CATALOG.md](docs/CONTROL-CATALOG.md); exactly what is collected and the
-permissions needed are in [docs/DATA-COLLECTION.md](docs/DATA-COLLECTION.md).
+## Online coverage
 
-## Try it in your browser
+Microsoft Graph supplies Entra ID, SharePoint/OneDrive tenant settings, Teams app and
+per-team settings, and Intune evidence. Azure and Exchange Online have separate connection
+and consent flows. Public DNS supplies mail authentication records.
 
-The hosted browser version at <https://www.palanikumar.net/tools/adminsecops/app> runs the
-same engine entirely in your browser tab: explore the fictional Contoso and Fabrikam
-samples or analyse a compatible evidence package. There is no server-side API; evidence is
-not uploaded. See [HOSTED-BROWSER-MODE](docs/HOSTED-BROWSER-MODE.md).
+Coverage depends on permissions, roles, licensing and successful collection. Teams tenant
+policies and on-premises AD, AD CS, Group Policy and Windows collection are not available
+online. The current connector release still needs end-to-end validation in authorised
+customer tenants; an implemented connector is not a claim that all live scenarios pass.
+
+Missing, failed or unauthorised evidence is **Not assessed**, never Pass. Coverage counts
+are not a security score, and an assessment is not certification or a guarantee of security.
+
+See the [control catalogue](docs/CONTROL-CATALOG.md),
+[online connectors and permissions](docs/ONLINE-CONNECTORS.md),
+[online workloads](docs/ONLINE-WORKLOADS.md) and [limitations](docs/KNOWN-LIMITATIONS.md).
 
 ## Quick start
 
 Prerequisites: Node.js 22.22+, PowerShell 7.2+ (for collection).
 
 ```powershell
-npm install
+npm ci
 npm run build
 npm start          # open http://localhost:4310
 ```
@@ -98,7 +78,8 @@ Run the end-to-end demonstration on sanitized data: `npm run demo`.
 
 | Path | Contents |
 |---|---|
-| `apps/web` | React dashboard (local mode, and the static hosted browser build) |
+| `apps/web` | React dashboard: online, local and static browser modes |
+| `apps/control-plane` | Hosted sign-in, tenant-bound API, collection worker and PostgreSQL persistence |
 | `apps/api` | Local REST API (serves the dashboard) |
 | `apps/cli` | Command-line interface |
 | `packages/core` | Vocabulary, safe JSON, hashing, secret detection, logging |
@@ -137,4 +118,4 @@ Never commit them to source control.
 
 Do not include tenant names, identifiers, credentials, access tokens, logs, screenshots or
 raw assessment output in a public GitHub issue. See [SECURITY](SECURITY.md) for reporting
-security concerns and [PRIVACY](docs/PRIVACY.md) for the local data-handling model.
+security concerns and [PRIVACY](docs/PRIVACY.md) for the mode-specific data-handling model.

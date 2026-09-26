@@ -17,7 +17,35 @@ import {
  * lives here.
  */
 
+/** Why a non-Graph connector cannot be used for this collection (never a passing state). */
+export type ConnectorGapState = 'not-connected' | 'consent-required' | 'expired' | 'unavailable';
+
+export interface ConnectorGap {
+  readonly state: ConnectorGapState;
+  /** Secret-free explanation shown in evidence and on the Coverage page. */
+  readonly reason: string;
+}
+
+/** Collection status and message code recorded for datasets of an unusable connector. */
+export const CONNECTOR_GAP_OUTCOME: Readonly<Record<ConnectorGapState, { status: CollectionStatus; code: string }>> = {
+  'not-connected': { status: 'NotCollected', code: 'CONNECTOR_NOT_CONNECTED' },
+  'consent-required': { status: 'Unauthorized', code: 'CONNECTOR_CONSENT_REQUIRED' },
+  expired: { status: 'NotCollected', code: 'CONNECTOR_EXPIRED' },
+  unavailable: { status: 'NotCollected', code: 'CONNECTOR_UNAVAILABLE' },
+};
+
+export interface ArmRuntime {
+  readonly state: 'connected';
+  /** Client bound to the Azure Resource Manager policy and the ARM token only. */
+  readonly client: GraphClient;
+  /** Subscriptions of the verified tenant, filled by azure.subscriptions. */
+  subscriptions: { readonly ids: readonly string[]; readonly complete: boolean } | undefined;
+  /** Set when the subscription list itself could not be read. */
+  listError?: GraphRequestError | undefined;
+}
+
 export interface CollectionContext {
+  /** Microsoft Graph client (Graph token only). */
   readonly client: GraphClient;
   readonly clock: () => Date;
   readonly tenantId: string;
@@ -27,6 +55,12 @@ export interface CollectionContext {
   /** Enabled service plan names; null when licences could not be determined. */
   servicePlans: ReadonlySet<string> | null | undefined;
   organization: { displayName: string | null; primaryDomain: string | null } | undefined;
+  /** Verified domains of the tenant (from entra.organization); undefined until verified. */
+  verifiedDomains?: readonly { name: string; capabilities: string | null }[] | undefined;
+  /** Azure Resource Manager connection, or why it cannot be used. */
+  readonly arm?: ArmRuntime | ConnectorGap | undefined;
+  /** Connector-specific state shared between datasets of one collection. */
+  readonly shared: Map<string, unknown>;
 }
 
 export interface DatasetState {
@@ -37,6 +71,16 @@ export interface DatasetState {
   partial: boolean;
   /** Set by a collector that decides the dataset does not apply (licence absent). */
   notApplicable: boolean;
+  /** Set by a collector whose connector cannot be used; the dataset gets that honest status. */
+  connectorGap?: ConnectorGap | undefined;
+  /** Set by a collector that reports a status directly (for example every target failed). */
+  forcedStatus?: { status: CollectionStatus; code: string; message: string } | undefined;
+}
+
+/** Records that a connector cannot be used; the collector must then return without data. */
+export function connectorUnavailable(state: DatasetState, gap: ConnectorGap): null {
+  state.connectorGap = gap;
+  return null;
 }
 
 export interface DatasetOutcome {
@@ -93,6 +137,15 @@ export async function runDataset(
     );
     return finish(status, null);
   }
+  if (state.connectorGap !== undefined) {
+    const outcome = CONNECTOR_GAP_OUTCOME[state.connectorGap.state];
+    state.errors.push(message(outcome.code, state.connectorGap.reason));
+    return finish(outcome.status, null);
+  }
+  if (state.forcedStatus !== undefined) {
+    state.errors.push(message(state.forcedStatus.code, state.forcedStatus.message));
+    return finish(state.forcedStatus.status, null);
+  }
   if (state.notApplicable) return finish('NotApplicable', null);
 
   // Defence in depth: the payload must satisfy the dataset schema and contain no secret material.
@@ -112,7 +165,7 @@ export async function runDataset(
     state.errors.push(
       message(
         'DATA_INVALID',
-        `The Microsoft Graph response did not match the ${definition.id} schema and was not used (${where}).`,
+        `The ${serviceName(definition)} response did not match the ${definition.id} schema and was not used (${where}).`,
       ),
     );
     return finish('Failed', null);
@@ -147,6 +200,36 @@ export function graphPermissionsOf(definition: DatasetDefinition): string[] {
   return out;
 }
 
+/**
+ * Microsoft Graph delegated permission the hosted collector uses for a dataset when it
+ * differs from the least-privileged permission in the dataset definition. Each substitute is
+ * documented by Microsoft as sufficient for the request (listed as a higher-privileged,
+ * read-only permission) and is already part of the online consent, so no additional scope is
+ * requested:
+ * - PIM lists: RoleManagement.Read.Directory is listed for roleAssignmentScheduleInstances and
+ *   roleEligibilitySchedules.
+ * - applications, servicePrincipals and appRoleAssignedTo: Directory.Read.All is listed.
+ */
+export const HOSTED_PERMISSION_OVERRIDES: Readonly<Record<string, readonly string[]>> = {
+  'entra.roleAssignmentScheduleInstances': ['RoleManagement.Read.Directory'],
+  'entra.roleEligibilitySchedules': ['RoleManagement.Read.Directory'],
+  'entra.applications': ['Directory.Read.All'],
+  'entra.servicePrincipals': ['Directory.Read.All'],
+  'entra.apiPermissionGrants': ['Directory.Read.All'],
+};
+
+/** Graph permissions the hosted collector relies on for a dataset (overrides applied). */
+export function hostedGraphPermissionsOf(definition: DatasetDefinition): string[] {
+  return [...(HOSTED_PERMISSION_OVERRIDES[definition.id] ?? graphPermissionsOf(definition))];
+}
+
+function serviceName(definition: DatasetDefinition): string {
+  if (definition.source === 'AzureResourceManager') return 'Azure Resource Manager';
+  if (definition.source === 'ExchangeOnline') return 'Exchange Online';
+  if (definition.source === 'DNS') return 'DNS';
+  return 'Microsoft Graph';
+}
+
 function explainError(
   error: GraphRequestError,
   status: CollectionStatus,
@@ -155,10 +238,13 @@ function explainError(
 ): string {
   if (status === 'NotApplicable')
     return `${error.message} The service reported that the required licence or feature is not available.`;
+  if (status === 'Unauthorized' && definition.source === 'AzureResourceManager') {
+    return `${error.message} The signed-in account cannot read this Azure data. Required: ${definition.permissions.join('; ')}. Azure controls that need it are not assessed.`;
+  }
   if (status === 'Unauthorized') {
     const granted = context.grantedScopes;
     const missing =
-      granted === null ? [] : graphPermissionsOf(definition).filter((p) => !granted.has(p));
+      granted === null ? [] : hostedGraphPermissionsOf(definition).filter((p) => !granted.has(p));
     const consent =
       missing.length > 0
         ? ` Delegated consent was not granted for: ${missing.join(', ')}. A tenant administrator must grant consent, then sign in again.`
@@ -180,13 +266,14 @@ export async function getOne(
   state: DatasetState,
   context: CollectionContext,
   url: string,
+  client: GraphClient = context.client,
 ): Promise<Record<string, unknown>> {
   state.operations.push(`GET ${url}`);
-  const body = asRecord(await context.client.get(url));
+  const body = asRecord(await client.get(url));
   if (body === undefined)
     throw new GraphRequestError(
       'invalid-response',
-      'Microsoft Graph returned a response that is not a JSON object.',
+      `${client.policy.service} returned a response that is not a JSON object.`,
     );
   return body;
 }
@@ -195,9 +282,11 @@ export async function getAll(
   state: DatasetState,
   context: CollectionContext,
   url: string,
+  client: GraphClient = context.client,
+  operation: string = url,
 ): Promise<unknown[]> {
-  state.operations.push(`GET ${url}`);
-  const result: GraphPageResult = await context.client.getAll(url);
+  if (!state.operations.includes(`GET ${operation}`)) state.operations.push(`GET ${operation}`);
+  const result: GraphPageResult = await client.getAll(url);
   if (result.incomplete !== null) {
     state.errors.push(message(result.incomplete.code, result.incomplete.message));
     state.partial = true;
@@ -224,15 +313,18 @@ export async function fanout<T>(
     url: (item: T) => string | undefined;
     target: (item: T) => string | null;
     what: string;
+    /** Client to use; the Microsoft Graph client by default. */
+    client?: GraphClient;
   },
 ): Promise<Map<T, Record<string, unknown> | undefined>> {
+  const client = options.client ?? context.client;
   const results = new Map<T, Record<string, unknown> | undefined>();
   if (items.length === 0) return results;
   state.operations.push(`GET ${options.operation}`);
   const cap = Math.max(0, Math.floor(context.limits.maxFanoutRequests));
   let sent = 0;
   for (const item of items) {
-    context.client.throwIfCancelled();
+    client.throwIfCancelled();
     const target = options.target(item);
     const url = options.url(item);
     if (url === undefined) {
@@ -256,9 +348,9 @@ export async function fanout<T>(
     }
     sent += 1;
     try {
-      const body = asRecord(await context.client.get(url));
+      const body = asRecord(await client.get(url));
       if (body === undefined)
-        throw new GraphRequestError('invalid-response', 'Microsoft Graph returned a response that is not a JSON object.');
+        throw new GraphRequestError('invalid-response', `${client.policy.service} returned a response that is not a JSON object.`);
       results.set(item, body);
     } catch (error) {
       if (!(error instanceof GraphRequestError)) throw error;

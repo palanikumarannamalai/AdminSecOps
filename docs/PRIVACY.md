@@ -1,7 +1,7 @@
 # Privacy
 
 AdminSecOps is designed to collect the minimum data needed to assess configuration, to
-process it locally, and to keep the administrator in control of it.
+keep the administrator informed about where it is processed. Processing depends on the mode.
 
 ## What is collected
 
@@ -14,14 +14,23 @@ including some personal data:
   privileged AD accounts and computers);
 - MFA registration state (registered yes/no, method types - not the phone numbers or keys).
 
-## What is never collected
+## What is excluded from assessment evidence
 
 Passwords or password hashes, tokens, private keys, authentication cookies, e-mail message
 bodies or subjects, Teams messages, SharePoint/OneDrive documents, LAPS passwords, client
 secret values or hints, security contact e-mail addresses, custom banned password lists.
 The engine rejects evidence files containing such material (see EVIDENCE-MODEL.md).
 
-## Where data goes
+## Online service
+
+The online app at app.adminsecops.com collects configuration server-side with delegated
+Microsoft access. Authentication necessarily uses tokens and session cookies; these are
+not assessment evidence. Raw configuration evidence is processed in memory. Assessment
+results are retained for 30 days and audit events for 90 days. Downloaded reports remain
+under your control and are not removed by server retention. Review the requested consent
+and [connector permissions](ONLINE-CONNECTORS.md) before connecting a tenant.
+
+## Where data goes in the local application
 
 Nowhere, by default. The collector writes an evidence package to a folder you choose.
 The local application processes it in memory on your machine and stores only the

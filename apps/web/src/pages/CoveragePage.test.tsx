@@ -103,6 +103,53 @@ describe('coverage computation', () => {
   });
 });
 
+describe('connector coverage states', () => {
+  const issue = (datasetId: string, code: string) => ({ code, message: code, target: null, level: 'error' as const, module: null, datasetId, origin: 'collector' as const });
+  const connectorResult: AssessmentResult = {
+    ...sampleResult,
+    collection: { ...sampleResult.collection, collector: { ...sampleResult.collection.collector, name: 'AdminSecOps.HostedGraphCollector' }, modules: [module('Azure', 'Skipped'), module('Exchange', 'CompletedWithErrors')] },
+    evidence: {
+      ...sampleResult.evidence,
+      datasets: [
+        dataset('azure.storageAccounts', 'unavailable', 'NotCollected', 'Azure', 'Not connected.'),
+        dataset('exchange.transportConfig', 'unavailable', 'Unauthorized', 'Exchange', 'Consent missing.'),
+        dataset('exchange.mailDnsRecords', 'available', 'Success', 'Exchange', 'Collected.'),
+        dataset('ad.domains', 'unavailable', null, 'AD', 'Not present in the evidence package.'),
+        dataset('intune.compliancePolicies', 'unavailable', 'Failed', 'Intune', 'HTTP 500.'),
+      ],
+      issues: [issue('azure.storageAccounts', 'CONNECTOR_NOT_CONNECTED'), issue('exchange.transportConfig', 'CONNECTOR_CONSENT_REQUIRED')],
+    },
+    results: [
+      control('AZ-STG-001', 'NOT_ASSESSED', 'azure.storageAccounts'),
+      control('M365-EXO-001', 'NOT_ASSESSED', 'exchange.transportConfig'),
+      control('M365-MAIL-002', 'PASS', 'exchange.mailDnsRecords'),
+      control('AD-PWD-001', 'NOT_ASSESSED', 'ad.domains'),
+      control('INTUNE-CMP-002', 'NOT_ASSESSED', 'intune.compliancePolicies'),
+    ],
+  };
+
+  it('distinguishes not connected, consent required, unsupported and failed collection', () => {
+    const coverage = new Map(computeCoverage(connectorResult).map((w) => [w.key, w]));
+    expect(coverage.get('azure')).toMatchObject({ state: 'not-assessed', blocker: 'not-connected', assessed: 0 });
+    expect(coverage.get('exchange')).toMatchObject({ state: 'partial', assessed: 1, notAssessed: 1 });
+    expect(coverage.get('exchange')?.gaps[0]?.reason).toBe('permission');
+    expect(coverage.get('onprem')).toMatchObject({ state: 'not-assessed', blocker: 'unsupported' });
+    expect(coverage.get('onprem')?.skippedReasons[0]).toContain('private networks');
+    expect(coverage.get('intune')).toMatchObject({ state: 'not-assessed', blocker: 'failed' });
+    expect(gapReason('NotCollected', false, ['CONNECTOR_EXPIRED'])).toBe('not-connected');
+    expect(gapReason('NotCollected', false, ['CONNECTOR_UNAVAILABLE'])).toBe('unsupported');
+  });
+
+  it('labels each not-assessed workload with its reason on the page', async () => {
+    renderApp(`/assessments/${ASSESSMENT_ID}/coverage`, createFakeApi({ getAssessment: vi.fn(() => Promise.resolve(connectorResult)) }));
+    const table = await screen.findByRole('table', { name: 'Coverage per workload' });
+    expect(within(within(table).getByRole('row', { name: /Azure subscriptions/ })).getByText('not connected')).toBeTruthy();
+    expect(within(within(table).getByRole('row', { name: /On-premises/ })).getByText('unsupported online')).toBeTruthy();
+    expect(within(within(table).getByRole('row', { name: /Microsoft Intune/ })).getByText('collection failed')).toBeTruthy();
+    expect(screen.getByText(/Connector not connected or connection expired/)).toBeTruthy();
+  });
+});
+
 describe('CoveragePage', () => {
   it('shows per-workload coverage and the reason each dataset is missing', async () => {
     renderApp(`/assessments/${ASSESSMENT_ID}/coverage`, createFakeApi({ getAssessment: vi.fn(() => Promise.resolve(onlineResult)) }));
