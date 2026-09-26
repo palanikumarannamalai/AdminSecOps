@@ -9,6 +9,11 @@
   "excludedFileExtensionsForSyncApp": [
     ".exe"
   ],
+  "idleSessionSignOut": {
+    "isEnabled": false,
+    "warnAfterInSeconds": 0,
+    "signOutAfterInSeconds": 0
+  },
   "isCommentingOnSitePagesEnabled": true,
   "isFileActivityNotificationEnabled": true,
   "isLegacyAuthProtocolsEnabled": true,

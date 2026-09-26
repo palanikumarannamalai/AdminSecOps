@@ -127,14 +127,14 @@ const FOREST_GROUP_RIDS: Readonly<Record<string, string>> = { '519': 'Enterprise
 
 export const adForestAdminGroupsEmpty = defineControl({
   id: 'AD-PRIV-003',
-  version: '1.0.0',
+  version: '1.1.0',
   lifecycle: 'stable',
   title: 'Enterprise Admins and Schema Admins have no standing members',
   technology: 'ad',
   category: 'Privileged access',
   subcategory: 'Forest administration',
   description:
-    'Checks that the forest-wide Enterprise Admins and Schema Admins groups contain no members other than the forest root domain\'s built-in Administrator account (RID 500), including members added through nested groups.',
+    'Checks that the forest-wide Enterprise Admins and Schema Admins groups have no standing members, including nested members. Only Enterprise Admins permits an exception for the secured forest root built-in Administrator (RID 500).',
   rationale:
     'Enterprise Admins control every domain in the forest and Schema Admins can change the definition of every object. Microsoft guidance is that Enterprise Admins should have no day-to-day members (with the possible exception of the secured forest root Administrator account) and that Schema Admins should stay empty except while a schema change is being made. Permanent membership multiplies the number of accounts whose compromise means losing the whole forest.',
   severity: 'medium',
@@ -144,10 +144,10 @@ export const adForestAdminGroupsEmpty = defineControl({
   optionalEvidence: [],
   evaluation: {
     logic:
-      'Groups are identified by SID (RID 519 Enterprise Admins, RID 518 Schema Admins), so renamed groups are still found. FAIL when either group has any recursive member other than the built-in Administrator (RID 500) whose SID belongs to the same domain as the group (the forest root domain); an Administrator account from a child domain is a failure. PASS when both groups are present and empty or contain only that account; REVIEW when only one of the two groups is present and it has no standing members. NOT_ASSESSED when neither group is present in the evidence (for example only a child domain was collected). FAIL rather than REVIEW is used because Microsoft states these groups should have no standing members.',
+      'Groups are identified by SID (RID 519 Enterprise Admins, RID 518 Schema Admins), so renamed groups are still found. FAIL when Schema Admins has any recursive member, or Enterprise Admins has a recursive member other than the secured forest root built-in Administrator (RID 500); an Administrator account from a child domain is a failure. PASS when both groups are present, Schema Admins is empty and Enterprise Admins is empty or contains only that account; REVIEW when only one of the two groups is present and it has no standing members. NOT_ASSESSED when neither group is present in the evidence (for example only a child domain was collected). FAIL rather than REVIEW is used because Microsoft states these groups should have no standing members.',
     parameters: {},
   },
-  expectedState: 'Enterprise Admins and Schema Admins are empty (or contain only the secured forest root Administrator); members are added temporarily for a specific task and removed afterwards.',
+  expectedState: 'Schema Admins is empty; Enterprise Admins is empty or contains only the secured forest root Administrator; members are added temporarily for a specific task and removed afterwards.',
   remediation: {
     summary: 'Remove standing members from Enterprise Admins and Schema Admins and adopt a temporary-membership process for forest-level changes.',
     steps: [
@@ -173,7 +173,7 @@ export const adForestAdminGroupsEmpty = defineControl({
   impact: 'Removed members lose forest-wide rights. Their domain-level rights through other groups are unchanged.',
   rollback: ['Add the account back to the group (Add-ADGroupMember) if a forest-level task is in progress, then remove it again afterwards.'],
   validation: [
-    'Run Get-ADGroupMember -Recursive for both groups in the forest root domain and confirm only the built-in Administrator (or nobody) is listed.',
+    'Run Get-ADGroupMember -Recursive for both groups in the forest root domain and confirm Schema Admins is empty and Enterprise Admins contains only the secured forest root Administrator or nobody.',
     'Re-run the AdminSecOps Active Directory collector and confirm AD-PRIV-003 is PASS.',
   ],
   references: [AD_REF.enterpriseAdminsAppendixE, AD_REF.schemaAdminsEmpty, AD_REF.privilegedGroupsAppendixB, AD_REF.attackDomainAccounts],
@@ -207,7 +207,7 @@ export const adForestAdminGroupsEmpty = defineControl({
       for (const member of group.members) {
         const isRootAdministrator =
           isBuiltInAdministrator(member.sid) && sidDomainPart(member.sid) === groupDomain && USER_CLASSES.has(member.objectClass.toLowerCase());
-        if (isRootAdministrator) {
+        if (isRootAdministrator && sidRid(group.groupSid) === '519') {
           notes.push(
             `${label} contains the forest root built-in Administrator account (${member.samAccountName}). Microsoft accepts this only if the account is secured (long password stored offline, marked sensitive, sign-ins monitored).`,
           );
@@ -218,7 +218,7 @@ export const adForestAdminGroupsEmpty = defineControl({
             'adGroupMember',
             `${group.groupSid}:${member.sid}`,
             qualifiedName(group.domain, `${group.groupName} > ${member.samAccountName}`),
-            `${member.objectClass} is a standing member of ${label}${isBuiltInAdministrator(member.sid) ? ' (Administrator account of a different domain)' : ''}`,
+            `${member.objectClass} is a standing member of ${label}${isBuiltInAdministrator(member.sid) && !isRootAdministrator ? ' (Administrator account of a different domain)' : ''}`,
           ),
         );
       }
@@ -245,8 +245,8 @@ export const adForestAdminGroupsEmpty = defineControl({
       });
     }
     return pass({
-      reason: 'Enterprise Admins and Schema Admins contain no standing members other than the forest root built-in Administrator.',
-      summary: 'Forest-level administrative groups are empty or contain only the built-in Administrator.',
+      reason: 'Schema Admins is empty and Enterprise Admins has no standing members other than the forest root built-in Administrator.',
+      summary: 'Schema Admins is empty; Enterprise Admins is empty or contains only the forest root built-in Administrator.',
       facts,
       notes,
     });

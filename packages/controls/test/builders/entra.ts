@@ -20,6 +20,8 @@ export interface CaPolicyInput {
   includeRoles?: string[];
   excludeRoles?: string[];
   includeApplications?: string[];
+  excludeApplications?: string[];
+  excludePlatforms?: string[];
   clientAppTypes?: string[];
   signInRiskLevels?: string[];
   userRiskLevels?: string[];
@@ -48,14 +50,14 @@ export function caPolicy(input: CaPolicyInput = {}): Record<string, unknown> {
       },
       applications: {
         includeApplications: input.includeApplications ?? ['All'],
-        excludeApplications: [],
+        excludeApplications: input.excludeApplications ?? [],
         includeUserActions: [],
         includeAuthenticationContextClassReferences: [],
       },
       clientAppTypes: input.clientAppTypes ?? ['all'],
       signInRiskLevels: input.signInRiskLevels ?? [],
       userRiskLevels: input.userRiskLevels ?? [],
-      platforms: null,
+      platforms: input.excludePlatforms ? { includePlatforms: ['all'], excludePlatforms: input.excludePlatforms } : null,
       locations: input.excludeLocations ? { includeLocations: ['All'], excludeLocations: input.excludeLocations } : null,
       authenticationFlows: input.transferMethods === undefined || input.transferMethods === null ? null : { transferMethods: input.transferMethods },
     },

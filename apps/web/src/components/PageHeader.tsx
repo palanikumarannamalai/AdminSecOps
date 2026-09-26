@@ -2,11 +2,13 @@ import type { ReactNode } from 'react';
 
 export function PageHeader({
   title,
+  titleId,
   description,
   actions,
   eyebrow,
 }: {
   title: string;
+  titleId?: string;
   description?: ReactNode;
   actions?: ReactNode;
   eyebrow?: ReactNode;
@@ -15,7 +17,7 @@ export function PageHeader({
     <header className="page-header">
       <div className="page-header__text">
         {eyebrow !== undefined ? <p className="page-header__eyebrow">{eyebrow}</p> : null}
-        <h1 className="page-header__title">{title}</h1>
+        <h1 id={titleId} className="page-header__title">{title}</h1>
         {description !== undefined ? <div className="page-header__description">{description}</div> : null}
       </div>
       {actions !== undefined ? <div className="page-header__actions">{actions}</div> : null}

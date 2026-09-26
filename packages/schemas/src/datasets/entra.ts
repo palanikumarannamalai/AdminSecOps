@@ -37,7 +37,8 @@ export const entraSubscribedSkus = defineDataset({
   module: 'Entra',
   technology: 'entra',
   title: 'Licences (subscribed SKUs)',
-  description: 'Licence SKUs and service plans, used to decide control applicability (e.g. Entra ID P2).',
+  description:
+    'Licence SKUs and service plans, used to decide control applicability (e.g. Entra ID P2).',
   source: 'MicrosoftGraph',
   operations: [`GET ${GRAPH}/subscribedSkus`],
   permissions: ['Graph: Organization.Read.All'],
@@ -113,8 +114,14 @@ const CaUsersSchema = z.object({
   includeRoles: list(z.string()),
   excludeRoles: list(z.string()),
   /** Non-null when guest/external user types are included; shape is kept opaque. */
-  includeGuestsOrExternalUsers: z.unknown().nullish().transform((v) => (v === undefined ? null : v)),
-  excludeGuestsOrExternalUsers: z.unknown().nullish().transform((v) => (v === undefined ? null : v)),
+  includeGuestsOrExternalUsers: z
+    .unknown()
+    .nullish()
+    .transform((v) => (v === undefined ? null : v)),
+  excludeGuestsOrExternalUsers: z
+    .unknown()
+    .nullish()
+    .transform((v) => (v === undefined ? null : v)),
 });
 
 export const ConditionalAccessPolicySchema = z.object({
@@ -166,6 +173,17 @@ export const ConditionalAccessPolicySchema = z.object({
       .object({ includeLocations: list(z.string()), excludeLocations: list(z.string()) })
       .nullish()
       .transform((v) => v ?? null),
+    devices: z
+      .object({
+        includeDevices: list(z.string()),
+        excludeDevices: list(z.string()),
+        deviceFilter: z
+          .object({ mode: optString, rule: optString })
+          .nullish()
+          .transform((v) => v ?? null),
+      })
+      .nullish()
+      .transform((v) => v ?? null),
     /** e.g. { transferMethods: "deviceCodeFlow,authenticationTransfer" } */
     authenticationFlows: z
       .object({ transferMethods: optString })
@@ -179,7 +197,7 @@ export const ConditionalAccessPolicySchema = z.object({
       customAuthenticationFactors: list(z.string()),
       termsOfUse: list(z.string()),
       authenticationStrength: z
-        .object({ id: z.string(), displayName: optString })
+        .object({ id: z.string(), displayName: optString, requirementsSatisfied: optString })
         .nullish()
         .transform((v) => v ?? null),
     })
@@ -188,7 +206,12 @@ export const ConditionalAccessPolicySchema = z.object({
   sessionControls: z
     .object({
       signInFrequency: z
-        .object({ isEnabled: optBool, value: optNumber, type: optString, frequencyInterval: optString })
+        .object({
+          isEnabled: optBool,
+          value: optNumber,
+          type: optString,
+          frequencyInterval: optString,
+        })
         .nullish()
         .transform((v) => v ?? null),
       persistentBrowser: z
@@ -209,7 +232,10 @@ export const entraConditionalAccessPolicies = defineDataset({
   description: 'All Conditional Access policies including disabled and report-only policies.',
   source: 'MicrosoftGraph',
   operations: [`GET ${GRAPH}/identity/conditionalAccess/policies`],
-  permissions: ['Graph: Policy.Read.All', 'Directory role able to read CA policies (e.g. Global Reader or Security Reader)'],
+  permissions: [
+    'Graph: Policy.Read.All',
+    'Directory role able to read CA policies (e.g. Global Reader or Security Reader)',
+  ],
   prerequisites: ['Microsoft Entra ID P1 (Conditional Access)'],
   personalData: 'identifiers',
   schema: z.array(ConditionalAccessPolicySchema),
@@ -413,7 +439,8 @@ export const entraServicePrincipals = defineDataset({
   module: 'Entra',
   technology: 'entra',
   title: 'Service principals',
-  description: 'Service principals (enterprise applications, managed identities) with credential metadata only.',
+  description:
+    'Service principals (enterprise applications, managed identities) with credential metadata only.',
   source: 'MicrosoftGraph',
   operations: [
     `GET ${GRAPH}/servicePrincipals?$select=id,appId,displayName,servicePrincipalType,appOwnerOrganizationId,accountEnabled,passwordCredentials,keyCredentials`,

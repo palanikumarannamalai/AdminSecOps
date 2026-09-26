@@ -26,9 +26,9 @@ const NO_GPOS = 'The evidence contains no Group Policy objects, although every d
 
 export const gpoLanManagerAuthLevel = defineControl({
   id: 'GPO-SEC-001',
-  version: '1.0.0',
+  version: '1.1.0',
   lifecycle: 'stable',
-  title: 'Group Policy enforces LAN Manager authentication level 5 (NTLMv2 only)',
+  title: 'Linked Group Policy configures LAN Manager authentication level 5 (NTLMv2 only)',
   technology: 'gpo',
   category: 'Authentication',
   subcategory: 'NTLM',
@@ -43,7 +43,7 @@ export const gpoLanManagerAuthLevel = defineControl({
   optionalEvidence: [],
   evaluation: {
     logic:
-      'Considers GPOs that apply to computers (at least one enabled link and computer settings not disabled) and reads their computer-scope LmCompatibilityLevel setting (registry path ...\\Control\\Lsa\\LmCompatibilityLevel, matched case-insensitively with MACHINE\\ or HKEY_LOCAL_MACHINE\\ prefixes). FAIL when any such GPO sets a value below 5, because depending on link order and OU placement it can win for some computers. REVIEW when a value cannot be interpreted as a number. PASS when at least one such GPO sets 5 and none sets less. FAIL when no applying GPO configures the setting, because computers then use the Windows default of 3 (documented in the LocalPoliciesSecurityOptions policy CSP). GPOs that set the value but do not apply are mentioned in notes. Link order, security filtering and WMI filters are not evaluated; confirm effective values with WIN-NTLM-001.',
+      'Considers GPOs that apply to computers (at least one enabled link and computer settings not disabled) and reads their computer-scope LmCompatibilityLevel setting (registry path ...\\Control\\Lsa\\LmCompatibilityLevel, matched case-insensitively with MACHINE\\ or HKEY_LOCAL_MACHINE\\ prefixes). FAIL when any such GPO sets a value below 5, because depending on link order and OU placement it can win for some computers. REVIEW when a value is not an integer from 0 to 5. PASS when at least one such GPO sets 5 and none sets less. REVIEW when no applying GPO configures the setting, because local policy and MDM configuration are not collected here. GPOs that set the value but do not apply are mentioned in notes. Link order, security filtering and WMI filters are not evaluated; confirm effective values with WIN-NTLM-001.',
     parameters: { requiredLevel: 5 },
   },
   expectedState: 'A GPO linked at the domain (or to every OU containing computers, including Domain Controllers) sets LAN Manager authentication level to "Send NTLMv2 response only. Refuse LM & NTLM", and no GPO sets a lower level.',
@@ -87,8 +87,8 @@ export const gpoLanManagerAuthLevel = defineControl({
     const configured = gpos.map((g) => ({ gpo: g, values: valuesOf(g) })).filter((e) => e.values.length > 0);
     const applying = configured.filter((e) => gpoAppliesToComputers(e.gpo));
     const notApplying = configured.filter((e) => !gpoAppliesToComputers(e.gpo));
-    const weak = applying.filter((e) => e.values.some((v) => v.num !== null && v.num < 5));
-    const unreadable = applying.filter((e) => e.values.some((v) => v.num === null));
+    const weak = applying.filter((e) => e.values.some((v) => v.num !== null && Number.isInteger(v.num) && v.num >= 0 && v.num < 5));
+    const unreadable = applying.filter((e) => e.values.some((v) => v.num === null || !Number.isInteger(v.num) || v.num < 0 || v.num > 5));
     const strong = applying.filter((e) => e.values.some((v) => v.num === 5));
     const describe = (e: (typeof configured)[number]) =>
       `Sets ${e.values.map((v) => (v.num !== null ? `${v.num} (${LM_LEVEL_LABELS[v.num] ?? 'unknown level'})` : `"${String(v.raw)}"`)).join(', ')}; ${linksText(e.gpo)}.`;
@@ -123,13 +123,13 @@ export const gpoLanManagerAuthLevel = defineControl({
     if (strong.length > 0) {
       return pass({
         reason: `LAN Manager authentication level 5 is set by ${strong.map((e) => `"${e.gpo.displayName}"`).join(', ')} and no linked GPO sets a lower level.`,
-        summary: 'Group Policy enforces NTLMv2 only (refuse LM and NTLM).',
+        summary: 'Linked GPOs configure NTLMv2 only; effective host coverage requires verification.',
         facts,
         notes,
       });
     }
-    return fail({
-      reason: 'No linked GPO configures the LAN Manager authentication level, so computers use the Windows default (level 3), at which servers and domain controllers still accept LM and NTLMv1.',
+    return review({
+      reason: 'No linked GPO configures the LAN Manager authentication level. Local policy or another management provider may configure it; verify effective host values with WIN-NTLM-001 rather than assuming the Windows default (level 3).',
       summary: 'LAN Manager authentication level is not enforced by Group Policy.',
       facts,
       notes,
@@ -143,7 +143,7 @@ function isWdigestPolicyName(name: string): boolean {
 
 export const gpoNoWdigest = defineControl({
   id: 'GPO-SEC-002',
-  version: '1.0.0',
+  version: '1.1.0',
   lifecycle: 'stable',
   title: 'No linked GPO enables WDigest credential caching',
   technology: 'gpo',
@@ -160,7 +160,7 @@ export const gpoNoWdigest = defineControl({
   optionalEvidence: [],
   evaluation: {
     logic:
-      'Considers GPOs that apply to computers (at least one enabled link and computer settings not disabled). FAIL when any of them sets the registry value ...\\SecurityProviders\\WDigest\\UseLogonCredential to 1 (matched case-insensitively with MACHINE\\ or HKEY_LOCAL_MACHINE\\ prefixes, in any settings category) or sets the MS Security Guide administrative template "WDigest Authentication" to Enabled. PASS otherwise; the reason states whether a GPO explicitly disables WDigest or the setting is left to the operating system default (disabled on Windows 8.1 / Windows Server 2012 R2 and later). GPOs that would enable WDigest but are not applied are reported in notes.',
+      'Considers GPOs that apply to computers (at least one enabled link and computer settings not disabled). FAIL when any of them sets the registry value ...\\SecurityProviders\\WDigest\\UseLogonCredential to 1 (matched case-insensitively with MACHINE\\ or HKEY_LOCAL_MACHINE\\ prefixes, in any settings category) or sets the MS Security Guide administrative template "WDigest Authentication" to Enabled. REVIEW for unrecognized WDigest values. PASS otherwise; the reason states whether a GPO explicitly disables WDigest or the setting is left to the operating system default (disabled on Windows 8.1 / Windows Server 2012 R2 and later). GPOs that would enable WDigest but are not applied are reported in notes.',
     parameters: {},
   },
   expectedState: 'No GPO enables WDigest; ideally a domain-wide GPO explicitly disables it (MS Security Guide "WDigest Authentication" = Disabled, as in the Microsoft security baselines).',
@@ -196,25 +196,29 @@ export const gpoNoWdigest = defineControl({
   evaluate: (ctx) => {
     const gpos = ctx.data('gpo.groupPolicyObjects');
     if (gpos.length === 0) return notAssessed({ reason: NO_GPOS, summary: 'No Group Policy objects in evidence.' });
-    const stateOf = (g: GroupPolicyObject): { enables: string[]; disables: string[] } => {
+    const stateOf = (g: GroupPolicyObject): { enables: string[]; disables: string[]; unknown: string[] } => {
       const enables: string[] = [];
       const disables: string[] = [];
+      const unknown: string[] = [];
       for (const s of gpoRegistrySettings(g, REGISTRY.wdigestUseLogonCredential)) {
         const n = settingNumber(s.value);
         if (n === 1) enables.push(`UseLogonCredential = 1 (${s.category})`);
         else if (n === 0) disables.push('UseLogonCredential = 0');
+        else unknown.push(`Unrecognized UseLogonCredential value (${s.category})`);
       }
       for (const s of gpoNamedSettings(g, 'RegistryPolicy', isWdigestPolicyName)) {
         const state = settingEnabledState(s.value);
         if (state === 'Enabled') enables.push(`"${s.name}" = Enabled`);
         else if (state === 'Disabled') disables.push(`"${s.name}" = Disabled`);
+        else unknown.push(`Unrecognized state for "${s.name}"`);
       }
-      return { enables, disables };
+      return { enables, disables, unknown };
     };
     const evaluated = gpos.map((g) => ({ gpo: g, applies: gpoAppliesToComputers(g), ...stateOf(g) }));
     const enabling = evaluated.filter((e) => e.applies && e.enables.length > 0);
     const disabling = evaluated.filter((e) => e.applies && e.disables.length > 0 && e.enables.length === 0);
     const dormant = evaluated.filter((e) => !e.applies && e.enables.length > 0);
+    const uncertain = evaluated.filter((e) => e.applies && e.unknown.length > 0);
     const facts = [
       fact('GPOs collected', gpos.length),
       fact('Applying GPOs that enable WDigest', enabling.length),
@@ -232,11 +236,20 @@ export const gpoNoWdigest = defineControl({
         notes,
       });
     }
+    if (uncertain.length > 0) {
+      return review({
+        reason: 'A linked GPO contains a WDigest setting whose value cannot be interpreted.',
+        summary: 'WDigest configuration needs manual verification.',
+        facts,
+        affectedObjects: uncertain.map((e) => gpoObject(e.gpo, e.unknown.join('; '))),
+        notes,
+      });
+    }
     return pass({
       reason:
         disabling.length > 0
           ? `No linked GPO enables WDigest, and ${plural(disabling.length, 'GPO')} explicitly disable it (${disabling.map((e) => `"${e.gpo.displayName}"`).join(', ')}).`
-          : 'No linked GPO enables WDigest. The setting is not configured by Group Policy, so computers use the operating system default (disabled on Windows 8.1 / Windows Server 2012 R2 and later).',
+          : 'No linked GPO enables WDigest. The setting is not configured by these GPOs; local or MDM settings may still override the OS default. Check effective host state with WIN-CRED-001.',
       summary: 'Group Policy does not enable WDigest credential caching.',
       facts,
       notes:

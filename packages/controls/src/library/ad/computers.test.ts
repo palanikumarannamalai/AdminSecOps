@@ -14,13 +14,14 @@ describe('AD-CMP-001 LAPS coverage', () => {
     expect(result.notes.join(' ')).toContain('legacy Microsoft LAPS');
   });
 
-  it('fails for computers without any LAPS expiration', () => {
+  it('requires review for absent AD LAPS evidence because Entra backup may protect the device', () => {
     const result = run(adLapsCoverage, {
       'ad.computers': [adComputer(), adComputer({ name: 'SRV01', domain: CHILD, operatingSystem: 'Windows Server 2022 Standard', windowsLapsExpiration: null })],
     });
-    expect(result.status).toBe('FAIL');
+    expect(result.status).toBe('REVIEW');
     expect(result.affectedObjects[0]?.id).toBe(`${CHILD}\\SRV01`);
     expect(result.statusReason).toContain('50%');
+    expect(result.statusReason).toContain('Microsoft Entra ID');
   });
 
   it('excludes domain controllers, disabled computers and non-Windows systems', () => {
@@ -54,11 +55,11 @@ describe('AD-CMP-001 LAPS coverage', () => {
 });
 
 describe('AD-CMP-002 unsupported Windows on computers', () => {
-  it('passes for supported versions and notes untracked ones', () => {
+  it('requires review when supported versions are mixed with untracked releases', () => {
     const result = run(adUnsupportedComputers, {
       'ad.computers': [adComputer({ operatingSystem: 'Windows Server 2022 Standard' }), adComputer({ operatingSystem: 'Windows 11 Enterprise' })],
     });
-    expect(result.status).toBe('PASS');
+    expect(result.status).toBe('REVIEW');
     expect(result.notes.join(' ')).toContain('does not track');
   });
 
@@ -86,7 +87,7 @@ describe('AD-CMP-002 unsupported Windows on computers', () => {
       'ad.computers': [
         adComputer({ enabled: false, operatingSystem: 'Windows 7 Professional' }),
         adComputer({ isDomainController: true, operatingSystem: 'Windows Server 2012 R2 Standard' }),
-        adComputer(),
+        adComputer({ operatingSystem: 'Windows Server 2022 Standard' }),
       ],
     });
     expect(result.status).toBe('PASS');

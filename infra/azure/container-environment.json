@@ -1,0 +1,20 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": { "type": "string", "defaultValue": "uaenorth", "allowedValues": ["uaenorth"] },
+    "environmentName": { "type": "string", "defaultValue": "cae-adminsecops-dev-uaenorth" }
+  },
+  "resources": [{
+    "type": "Microsoft.App/managedEnvironments",
+    "apiVersion": "2025-01-01",
+    "name": "[parameters('environmentName')]",
+    "location": "[parameters('location')]",
+    "tags": { "project": "AdminSecOps", "environment": "development", "managedBy": "ARM" },
+    "properties": {
+      "zoneRedundant": false,
+      "workloadProfiles": [{ "name": "Consumption", "workloadProfileType": "Consumption" }],
+      "appLogsConfiguration": { "destination": "azure-monitor" }
+    }
+  }]
+}

@@ -1,7 +1,77 @@
 import { describe, expect, it } from 'vitest';
 import { sharePointSettings } from '../../../test/builders/m365.js';
 import { run } from '../../../test/run.js';
-import { m365SharePointAnyoneLinks, m365SharePointLegacyAuth } from './sharepoint.js';
+import {
+  m365SharePointAnyoneLinks,
+  m365SharePointGuestResharing,
+  m365SharePointIdleSignOut,
+  m365SharePointLegacyAuth,
+} from './sharepoint.js';
+
+describe('M365-SPO-003 guest resharing', () => {
+  it('passes when guests cannot reshare', () => {
+    expect(run(m365SharePointGuestResharing, { 'm365.sharePointSettings': sharePointSettings() }).status).toBe('PASS');
+  });
+
+  it('asks for review (not failure) when guests can reshare', () => {
+    const result = run(m365SharePointGuestResharing, {
+      'm365.sharePointSettings': sharePointSettings({ isResharingByExternalUsersEnabled: true }),
+    });
+    expect(result.status).toBe('REVIEW');
+    expect(result.affectedObjects[0]?.id).toBe('sharepoint.isResharingByExternalUsersEnabled');
+  });
+
+  it('does not apply when external sharing is off', () => {
+    expect(
+      run(m365SharePointGuestResharing, {
+        'm365.sharePointSettings': sharePointSettings({ sharingCapability: 'Disabled', isResharingByExternalUsersEnabled: true }),
+      }).status,
+    ).toBe('NOT_APPLICABLE');
+  });
+
+  it('is NOT_ASSESSED when the value is missing (null is never off)', () => {
+    expect(
+      run(m365SharePointGuestResharing, {
+        'm365.sharePointSettings': sharePointSettings({ isResharingByExternalUsersEnabled: null }),
+      }).status,
+    ).toBe('NOT_ASSESSED');
+  });
+});
+
+describe('M365-SPO-004 idle session sign-out', () => {
+  it('passes when idle sign-out is enabled and reports the times', () => {
+    const result = run(m365SharePointIdleSignOut, {
+      'm365.sharePointSettings': sharePointSettings({
+        idleSessionSignOut: { isEnabled: true, warnAfterInSeconds: 2700, signOutAfterInSeconds: 3600 },
+      }),
+    });
+    expect(result.status).toBe('PASS');
+    expect(result.observed.facts).toContainEqual({ label: 'Sign out after (seconds)', value: 3600 });
+  });
+
+  it('asks for review when idle sign-out is off', () => {
+    expect(
+      run(m365SharePointIdleSignOut, {
+        'm365.sharePointSettings': sharePointSettings({ idleSessionSignOut: { isEnabled: false } }),
+      }).status,
+    ).toBe('REVIEW');
+  });
+
+  it.each([undefined, null, { warnAfterInSeconds: 60 }])('is NOT_ASSESSED when the setting is %o', (idleSessionSignOut) => {
+    expect(
+      run(m365SharePointIdleSignOut, { 'm365.sharePointSettings': sharePointSettings({ idleSessionSignOut }) }).status,
+    ).toBe('NOT_ASSESSED');
+  });
+
+  it('never passes on partial evidence', () => {
+    const result = run(
+      m365SharePointIdleSignOut,
+      { 'm365.sharePointSettings': sharePointSettings({ idleSessionSignOut: { isEnabled: true } }) },
+      { partial: ['m365.sharePointSettings'] },
+    );
+    expect(result.status).toBe('REVIEW');
+  });
+});
 
 describe('M365-SPO-001 no Anyone links', () => {
   it.each(['disabled', 'existingExternalUserSharingOnly', 'externalUserSharingOnly'])(

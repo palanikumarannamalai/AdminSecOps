@@ -1,6 +1,6 @@
 @{
     RootModule           = 'AdminSecOps.Collector.psm1'
-    ModuleVersion        = '0.1.0'
+    ModuleVersion        = '0.2.0'
     GUID                 = '51822c08-c2b0-4339-b16f-c6ee6ed6fb0b'
     Author               = 'AdminSecOps'
     CompanyName          = 'AdminSecOps'

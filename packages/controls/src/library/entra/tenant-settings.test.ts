@@ -60,7 +60,7 @@ describe('ENTRA-EXT-003 inactive guests', () => {
   const guest = (id: string, overrides: Record<string, unknown>) => ({ id, userPrincipalName: `${id}#EXT#@contoso.onmicrosoft.com`, accountEnabled: true, ...overrides });
   const assessedAt = '2026-09-01T00:00:00Z';
 
-  it('fails for guests inactive beyond the threshold or never signed in', () => {
+  it('reviews guests with old or absent sign-in attempts without claiming never signed in', () => {
     const result = run(
       entraStaleGuests,
       {
@@ -75,12 +75,12 @@ describe('ENTRA-EXT-003 inactive guests', () => {
       },
       { assessedAt },
     );
-    expect(result.status).toBe('FAIL');
+    expect(result.status).toBe('REVIEW');
     expect(result.affectedObjects.map((o) => o.id).sort()).toEqual(['never', 'old']);
   });
 
-  it('passes with only active guests', () => {
-    expect(run(entraStaleGuests, { 'entra.guestUsers': [guest('a', { lastSignInDateTime: '2026-08-31T00:00:00Z' })] }, { assessedAt }).status).toBe('PASS');
+  it('cannot prove successful use from recent attempts', () => {
+    expect(run(entraStaleGuests, { 'entra.guestUsers': [guest('a', { lastSignInDateTime: '2026-08-31T00:00:00Z' })] }, { assessedAt }).status).toBe('REVIEW');
   });
 
   it('downgrades PASS to REVIEW when sign-in activity was only partially collected', () => {

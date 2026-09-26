@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { list, optBool, optString } from '../common.js';
+import { list, optBool, optNumber, optString } from '../common.js';
 import { defineDataset } from './define.js';
 
 const EXO_ROLE = 'Exchange Online: View-Only Organization Management (or Global Reader)';
@@ -224,7 +224,10 @@ export const m365SharePointSettings = defineDataset({
   description: 'Tenant-level SharePoint Online and OneDrive sharing and access settings.',
   source: 'MicrosoftGraph',
   operations: ['GET https://graph.microsoft.com/v1.0/admin/sharepoint/settings'],
-  permissions: ['Graph: SharePointTenantSettings.Read.All'],
+  permissions: [
+    'Graph: SharePointTenantSettings.Read.All',
+    'Directory role for delegated access: Global Reader or SharePoint Administrator',
+  ],
   personalData: 'none',
   schema: z.object({
     /** disabled | externalUserSharingOnly | externalUserAndGuestSharing | existingExternalUserSharingOnly */
@@ -234,7 +237,82 @@ export const m365SharePointSettings = defineDataset({
     isResharingByExternalUsersEnabled: optBool,
     isLegacyAuthProtocolsEnabled: optBool,
     isUnmanagedSyncAppForTenantRestricted: optBool,
+    /** Domain names only; null when not returned. */
+    sharingAllowedDomainList: z.array(z.string().max(300)).max(5000).nullish().transform((v) => v ?? null),
+    sharingBlockedDomainList: z.array(z.string().max(300)).max(5000).nullish().transform((v) => v ?? null),
+    isRequireAcceptingUserToMatchInvitedUserEnabled: optBool,
+    /** Idle session sign-out for browser sessions on unmanaged devices; null when not returned. */
+    idleSessionSignOut: z
+      .object({
+        isEnabled: optBool,
+        warnAfterInSeconds: optNumber,
+        signOutAfterInSeconds: optNumber,
+      })
+      .nullish()
+      .transform((v) => v ?? null),
   }),
+});
+
+const TEAMS_ROLE_NOTE =
+  'Directory role: Microsoft does not document the directory role for delegated access; a signed-in role that cannot read it is reported Unauthorized';
+
+export const m365TeamsAppSettings = defineDataset({
+  id: 'm365.teamsAppSettings',
+  module: 'M365',
+  technology: 'm365',
+  title: 'Microsoft Teams app settings',
+  description:
+    'Tenant-wide settings for Teams apps: whether users can request unavailable apps and whether apps that need resource-specific consent can be installed in the personal scope. Teams meeting, messaging, federation and app permission policies are not available to delegated Microsoft Graph and are not included.',
+  source: 'MicrosoftGraph',
+  operations: ['GET https://graph.microsoft.com/v1.0/teamwork/teamsAppSettings'],
+  permissions: ['Graph: TeamworkAppSettings.Read.All (delegated only)', TEAMS_ROLE_NOTE],
+  prerequisites: ['Microsoft Teams'],
+  personalData: 'none',
+  schema: z.object({
+    allowUserRequestsForAppAccess: optBool,
+    isUserPersonalScopeResourceSpecificConsentEnabled: optBool,
+  }),
+});
+
+const TeamMemberSettingsSchema = z.object({
+  allowCreateUpdateChannels: optBool,
+  allowDeleteChannels: optBool,
+  allowAddRemoveApps: optBool,
+  allowCreateUpdateRemoveTabs: optBool,
+  allowCreateUpdateRemoveConnectors: optBool,
+});
+
+const TeamGuestSettingsSchema = z.object({
+  allowCreateUpdateChannels: optBool,
+  allowDeleteChannels: optBool,
+});
+
+export const m365TeamsTeamSettings = defineDataset({
+  id: 'm365.teamsTeamSettings',
+  module: 'M365',
+  technology: 'm365',
+  title: 'Microsoft Teams per-team settings',
+  description:
+    'Member and guest settings of individual teams (settings chosen by team owners, not tenant-wide policy). Collection is bounded: when not every team can be read the dataset is Partial. Channels, messages, members and files are not collected.',
+  source: 'MicrosoftGraph',
+  operations: [
+    'GET https://graph.microsoft.com/v1.0/teams?$select=id,displayName,visibility',
+    'GET https://graph.microsoft.com/v1.0/teams/{id}?$select=id,displayName,visibility,isArchived,memberSettings,guestSettings',
+  ],
+  permissions: ['Graph: Team.ReadBasic.All', TEAMS_ROLE_NOTE],
+  prerequisites: ['Microsoft Teams'],
+  personalData: 'identifiers',
+  schema: z.array(
+    z.object({
+      id: z.string().min(1).max(200),
+      displayName: optString,
+      /** private | public | hiddenMembership */
+      visibility: optString,
+      isArchived: optBool,
+      memberSettings: TeamMemberSettingsSchema.nullish().transform((v) => v ?? null),
+      guestSettings: TeamGuestSettingsSchema.nullish().transform((v) => v ?? null),
+    }),
+  ),
 });
 
 export const M365_DATASETS = [
@@ -250,4 +328,6 @@ export const M365_DATASETS = [
   exchangeAtpPolicy,
   exchangeMailDnsRecords,
   m365SharePointSettings,
+  m365TeamsAppSettings,
+  m365TeamsTeamSettings,
 ] as const;

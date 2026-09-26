@@ -11,6 +11,8 @@ export default tseslint.config(
       '.claude/**',
       '**/dist/**',
       '**/dist-hosted/**',
+      '**/dist-online/**',
+      'out/**',
       '**/.e2e-site/**',
       '**/test-results/**',
       '**/playwright-report/**',

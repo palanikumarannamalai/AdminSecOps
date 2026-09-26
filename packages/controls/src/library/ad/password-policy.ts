@@ -27,16 +27,16 @@ const NO_POLICIES = {
 
 export const adPwdMinimumLength = defineControl({
   id: 'AD-PWD-001',
-  version: '1.0.0',
+  version: '1.1.0',
   lifecycle: 'stable',
-  title: 'Default domain password policy requires a minimum length of 14 characters',
+  title: 'Default domain password policy requires a minimum length of 15 characters',
   technology: 'ad',
   category: 'Authentication',
   subcategory: 'Password policy',
   description:
-    'Checks, for every domain, that the default domain password policy requires passwords of at least 14 characters, and reports fine-grained password policies (PSOs) that apply a shorter minimum to some accounts.',
+    'Checks, for every domain, that the default domain password policy requires passwords of at least 15 characters, and reports fine-grained password policies (PSOs) that apply a shorter minimum to some accounts.',
   rationale:
-    'Short passwords can be guessed online or cracked offline quickly once a password hash or Kerberos ticket is captured. Length is the password property that adds the most resistance to guessing. The default domain policy still ships with a 7 character minimum, which is far below current Microsoft baseline guidance.',
+    'Short passwords can be guessed online or cracked offline quickly once a password hash or Kerberos ticket is captured. Length is the password property that adds the most resistance to guessing. The default domain policy still ships with a 7 character minimum, which is below the NIST-informed default used here.',
   severity: 'medium',
   confidence: 'high',
   applicability: { description: 'Every Active Directory domain in the collected forest.' },
@@ -45,15 +45,15 @@ export const adPwdMinimumLength = defineControl({
   evaluation: {
     logic:
       'For each domain: FAIL when the default domain password policy minPasswordLength is below the minimumLength parameter. REVIEW when the default policy meets the minimum but a fine-grained password policy that is applied to at least one user or group sets a shorter minimum. PASS when every default policy meets the minimum and no applied PSO weakens it. PSOs that apply to nobody are ignored and noted. The overall result is the worst domain result.',
-    parameters: { minimumLength: 14 },
+    parameters: { minimumLength: 15 },
   },
-  expectedState: 'Every domain requires passwords of at least 14 characters, including accounts governed by fine-grained password policies.',
+  expectedState: 'Every domain requires passwords of at least 15 characters, including accounts governed by fine-grained password policies. This conservative default assumes passwords can be used as a single factor.',
   remediation: {
     summary: 'Raise the minimum password length in the password policy GPO linked to the domain root (usually the Default Domain Policy) and in any fine-grained password policy that sets a shorter minimum.',
     steps: [
       'Communicate the change first: users are asked for the new length only at their next password change, but help desk staff and password reset tooling must accept longer passwords.',
       'Open Group Policy Management (gpmc.msc), edit the GPO that defines the domain password policy (normally the Default Domain Policy linked at the domain root).',
-      'Go to Computer Configuration > Policies > Windows Settings > Security Settings > Account Policies > Password Policy and set "Minimum password length" to 14 or more.',
+      'Go to Computer Configuration > Policies > Windows Settings > Security Settings > Account Policies > Password Policy and set "Minimum password length" to 15 or more.',
       'For each fine-grained password policy listed in the finding, open Active Directory Administrative Center (dsac.exe) > System > Password Settings Container, open the policy and raise "Enforce minimum password length".',
       'Consider deploying Microsoft Entra Password Protection for on-premises AD DS to block common and easily guessed passwords as well.',
       'Repeat for every domain listed in the finding (each domain has its own password policy).',
@@ -65,12 +65,13 @@ export const adPwdMinimumLength = defineControl({
       'Get-ADFineGrainedPasswordPolicy -Filter * -Server contoso.com | Select-Object Name, MinPasswordLength, AppliesTo',
       '# The default domain policy is normally managed through the Default Domain Policy GPO (preferred).',
       '# Set-ADDefaultDomainPasswordPolicy writes the domain object directly and can be overwritten by the GPO:',
-      'Set-ADDefaultDomainPasswordPolicy -Identity contoso.com -MinPasswordLength 14',
-      "Set-ADFineGrainedPasswordPolicy -Identity 'ServiceAccountsPSO' -MinPasswordLength 14 -Server contoso.com",
+      'Set-ADDefaultDomainPasswordPolicy -Identity contoso.com -MinPasswordLength 15',
+      "Set-ADFineGrainedPasswordPolicy -Identity 'ServiceAccountsPSO' -MinPasswordLength 15 -Server contoso.com",
     ].join('\n'),
     effort: 'low',
   },
   implementationConsiderations: [
+    'NIST SP 800-63B-4 requires 15 characters for single-factor passwords and permits a minimum of 8 when passwords are used only within MFA. Directory password-policy evidence does not establish MFA enforcement on every authentication path, so this control defaults to 15. It does not certify NIST compliance or impose periodic changes to human passwords.',
     'Existing passwords stay valid; the new minimum applies the next time each user changes or resets a password. Accounts with "password never expires" keep their short password until it is changed, so combine this change with a password rotation plan for service and administrator accounts.',
     'The Group Policy setting accepts values up to 14 unless the "Relax minimum password length limits" setting is enabled on the domain controllers; test any value above 14 with the "Minimum password length audit" setting first because some older clients and applications cannot handle longer passwords.',
     'Only the password policy in a GPO linked to the domain root applies to domain accounts; the same setting in a GPO linked to an OU only affects local accounts on computers.',
@@ -82,11 +83,11 @@ export const adPwdMinimumLength = defineControl({
     'Restore the previous MinPasswordLength value on any changed fine-grained password policy with Set-ADFineGrainedPasswordPolicy.',
   ],
   validation: [
-    'Run Get-ADDefaultDomainPasswordPolicy in each domain and confirm MinPasswordLength is 14 or more.',
+    'Run Get-ADDefaultDomainPasswordPolicy in each domain and confirm MinPasswordLength is 15 or more.',
     'Run Get-ADUserResultantPasswordPolicy for a member of each PSO and confirm the effective minimum length.',
     'Re-run the AdminSecOps Active Directory collector and confirm AD-PWD-001 is PASS.',
   ],
-  references: [AD_REF.m365PasswordRecommendations, AD_REF.minimumPasswordLength, AD_REF.fineGrainedPasswordPolicies, REF.nist80063b, AD_REF.attackPasswordCracking],
+  references: [AD_REF.nistPasswordRequirements, AD_REF.m365PasswordRecommendations, AD_REF.minimumPasswordLength, AD_REF.fineGrainedPasswordPolicies, REF.nist80063b, AD_REF.attackPasswordCracking],
   frameworkMappings: [
     { framework: 'NIST-800-53r5', id: 'IA-5(1)' },
     { framework: 'MITRE-ATTACK', id: 'T1110.001' },

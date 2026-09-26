@@ -1,0 +1,20 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": { "type": "string", "defaultValue": "uaenorth", "allowedValues": ["uaenorth"] },
+    "resourceGroupName": { "type": "string", "defaultValue": "rg-adminsecops-dev-uaenorth" }
+  },
+  "resources": [{
+    "type": "Microsoft.Resources/resourceGroups",
+    "apiVersion": "2022-09-01",
+    "name": "[parameters('resourceGroupName')]",
+    "location": "[parameters('location')]",
+    "tags": { "project": "AdminSecOps", "environment": "development", "managedBy": "ARM" },
+    "properties": {}
+  }],
+  "outputs": {
+    "resourceGroupName": { "type": "string", "value": "[parameters('resourceGroupName')]" },
+    "location": { "type": "string", "value": "[parameters('location')]" }
+  }
+}

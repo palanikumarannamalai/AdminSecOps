@@ -6,7 +6,7 @@ BeforeAll {
     Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'AdminSecOps.Collector.psd1') -Force
     $script:mod = Get-Module AdminSecOps.Collector
     # Stubs shadow the real cmdlets (functions take precedence) so nothing is ever sent to a service.
-    function global:Invoke-MgGraphRequest { [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '', Justification = 'Stub signature for mocking.')] param($Method, $Uri, $OutputType, $ErrorAction) throw 'stub not mocked' }
+    function global:Invoke-MgGraphRequest { [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '', Justification = 'Stub signature for mocking.')] param($Method, $Uri, $Headers, $OutputType, $ErrorAction) throw 'stub not mocked' }
     function global:Get-MgContext { $null }
     function global:Invoke-AzRestMethod { [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '', Justification = 'Stub signature for mocking.')] param($Method, $Path, $Uri, $ErrorAction) throw 'stub not mocked' }
     function global:Get-OrganizationConfig { [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '', Justification = 'Stub signature for mocking.')] param($ErrorAction) [pscustomobject]@{ AuditDisabled = $false; OAuth2ClientProfileEnabled = $true; CustomerLockBoxEnabled = $null; MailTipsExternalRecipientsTipsEnabled = $true; Extra = 'ignored' } }
@@ -25,7 +25,7 @@ Describe 'Microsoft Graph wrapper (live path, mocked)' {
         Mock -ModuleName AdminSecOps.Collector Invoke-MgGraphRequest -ParameterFilter { $Uri -like '*skiptoken=2' } -MockWith { '{"value":[{"id":"2"},{"id":"3"}]}' }
         $items = & $script:mod { @(Invoke-AsoGraphGetAll -Uri 'https://graph.microsoft.com/v1.0/groupSettings') }
         @($items | ForEach-Object id) | Should -Be @('1', '2', '3')
-        Should -Invoke -ModuleName AdminSecOps.Collector Invoke-MgGraphRequest -Times 2 -Exactly -ParameterFilter { $Method -eq 'GET' -and $OutputType -eq 'Json' }
+        Should -Invoke -ModuleName AdminSecOps.Collector Invoke-MgGraphRequest -Times 2 -Exactly -ParameterFilter { $Method -eq 'GET' -and $OutputType -eq 'Json' -and $Headers.Prefer -eq 'include-unknown-enum-members' }
     }
 
     It 'retries after 429 throttling' {

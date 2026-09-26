@@ -10,7 +10,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "preview": "vite preview",
     "build:hosted": "tsc -p tsconfig.json --noEmit && vite build --mode hosted",
-    "preview:hosted": "vite preview --mode hosted --outDir dist-hosted"
+    "preview:hosted": "vite preview --mode hosted --outDir dist-hosted",
+    "build:online": "tsc -p tsconfig.json --noEmit && vite build --mode online"
   },
   "dependencies": {
     "react": "^19.3.0",

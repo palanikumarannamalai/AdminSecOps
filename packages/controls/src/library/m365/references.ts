@@ -13,6 +13,7 @@ const mitre = (title: string, url: string): Reference => ({ title, url, publishe
 const LEARN = 'https://learn.microsoft.com/en-us';
 
 export const M365_REF = {
+  dmarcCurrent: { title: 'IETF RFC 9989: DMARC (May 2026)', url: 'https://datatracker.ietf.org/doc/html/rfc9989', publisher: 'Other' },
   // --- Auditing ------------------------------------------------------------------
   auditLogEnableDisable: ms(
     'Turn auditing on or off (Microsoft Purview)',
@@ -113,6 +114,28 @@ export const M365_REF = {
   setSpoTenant: ms(
     'Set-SPOTenant (SharePoint Online PowerShell)',
     `${LEARN}/powershell/module/microsoft.online.sharepoint.powershell/set-spotenant`,
+  ),
+  spoIdleSignOut: ms(
+    'Sign out inactive users (SharePoint in Microsoft 365)',
+    `${LEARN}/sharepoint/sign-out-inactive-users`,
+  ),
+
+  // --- Microsoft Teams ------------------------------------------------------------------------
+  graphTeamsAppSettings: ms(
+    'teamsAppSettings resource type (Microsoft Graph v1.0)',
+    `${LEARN}/graph/api/resources/teamsappsettings?view=graph-rest-1.0`,
+  ),
+  teamsRsc: ms(
+    'Resource-specific consent for apps (Microsoft Teams)',
+    `${LEARN}/microsoftteams/platform/graph-api/rsc/resource-specific-consent`,
+  ),
+  graphTeam: ms(
+    'team resource type (Microsoft Graph v1.0)',
+    `${LEARN}/graph/api/resources/team?view=graph-rest-1.0`,
+  ),
+  teamsGuestAccess: ms(
+    'Guest access in Microsoft Teams',
+    `${LEARN}/microsoftteams/guest-access`,
   ),
 
   // --- Defender for Office 365 -------------------------------------------------------------

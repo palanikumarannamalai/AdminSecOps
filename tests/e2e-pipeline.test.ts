@@ -41,7 +41,8 @@ describe('end-to-end local assessment pipeline', () => {
     expect(result.summary.byStatus.ERROR).toBe(0);
 
     // Intentional issues in the sanitized environment are detected.
-    expect(status(result, 'ENTRA-CA-002')).toBe('FAIL');
+    // The sample has MFA-related policies whose enforcement/scope needs review.
+    expect(status(result, 'ENTRA-CA-002')).toBe('REVIEW');
     expect(status(result, 'GPO-PWD-001')).toBe('FAIL');
     expect(status(result, 'ADCS-TPL-001')).toBe('FAIL');
     expect(status(result, 'AZ-NET-001')).toBe('FAIL');
@@ -74,8 +75,10 @@ describe('end-to-end local assessment pipeline', () => {
     const comparison = compareAssessments(before, after);
     expect(comparison.sameEnvironment).toBe(true);
     expect(comparison.resolvedFindings.length).toBeGreaterThan(0);
-    expect(comparison.newFindings.map((f) => f.controlId)).toContain('ENTRA-CA-003');
-    expect(comparison.direction).toBe('mixed');
+    // Legacy-auth exclusions already require review in the baseline.
+    expect(before.results.find((r) => r.controlId === 'ENTRA-CA-003')?.status).toBe('REVIEW');
+    expect(comparison.newFindings.map((f) => f.controlId)).toContain('HYB-SYNC-001');
+    expect(comparison.direction).toBe('improved');
   });
 
   it('assesses an on-premises-only environment without inventing cloud results', async () => {

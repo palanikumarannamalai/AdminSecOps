@@ -13,7 +13,7 @@ function syncFeatureControl(feature: 'hardMatch' | 'softMatch') {
   const hard = feature === 'hardMatch';
   return defineControl({
     id: hard ? 'HYB-SYNC-001' : 'HYB-SYNC-002',
-    version: '1.0.0',
+    version: '1.0.2',
     lifecycle: 'stable',
     title: hard ? 'Cloud object takeover through hard match is blocked' : 'Soft matching of synchronized objects is blocked',
     technology: 'hybrid',
@@ -23,7 +23,7 @@ function syncFeatureControl(feature: 'hardMatch' | 'softMatch') {
       ? 'Checks the tenant synchronization feature that prevents on-premises objects from taking over existing cloud accounts by matching their immutable ID (hard match).'
       : 'Checks the tenant synchronization feature that prevents on-premises objects from being joined to existing cloud accounts by matching SMTP address or UPN (soft match).',
     rationale: hard
-      ? 'If hard match takeover is allowed, anyone who can create or modify objects in the synchronized Active Directory scope can set a matching immutable ID and take control of an existing cloud-only account, including a cloud-only administrator.'
+      ? 'Blocking cloud object takeover through hard match restricts synchronization matching. Microsoft also applies cloud-side hard-match protections for privileged and previously synchronized targets from June 2026; a false tenant flag alone does not prove an administrator takeover is possible.'
       : 'Soft matching links an on-premises object to a cloud account with the same e-mail address or UPN. An attacker with write access to on-premises AD can use it to take over cloud accounts. After the initial synchronization, soft matching is rarely needed.',
     severity: hard ? 'high' : 'medium',
     confidence: 'high',
@@ -69,8 +69,8 @@ function syncFeatureControl(feature: 'hardMatch' | 'softMatch') {
       }
       if (values.some((v) => v === false)) {
         return fail({
-          reason: hard ? 'Cloud object takeover through hard match is allowed.' : 'Soft matching is allowed.',
-          summary: hard ? 'On-premises objects can take over cloud accounts by immutable ID.' : 'On-premises objects can be soft-matched to existing cloud accounts.',
+          reason: hard ? 'The tenant-wide hard-match takeover block is not enabled.' : 'Soft matching is allowed.',
+          summary: hard ? 'Enable the additional tenant-wide block; Microsoft cloud-side protections still apply to protected targets.' : 'On-premises objects can be soft-matched to existing cloud accounts.',
           facts,
           affectedObjects: configs.map((c) => affected('directorySynchronization', c.id, 'Tenant synchronization settings')),
         });
@@ -85,7 +85,7 @@ export const hybridBlockSoftMatch = syncFeatureControl('softMatch');
 
 export const hybridSyncRecent = defineControl({
   id: 'HYB-SYNC-003',
-  version: '1.0.0',
+  version: '1.0.2',
   lifecycle: 'stable',
   title: 'Directory synchronization completed recently',
   technology: 'hybrid',
@@ -99,7 +99,7 @@ export const hybridSyncRecent = defineControl({
   applicability: { description: 'Tenants that synchronize identities from on-premises Active Directory.' },
   requiredEvidence: ['entra.organization'],
   evaluation: {
-    logic: 'NOT_APPLICABLE when onPremisesSyncEnabled is not true. FAIL when onPremisesLastSyncDateTime is more than maxHoursSinceSync hours before the assessment time or missing.',
+    logic: 'NOT_APPLICABLE when onPremisesSyncEnabled is not true. FAIL for a recorded sync older than maxHoursSinceSync; REVIEW for missing or future timestamps. The default 24-hour threshold is an AdminSecOps operational baseline.',
     parameters: { maxHoursSinceSync: 24 },
   },
   expectedState: 'The last successful synchronization occurred within the last 24 hours (Microsoft Entra Connect syncs every 30 minutes by default).',
@@ -128,9 +128,10 @@ export const hybridSyncRecent = defineControl({
     const maxHours = ctx.num('maxHoursSinceSync');
     const last = parseTimestamp(org.onPremisesLastSyncDateTime);
     if (last === undefined) {
-      return fail({ reason: 'Synchronization is enabled but no last synchronization time is reported.', summary: 'Directory synchronization state is unknown.', facts: [fact('Last sync', null)] });
+      return review({ reason: 'Synchronization is enabled but no last synchronization time is reported.', summary: 'Directory synchronization state is unknown; missing telemetry is not proof of a stopped service.', confidence: 'medium', facts: [fact('Last sync', null)] });
     }
     const hours = Math.floor((ctx.assessedAt.getTime() - last.getTime()) / 3_600_000);
+    if (last > ctx.assessedAt) return review({ reason: 'The reported synchronization time is later than the assessment time.', summary: 'Validate evidence timestamps before judging synchronization freshness.', confidence: 'low', facts: [fact('Last sync', last.toISOString())] });
     const facts = [fact('Last sync', last.toISOString()), fact('Hours since last sync', hours), fact('Days since last sync', daysBetween(last, ctx.assessedAt))];
     if (hours > maxHours) {
       return fail({ reason: `The last synchronization was ${hours} hours before the assessment.`, summary: 'Directory synchronization appears to have stopped.', facts });
@@ -141,9 +142,9 @@ export const hybridSyncRecent = defineControl({
 
 export const hybridPasswordProtectionEnforced = defineControl({
   id: 'HYB-PWD-001',
-  version: '1.0.0',
+  version: '1.0.2',
   lifecycle: 'stable',
-  title: 'Microsoft Entra Password Protection is enforced for Active Directory',
+  title: 'Tenant Password Protection settings enable enforcement for Active Directory',
   technology: 'hybrid',
   category: 'Hybrid identity',
   subcategory: 'Password protection',
@@ -196,7 +197,7 @@ export const hybridPasswordProtectionEnforced = defineControl({
     ];
     const notes = settings === undefined ? ['No Password Rule Settings object exists, so Microsoft defaults apply (enabled, Audit mode).'] : [];
     if (eqi(enabled, 'true') && eqi(mode, 'enforce')) {
-      return pass({ reason: 'Password protection for Active Directory is enabled in Enforce mode.', summary: 'On-premises password protection is enforced.', facts, notes });
+      return pass({ reason: 'Tenant password protection settings specify Enforce mode; domain-controller agent deployment is not verified.', summary: 'Tenant enforcement settings are enabled; validate agents on every domain controller separately.', facts, notes: [...notes, 'Cloud settings do not establish that DC agents are installed, healthy or enforcing the policy.'] });
     }
     return fail({
       reason: eqi(enabled, 'true') ? `Password protection for Active Directory is in ${mode} mode.` : 'Password protection for Active Directory is disabled.',

@@ -505,8 +505,28 @@
       "path": "evidence/m365/sharePointSettings.json",
       "datasetId": "m365.sharePointSettings",
       "module": "M365",
-      "sha256": "71be6093f6691e3cda5273d90829b69425ba44b7a4d89c4a323d3449658d6d7e",
-      "sizeBytes": 801,
+      "sha256": "081135243a5ac67bb5d8e98e12d242b62b787aa1da6738c3ef463583028bf9d0",
+      "sizeBytes": 1059,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:36:39.0000000Z"
+    },
+    {
+      "path": "evidence/m365/teamsAppSettings.json",
+      "datasetId": "m365.teamsAppSettings",
+      "module": "M365",
+      "sha256": "6c8ec11183f532644264b4593e80e2f7763cda31e21e71f9b9895be5a53592c2",
+      "sizeBytes": 663,
+      "schemaVersion": "1.0",
+      "status": "Success",
+      "collectedAt": "2026-08-10T09:36:46.0000000Z"
+    },
+    {
+      "path": "evidence/m365/teamsTeamSettings.json",
+      "datasetId": "m365.teamsTeamSettings",
+      "module": "M365",
+      "sha256": "1012b84970378249ed58015565ceb09261fa3d2c299fc7120b200e5592273f5d",
+      "sizeBytes": 1749,
       "schemaVersion": "1.0",
       "status": "Success",
       "collectedAt": "2026-08-10T09:36:53.0000000Z"

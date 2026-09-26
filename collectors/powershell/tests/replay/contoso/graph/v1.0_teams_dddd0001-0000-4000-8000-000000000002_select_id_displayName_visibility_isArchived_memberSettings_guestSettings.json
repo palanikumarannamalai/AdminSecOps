@@ -1,0 +1,18 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#teams(id,displayName,visibility,isArchived,memberSettings,guestSettings)/$entity",
+  "id": "dddd0001-0000-4000-8000-000000000002",
+  "displayName": "Partner Project Falcon",
+  "visibility": "private",
+  "isArchived": false,
+  "memberSettings": {
+    "allowCreateUpdateChannels": true,
+    "allowDeleteChannels": false,
+    "allowAddRemoveApps": false,
+    "allowCreateUpdateRemoveTabs": true,
+    "allowCreateUpdateRemoveConnectors": false
+  },
+  "guestSettings": {
+    "allowCreateUpdateChannels": true,
+    "allowDeleteChannels": false
+  }
+}

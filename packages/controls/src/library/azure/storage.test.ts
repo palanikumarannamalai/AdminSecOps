@@ -71,21 +71,24 @@ describe('AZ-STG-002 secure transfer', () => {
 });
 
 describe('AZ-STG-003 minimum TLS version', () => {
-  it.each(['TLS1_2', 'TLS1_3', 'tls1_2'])('passes with %s', (minimumTlsVersion) => {
+  it.each(['TLS1_2', 'tls1_2'])('passes with %s', (minimumTlsVersion) => {
     expect(run(azStorageMinimumTls, { 'azure.storageAccounts': [storageAccount({ minimumTlsVersion })] }).status).toBe('PASS');
   });
 
-  it.each(['TLS1_0', 'TLS1_1'])('fails with %s', (minimumTlsVersion) => {
-    expect(run(azStorageMinimumTls, { 'azure.storageAccounts': [storageAccount({ minimumTlsVersion })] }).status).toBe('FAIL');
+  it.each(['TLS1_0', 'TLS1_1'])('reviews stale configuration %s without claiming effective legacy exposure', (minimumTlsVersion) => {
+    expect(run(azStorageMinimumTls, { 'azure.storageAccounts': [storageAccount({ minimumTlsVersion })] }).status).toBe('REVIEW');
   });
 
-  it.each([null, ''])('fails when not set (%s), because TLS 1.0 is then accepted', (minimumTlsVersion) => {
+  it.each([null, ''])('does not assess missing minimum configuration (%s)', (minimumTlsVersion) => {
     const result = run(azStorageMinimumTls, { 'azure.storageAccounts': [storageAccount({ minimumTlsVersion })] });
-    expect(result.status).toBe('FAIL');
+    expect(result.status).toBe('NOT_ASSESSED');
     expect(result.affectedObjects[0]?.detail).toContain('not set');
   });
 
   it('does not pass an unrecognized value', () => {
     expect(run(azStorageMinimumTls, { 'azure.storageAccounts': [storageAccount({ minimumTlsVersion: 'TLS9' })] }).status).toBe('NOT_ASSESSED');
+  });
+  it('does not confuse TLS1_3 negotiation support with a supported minimum configuration', () => {
+    expect(run(azStorageMinimumTls, { 'azure.storageAccounts': [storageAccount({ minimumTlsVersion: 'TLS1_3' })] }).status).toBe('NOT_ASSESSED');
   });
 });

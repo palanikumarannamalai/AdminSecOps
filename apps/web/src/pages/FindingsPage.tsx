@@ -91,8 +91,7 @@ export function FindingsPage() {
         title="Findings"
         description={
           <p>
-            Controls with a FAIL or REVIEW result. Sorted by priority rank by default: rank 1 is the finding to address
-            first.
+            FAIL indicates evidence that does not meet the check. REVIEW needs verification; its severity is potential impact if confirmed. New assessments rank FAIL before REVIEW.
           </p>
         }
       />

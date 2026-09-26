@@ -59,6 +59,8 @@ import {
   intuneDeviceOverview,
   intuneSettings,
   m365SharePointSettings,
+  m365TeamsAppSettings,
+  m365TeamsTeamSettings,
   windowsHosts,
 } from '@adminsecops/schemas';
 import {
@@ -167,6 +169,8 @@ export function contosoEnvironment(data: ContosoData, variant: ContosoVariant): 
     }),
     collected(exchangeMailDnsRecords, m365.mailDnsRecords),
     collected(m365SharePointSettings, m365.sharePointSettings),
+    collected(m365TeamsAppSettings, m365.teamsAppSettings),
+    collected(m365TeamsTeamSettings, m365.teamsTeamSettings),
 
     collected(intuneSettings, m365.intuneSettings),
     collected(intuneDeviceOverview, m365.intuneDeviceOverview),

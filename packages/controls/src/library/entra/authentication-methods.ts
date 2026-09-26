@@ -4,7 +4,7 @@ import { REF } from '../../references.js';
 
 export const entraMembersRegisteredForMfa = defineControl({
   id: 'ENTRA-AUTH-001',
-  version: '1.0.0',
+  version: '1.0.2',
   lifecycle: 'stable',
   title: 'Member users are registered for multifactor authentication',
   technology: 'entra',
@@ -48,25 +48,27 @@ export const entraMembersRegisteredForMfa = defineControl({
   tags: ['mfa', 'identity'],
   evaluate: (ctx) => {
     const maxPercent = ctx.num('maxUnregisteredPercent');
-    const members = ctx.data('entra.userRegistrationDetails').filter((u) => (u.userType ?? 'member').toLowerCase() === 'member');
+    const registrations = ctx.data('entra.userRegistrationDetails');
+    const members = registrations.filter((u) => u.userType?.toLowerCase() === 'member');
     const unregistered = members.filter((u) => !u.isMfaRegistered);
     const percent = members.length === 0 ? 0 : Math.round((unregistered.length / members.length) * 1000) / 10;
     const facts = [fact('Member users', members.length), fact('Not registered for MFA', unregistered.length), fact('Unregistered (%)', percent)];
     if (unregistered.length > 0 && percent > maxPercent) {
       return fail({
         reason: `${plural(unregistered.length, 'member user')} (${percent}%) have not registered an MFA method.`,
-        summary: 'Some member users cannot be protected by MFA because they have not registered.',
+        summary: 'Some members have no registered MFA method; enforced MFA may block their access until registration.',
         facts,
         affectedObjects: unregistered.map((u) => affected('user', u.id, u.userPrincipalName, 'No MFA method registered')),
       });
     }
+    if (members.length === 0 || registrations.some(u => u.userType === null)) return review({ reason: 'Member registration coverage cannot be established from an empty report or rows with unknown user type.', summary: 'MFA registration coverage needs validation.', confidence: 'medium', facts });
     return pass({ reason: `MFA registration meets the threshold (${percent}% unregistered).`, summary: 'Member users are registered for MFA.', facts });
   },
 });
 
 export const entraWeakMethodsDisabled = defineControl({
   id: 'ENTRA-AUTH-002',
-  version: '1.0.0',
+  version: '1.0.2',
   lifecycle: 'stable',
   title: 'SMS and voice call authentication methods are disabled',
   technology: 'entra',
@@ -81,7 +83,7 @@ export const entraWeakMethodsDisabled = defineControl({
   requiredEvidence: ['entra.authenticationMethodsPolicy'],
   evaluation: {
     logic:
-      'PASS when the Sms and Voice method configurations are disabled or absent. REVIEW when either is enabled, listing its targets: some organisations still need telephony for specific users, which only an administrator can decide.',
+      'PASS when both Sms and Voice configurations are explicitly disabled and policy migration is complete. Otherwise REVIEW incomplete settings or migration. REVIEW when either is enabled, listing its targets: some organisations still need telephony for specific users, which only an administrator can decide.',
     parameters: {},
   },
   expectedState: 'SMS and voice call are disabled, or enabled only for a small documented group without alternatives.',
@@ -109,13 +111,15 @@ export const entraWeakMethodsDisabled = defineControl({
   ],
   tags: ['mfa', 'identity'],
   evaluate: (ctx) => {
-    const configs = ctx.data('entra.authenticationMethodsPolicy').authenticationMethodConfigurations;
+    const policy = ctx.data('entra.authenticationMethodsPolicy');
+    const configs = policy.authenticationMethodConfigurations;
     const weak = configs.filter((c) => ['sms', 'voice'].includes(c.id.toLowerCase()) && c.state.toLowerCase() === 'enabled');
     const facts = [
       fact('SMS enabled', weak.some((c) => c.id.toLowerCase() === 'sms')),
       fact('Voice call enabled', weak.some((c) => c.id.toLowerCase() === 'voice')),
     ];
-    if (weak.length === 0) return pass({ reason: 'SMS and voice call methods are disabled.', summary: 'Telephony MFA methods are disabled.', facts });
+    if (weak.length === 0 && (policy.policyMigrationState !== 'migrationComplete' || !['sms', 'voice'].every(id => configs.some(c => c.id.toLowerCase() === id && c.state.toLowerCase() === 'disabled')))) return review({ reason: 'Explicit disabled states for both telephony methods or completed policy migration are not established.', summary: 'Confirm authentication policy completeness and legacy method settings.', confidence: 'medium', facts });
+    if (weak.length === 0) return pass({ reason: 'SMS and voice call methods are explicitly disabled in the migrated authentication policy.', summary: 'Telephony MFA methods are disabled in this policy.', facts });
     return review({
       reason: `${weak.map((c) => c.id).join(' and ')} ${weak.length === 1 ? 'is' : 'are'} enabled; confirm whether any users still need telephony methods.`,
       summary: 'Weak telephony authentication methods are enabled.',

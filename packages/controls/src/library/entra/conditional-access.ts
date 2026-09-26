@@ -46,7 +46,7 @@ function policiesOrUnlicensed(ctx: ControlContext): Policy[] | null {
 }
 
 const UNLICENSED_REASON =
-  'Security defaults are disabled and the collector reported that Conditional Access is not available in this tenant (no Microsoft Entra ID P1 licence), so no mechanism enforces this requirement.';
+  'Security defaults are disabled and the collector reported Conditional Access as unavailable. No qualifying baseline configuration is established by this evidence; per-user MFA, Microsoft mandatory MFA and effective sign-in outcomes were not collected.';
 
 /** Tenant-wide policies (all users, all apps, modern clients, no narrowing conditions). */
 function isTenantWide(policy: Policy): boolean {
@@ -55,7 +55,7 @@ function isTenantWide(policy: Policy): boolean {
 
 export const entraCaMfaAllUsers = defineControl({
   id: 'ENTRA-CA-001',
-  version: '1.0.0',
+  version: '1.0.2',
   lifecycle: 'stable',
   title: 'Multifactor authentication is required for all users',
   technology: 'entra',
@@ -72,7 +72,7 @@ export const entraCaMfaAllUsers = defineControl({
   optionalEvidence: ['entra.conditionalAccessPolicies'],
   evaluation: {
     logic:
-      'PASS when security defaults are enabled, or when at least one enabled Conditional Access policy includes all users and all cloud apps, covers browser and modern clients, has no platform/location/risk conditions that narrow it, and always requires MFA or an authentication strength. REVIEW when such a policy exists only in report-only mode, only offers MFA as an alternative (OR with another control), or is narrowed by conditions. FAIL otherwise. If security defaults are disabled and Conditional Access policies could not be collected the control is NOT_ASSESSED.',
+      'PASS when security defaults are enabled, or when at least one enabled Conditional Access policy includes all users and all cloud apps, covers browser and modern clients, has no platform/location/risk conditions that narrow it, and always requires MFA or an authentication strength. REVIEW when such a policy exists only in report-only mode, only offers MFA as an alternative (OR with another control), is narrowed by conditions, or has unverified identity exclusions. FAIL otherwise. If security defaults are disabled and Conditional Access policies could not be collected the control is NOT_ASSESSED.',
     parameters: {},
   },
   expectedState:
@@ -103,7 +103,7 @@ export const entraCaMfaAllUsers = defineControl({
     'If security defaults were enabled as the fix, disable them in Entra ID > Overview > Properties > Manage security defaults.',
   ],
   validation: [
-    'Re-run the AdminSecOps Entra collector and confirm ENTRA-CA-001 is PASS.',
+    'Re-run the AdminSecOps Entra collector and confirm ENTRA-CA-001 is PASS, or validate documented emergency access exclusions if it is REVIEW.',
     'Use the Conditional Access "What If" tool for a standard user and all cloud apps and confirm the policy applies with an MFA grant.',
     'Review sign-in logs to confirm "Multifactor authentication" is satisfied for interactive sign-ins.',
   ],
@@ -129,16 +129,16 @@ export const entraCaMfaAllUsers = defineControl({
     }
     const policies = policiesOrUnlicensed(ctx);
     if (policies === null) {
-      return fail({ reason: UNLICENSED_REASON, summary: 'No mechanism requires MFA for all users.', facts: [fact('Security defaults enabled', false)] });
+      return review({ reason: UNLICENSED_REASON, summary: 'Tenant-wide MFA baseline coverage is not established.', confidence: 'medium', facts: [fact('Security defaults enabled', false)] });
     }
-    const candidates = policies.filter((p) => ca.includesAllUsers(p) && ca.includesAllApps(p) && ca.mfaRequirement(p) !== 'none');
+    const candidates = policies.filter((p) => ca.mfaRequirement(p) !== 'none' || Boolean(p.grantControls?.authenticationStrength));
     const strict = candidates.filter((p) => ca.isEnabled(p) && isTenantWide(p) && ca.mfaRequirement(p) === 'required');
     const facts = [
       fact('Security defaults enabled', false),
       fact('Conditional Access policies', policies.length),
       fact('Enabled policies requiring MFA for all users and apps', strict.length),
     ];
-    if (strict.length > 0) {
+    if (strict.some((p) => ca.exclusions(p).total === 0)) {
       return pass({
         reason: `Enabled Conditional Access policy requires MFA for all users and all cloud apps (${strict.map((p) => p.displayName).join(', ')}).`,
         summary: `${plural(strict.length, 'enabled policy', 'enabled policies')} require MFA for all users and all cloud apps.`,
@@ -147,11 +147,21 @@ export const entraCaMfaAllUsers = defineControl({
         notes: exclusionNote(strict),
       });
     }
+    if (strict.length > 0) {
+      return review({
+        reason: 'Enabled MFA policies include all users but have exclusions that require validation.',
+        summary: 'Confirm excluded identities are approved emergency access accounts or are protected by another policy.',
+        facts,
+        affectedObjects: strict.map((p) => policyObject(p, 'User scope exclusions require validation')),
+        notes: exclusionNote(strict),
+      });
+    }
     if (candidates.length > 0) {
       return review({
         reason:
-          'Policies that require MFA for all users exist but are report-only, disabled, narrowed by conditions, or allow a non-MFA alternative.',
-        summary: `${plural(candidates.length, 'policy', 'policies')} partially address MFA for all users, but none enforce it unconditionally.`,
+          `MFA-related policies were found (${candidates.map(p => p.displayName).join(', ')}), but tenant-wide coverage is not proven by the collected scope and grant evidence.`,
+        summary: 'Validate policy targeting, exclusions, conditions and authentication strengths; group membership and combined policy coverage are not resolved.',
+        confidence: 'medium',
         facts,
         affectedObjects: candidates.map((p) =>
           policyObject(p, `state=${p.state}; MFA=${ca.mfaRequirement(p)}; narrowed=${!ca.hasNoNarrowingConditions(p)}`),
@@ -159,8 +169,8 @@ export const entraCaMfaAllUsers = defineControl({
       });
     }
     return fail({
-      reason: 'Security defaults are disabled and no Conditional Access policy requires MFA for all users.',
-      summary: 'No mechanism was found that requires multifactor authentication for all users.',
+      reason: 'Security defaults are disabled and no qualifying Conditional Access MFA policy was found in the collected configuration.',
+      summary: 'The collected configuration does not meet this MFA policy baseline; other enforcement mechanisms were not assessed.',
       facts,
     });
   },
@@ -168,7 +178,7 @@ export const entraCaMfaAllUsers = defineControl({
 
 export const entraCaMfaAdmins = defineControl({
   id: 'ENTRA-CA-002',
-  version: '1.0.0',
+  version: '1.0.2',
   lifecycle: 'stable',
   title: 'Multifactor authentication is required for administrator roles',
   technology: 'entra',
@@ -185,10 +195,10 @@ export const entraCaMfaAdmins = defineControl({
   optionalEvidence: ['entra.conditionalAccessPolicies'],
   evaluation: {
     logic:
-      'PASS when security defaults are enabled or every role in the Microsoft administrator MFA template is included (directly or through "All users") and not excluded by an enabled policy that targets all cloud apps, covers modern clients, has no narrowing conditions and always requires MFA or an authentication strength. FAIL lists roles that are not covered.',
+      'PASS when security defaults are enabled or every role in the Microsoft administrator MFA template is included (directly or through "All users") and not excluded by an enabled policy that targets all cloud apps, covers modern clients, has no narrowing conditions and always requires MFA or an authentication strength. REVIEW when coverage depends on user, group or guest exclusions requiring validation. FAIL lists role templates without a qualifying policy; it does not determine actual sign-in outcomes.',
     parameters: {},
   },
-  expectedState: 'Every administrator role requires MFA at every sign-in to every cloud app.',
+  expectedState: 'Administrator access requires MFA; existing valid MFA sessions may satisfy the requirement without a new prompt.',
   remediation: {
     summary: 'Create a Conditional Access policy requiring MFA for the administrator directory roles (Microsoft template "Require multifactor authentication for admins").',
     steps: [
@@ -207,7 +217,7 @@ export const entraCaMfaAdmins = defineControl({
   impact: 'Administrators are prompted for MFA at sign-in. Scripts that use administrator accounts with passwords will stop working.',
   rollback: ['Set the policy to Report-only or Off in Entra ID > Conditional Access.'],
   validation: [
-    'Re-run the AdminSecOps Entra collector and confirm ENTRA-CA-002 is PASS.',
+    'Re-run the AdminSecOps Entra collector and confirm ENTRA-CA-002 is PASS, or validate documented emergency access exclusions if it is REVIEW.',
     'Use the Conditional Access "What If" tool with a Global Administrator and confirm MFA is required.',
   ],
   references: [REF.caRequireMfaAdmins, REF.securityDefaults, REF.entraBuiltInRoles, REF.attackValidAccounts],
@@ -221,16 +231,17 @@ export const entraCaMfaAdmins = defineControl({
   evaluate: (ctx) => {
     if (securityDefaultsEnabled(ctx)) {
       return pass({
-        reason: 'Security defaults are enabled and require MFA for administrator roles at every sign-in.',
+        reason: 'Security defaults are enabled and require MFA for supported administrator roles; this does not imply a fresh prompt for every request.',
         summary: 'Security defaults are enabled.',
         facts: [fact('Security defaults enabled', true)],
       });
     }
     const allPolicies = policiesOrUnlicensed(ctx);
     if (allPolicies === null) {
-      return fail({
+      return review({
         reason: UNLICENSED_REASON,
-        summary: 'No mechanism requires MFA for administrator roles.',
+        summary: 'Administrator MFA baseline coverage is not established.',
+        confidence: 'medium',
         facts: [fact('Security defaults enabled', false)],
         affectedObjects: MFA_ADMIN_ROLE_TEMPLATE_IDS.map((id) => affected('directoryRole', id, builtInRoleName(id))),
       });
@@ -246,8 +257,22 @@ export const entraCaMfaAdmins = defineControl({
     const uncovered = MFA_ADMIN_ROLE_TEMPLATE_IDS.filter((roleId) => !policies.some((p) => ca.coversRole(p, roleId)));
     const facts = [
       fact('Administrator roles checked', MFA_ADMIN_ROLE_TEMPLATE_IDS.length),
-      fact('Roles without an enforced MFA policy', uncovered.length),
+      fact('Enabled MFA policies found', policies.length),
+      fact('Roles without directly proven MFA policy coverage', uncovered.length),
     ];
+    const uncertain = MFA_ADMIN_ROLE_TEMPLATE_IDS.filter((roleId) =>
+      !policies.some((p) => ca.coversRole(p, roleId) && ca.exclusions(p).users === 0 && ca.exclusions(p).groups === 0 && !ca.exclusions(p).guestsOrExternal),
+    );
+    if (uncovered.length === 0 && uncertain.length > 0) {
+      return review({
+        reason: `Enabled administrator MFA policies were found (${policies.map(p => p.displayName).join(', ')}); exclusions require validation before full coverage can be confirmed.`,
+        confidence: 'medium',
+        summary: 'Validate excluded identities and their alternative protection before confirming administrator MFA coverage.',
+        facts,
+        affectedObjects: uncertain.map((id) => affected('directoryRole', id, builtInRoleName(id), 'Coverage depends on excluded identities')),
+        notes: exclusionNote(policies),
+      });
+    }
     if (uncovered.length === 0) {
       const used = policies.filter((p) => MFA_ADMIN_ROLE_TEMPLATE_IDS.some((r) => ca.coversRole(p, r)));
       return pass({
@@ -257,10 +282,21 @@ export const entraCaMfaAdmins = defineControl({
         notes: exclusionNote(used),
       });
     }
+    const unresolved = allPolicies.filter(p => (ca.mfaRequirement(p) !== 'none' || Boolean(p.grantControls?.authenticationStrength)) &&
+      (p.conditions.users.includeGroups.length > 0 || p.conditions.users.includeUsers.some(user => user.toLowerCase() !== 'all') ||
+       (MFA_ADMIN_ROLE_TEMPLATE_IDS.some(role => ca.coversRole(p, role)) && (!ca.isEnabled(p) || !ca.includesAllApps(p) || !coversModernClients(p) || !ca.hasNoNarrowingConditions(p) || ca.mfaRequirement(p) !== 'required'))));
+    if (unresolved.length > 0) return review({
+      reason: `Administrator MFA-related policies were found (${unresolved.map(p => p.displayName).join(', ')}), but administrator coverage cannot be confirmed from this evidence.`,
+      summary: 'Review policy scope and effective sign-in results; user/group targeting, conditions or custom strengths need additional evidence.',
+      confidence: 'medium', facts,
+      affectedObjects: unresolved.map(p => policyObject(p, `state=${p.state}; direct role coverage unverified`)),
+      notes: ['This is an evidence gap, not a finding that these administrators can sign in without MFA. Group membership and combined policies are not resolved.'],
+    });
     return fail({
       reason: `${plural(uncovered.length, 'administrator role')} are not covered by an enabled MFA policy.`,
-      summary: `${plural(uncovered.length, 'administrator role')} can sign in without being required to use MFA.`,
+      summary: `No qualifying enforced MFA policy was found for ${plural(uncovered.length, 'administrator role template')}.`,
       facts,
+      notes: ['This checks collected policy configuration, not actual sign-in outcomes or other MFA enforcement mechanisms.'],
       affectedObjects: uncovered.map((id) => affected('directoryRole', id, builtInRoleName(id), 'Not covered by an enabled MFA Conditional Access policy')),
     });
   },
@@ -268,7 +304,7 @@ export const entraCaMfaAdmins = defineControl({
 
 export const entraCaBlockLegacyAuth = defineControl({
   id: 'ENTRA-CA-003',
-  version: '1.0.0',
+  version: '1.0.2',
   lifecycle: 'stable',
   title: 'Legacy authentication is blocked',
   technology: 'entra',
@@ -285,7 +321,7 @@ export const entraCaBlockLegacyAuth = defineControl({
   optionalEvidence: ['entra.conditionalAccessPolicies'],
   evaluation: {
     logic:
-      'PASS when security defaults are enabled or an enabled Conditional Access policy includes all users and all cloud apps, targets both the "Exchange ActiveSync clients" and "Other clients" client app types and grants Block. REVIEW when such a policy is only in report-only mode. FAIL otherwise.',
+      'PASS when security defaults are enabled or an enabled Conditional Access policy includes all users and all cloud apps, targets both the "Exchange ActiveSync clients" and "Other clients" client app types and grants Block. REVIEW when the blocking policy is not enabled, narrowed by conditions or has unverified exclusions. FAIL otherwise.',
     parameters: {},
   },
   expectedState: 'An enabled Conditional Access policy (or security defaults) blocks legacy authentication for all users.',
@@ -327,12 +363,12 @@ export const entraCaBlockLegacyAuth = defineControl({
     }
     const policies = policiesOrUnlicensed(ctx);
     if (policies === null) {
-      return fail({ reason: UNLICENSED_REASON, summary: 'Legacy authentication protocols are not blocked.', facts: [fact('Security defaults enabled', false)] });
+      return fail({ reason: UNLICENSED_REASON, summary: 'No qualifying tenant-wide legacy authentication blocking policy was found.', facts: [fact('Security defaults enabled', false)] });
     }
     const blocking = policies.filter(
-      (p) => ca.blocksLegacyAuthentication(p) && ca.includesAllUsers(p) && ca.includesAllApps(p),
+      (p) => ca.blocksLegacyAuthentication(p),
     );
-    const enforced = blocking.filter((p) => ca.isEnabled(p));
+    const enforced = blocking.filter((p) => ca.isEnabled(p) && ca.includesAllUsers(p) && ca.includesAllApps(p) && ca.hasNoNarrowingConditions(p) && ca.exclusions(p).total === 0);
     const facts = [
       fact('Security defaults enabled', false),
       fact('Enabled policies blocking legacy authentication for all users', enforced.length),
@@ -347,8 +383,8 @@ export const entraCaBlockLegacyAuth = defineControl({
     }
     if (blocking.length > 0) {
       return review({
-        reason: 'A policy that blocks legacy authentication exists but is not enabled (report-only or off).',
-        summary: 'Legacy authentication blocking is configured but not enforced.',
+        reason: 'A legacy authentication blocking policy exists but is not enabled, has narrowing conditions, or has exclusions requiring validation.',
+        summary: 'Legacy authentication blocking needs enforcement or scope validation.',
         facts,
         affectedObjects: blocking.map((p) => policyObject(p, `state=${p.state}`)),
       });
@@ -360,4 +396,3 @@ export const entraCaBlockLegacyAuth = defineControl({
     });
   },
 });
-

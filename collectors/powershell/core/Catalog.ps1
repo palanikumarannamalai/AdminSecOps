@@ -22,7 +22,9 @@ $script:AsoGraphScopes = @(
     'OnPremDirectorySynchronization.Read.All',
     'SharePointTenantSettings.Read.All',
     'DeviceManagementConfiguration.Read.All',
-    'DeviceManagementManagedDevices.Read.All'
+    'DeviceManagementManagedDevices.Read.All',
+    'TeamworkAppSettings.Read.All',
+    'Team.ReadBasic.All'
 )
 
 $script:AsoModuleInfo = [ordered]@{
@@ -34,11 +36,11 @@ $script:AsoModuleInfo = [ordered]@{
         NeverCollects = 'Client secret values or hints, certificate key material, tokens, user passwords, custom banned password lists, sign-in logs, mail or file content.'
     }
     M365     = [ordered]@{
-        Role          = 'Microsoft Entra role: Global Reader (or SharePoint Administrator).'
-        Connection    = 'Connect-MgGraph -Scopes SharePointTenantSettings.Read.All -NoWelcome'
+        Role          = 'Microsoft Entra role: Global Reader (or SharePoint Administrator) for SharePoint settings. Microsoft does not document the role for the Teams app settings; teams the signed-in user cannot read are reported as incomplete.'
+        Connection    = 'Connect-MgGraph -Scopes SharePointTenantSettings.Read.All,TeamworkAppSettings.Read.All,Team.ReadBasic.All -NoWelcome'
         RequiredTools = @('Microsoft.Graph.Authentication')
-        Collects      = 'SharePoint Online and OneDrive tenant sharing settings.'
-        NeverCollects = 'Sites, files, sharing links or document content.'
+        Collects      = 'SharePoint Online and OneDrive tenant sharing and session settings; Microsoft Teams app settings; member and guest settings of each team (team names and IDs).'
+        NeverCollects = 'Sites, files, sharing links, document content, channels, messages or team members. Teams tenant policies are not available through delegated Microsoft Graph.'
     }
     Exchange = [ordered]@{
         Role          = 'Exchange Online role group: View-Only Organization Management (or Microsoft Entra Global Reader).'
@@ -148,7 +150,9 @@ $domainUser = 'Active Directory: authenticated domain user (read access to direc
     Build-AsoCatalogEntry -Id 'entra.onPremisesSynchronization' -Module Entra -Title 'Directory synchronization settings' -System MicrosoftGraph -ApiVersion 'v1.0' -Function 'Get-AsoEntraOnPremisesSynchronization' -Operations @("GET $g/directory/onPremisesSynchronization") -Permissions @('Graph: OnPremDirectorySynchronization.Read.All (delegated only)', 'Directory role: Global Administrator or Hybrid Identity Administrator is required by this API; without it the dataset is reported Unauthorized')
 
     # ---- M365 ----
-    Build-AsoCatalogEntry -Id 'm365.sharePointSettings' -Module M365 -Title 'SharePoint and OneDrive tenant settings' -System MicrosoftGraph -ApiVersion 'v1.0' -Function 'Get-AsoM365SharePointSetting' -Operations @("GET $g/admin/sharepoint/settings") -Permissions @('Graph: SharePointTenantSettings.Read.All')
+    Build-AsoCatalogEntry -Id 'm365.sharePointSettings' -Module M365 -Title 'SharePoint and OneDrive tenant settings' -System MicrosoftGraph -ApiVersion 'v1.0' -Function 'Get-AsoM365SharePointSetting' -Operations @("GET $g/admin/sharepoint/settings") -Permissions @('Graph: SharePointTenantSettings.Read.All', 'Directory role for delegated access: Global Reader or SharePoint Administrator')
+    Build-AsoCatalogEntry -Id 'm365.teamsAppSettings' -Module M365 -Title 'Microsoft Teams app settings' -System MicrosoftGraph -ApiVersion 'v1.0' -Function 'Get-AsoM365TeamsAppSetting' -Operations @("GET $g/teamwork/teamsAppSettings") -Permissions @('Graph: TeamworkAppSettings.Read.All (delegated only)') -Prerequisites @('Microsoft Teams')
+    Build-AsoCatalogEntry -Id 'm365.teamsTeamSettings' -Module M365 -Title 'Microsoft Teams per-team settings' -System MicrosoftGraph -ApiVersion 'v1.0' -Function 'Get-AsoM365TeamsTeamSetting' -Operations @("GET $g/teams?`$select=id,displayName,visibility", "GET $g/teams/{id}?`$select=id,displayName,visibility,isArchived,memberSettings,guestSettings") -Permissions @('Graph: Team.ReadBasic.All') -Prerequisites @('Microsoft Teams')
 
     # ---- Exchange ----
     Build-AsoCatalogEntry -Id 'exchange.organizationConfig' -Module Exchange -Title 'Exchange Online organization configuration' -System ExchangeOnline -Function 'Get-AsoExchangeOrganizationConfig' -Operations @('Get-OrganizationConfig') -Permissions @($exoRole)

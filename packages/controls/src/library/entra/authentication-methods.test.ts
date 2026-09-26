@@ -17,8 +17,8 @@ describe('ENTRA-AUTH-001 member MFA registration', () => {
     expect(result.observed.facts.find((f) => f.label === 'Unregistered (%)')?.value).toBe(50);
   });
 
-  it('passes with an empty report', () => {
-    expect(run(entraMembersRegisteredForMfa, { 'entra.userRegistrationDetails': [] }).status).toBe('PASS');
+  it('reviews an empty report rather than claiming member coverage', () => {
+    expect(run(entraMembersRegisteredForMfa, { 'entra.userRegistrationDetails': [] }).status).toBe('REVIEW');
   });
 });
 
@@ -44,8 +44,8 @@ describe('ENTRA-AUTH-002 SMS and voice', () => {
     expect(result.affectedObjects[0]?.detail).toContain('all users');
   });
 
-  it('passes when the methods are absent from the policy', () => {
+  it('reviews when method settings and migration status are absent', () => {
     const result = run(entraWeakMethodsDisabled, { 'entra.authenticationMethodsPolicy': { authenticationMethodConfigurations: [] } });
-    expect(result.status).toBe('PASS');
+    expect(result.status).toBe('REVIEW');
   });
 });

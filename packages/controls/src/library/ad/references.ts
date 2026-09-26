@@ -14,6 +14,11 @@ const SECURITY_POLICY = `${LEARN}/previous-versions/windows/it-pro/windows-10/se
 const AD_BEST_PRACTICES = `${LEARN}/windows-server/identity/ad-ds/plan/security-best-practices`;
 
 export const AD_REF = {
+  nistPasswordRequirements: {
+    title: 'NIST SP 800-63B-4: Password requirements',
+    url: 'https://pages.nist.gov/800-63-4/sp800-63b/authenticators/',
+    publisher: 'NIST',
+  },
   // --- Microsoft Defender for Identity posture assessments ----------------------
   mdiUnsecureAccountAttributes: ms(
     'Microsoft Defender for Identity: Unsecure account attributes assessment',

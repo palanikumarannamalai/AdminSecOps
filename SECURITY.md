@@ -1,6 +1,7 @@
 # Security policy
 
-AdminSecOps processes sensitive security configuration locally. Do not attach evidence
+AdminSecOps processes sensitive security configuration in local, browser-only and hosted modes.
+The online service processes configuration on its server; it is not local-only. Do not attach evidence
 packages, generated reports, tenant identifiers, logs, screenshots, credentials or tokens
 to a public issue.
 

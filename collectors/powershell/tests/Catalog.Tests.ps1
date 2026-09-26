@@ -79,8 +79,10 @@ Describe 'Get-AdminSecOpsPermission' {
 
     It 'only requests read scopes from Microsoft Graph' {
         $scopes = & $script:mod { $script:AsoGraphScopes }
-        $scopes.Count | Should -Be 14
-        @($scopes | Where-Object { $_ -notmatch '\.Read(\.|$)' }) | Should -BeNullOrEmpty
+        $scopes.Count | Should -Be 16
+        # Team.ReadBasic.All is read-only; ReadWrite never matches.
+        @($scopes | Where-Object { $_ -notmatch '\.Read(Basic)?(\.|$)' }) | Should -BeNullOrEmpty
+        @($scopes | Where-Object { $_ -match 'Write' }) | Should -BeNullOrEmpty
     }
 
     It 'filters by module' {

@@ -28,7 +28,7 @@ const ESU_NOTE =
 
 export const adLapsCoverage = defineControl({
   id: 'AD-CMP-001',
-  version: '1.0.0',
+  version: '1.1.0',
   lifecycle: 'stable',
   title: 'LAPS manages the local administrator password on Windows computers',
   technology: 'ad',
@@ -45,7 +45,7 @@ export const adLapsCoverage = defineControl({
   optionalEvidence: [],
   evaluation: {
     logic:
-      'Scope: enabled computers with isDomainController = false whose operatingSystem contains "Windows". A computer is managed when windowsLapsExpiration (msLAPS-PasswordExpirationTime) or legacyLapsExpiration (ms-Mcs-AdmPwdExpirationTime) is present; these expiration attributes are readable by authenticated users, so an empty value means LAPS has not stored a password for the computer. FAIL when any in-scope computer is unmanaged. REVIEW when all are managed but the latest expiration time of some computers is more than expiredGraceDays in the past (password not rotated, often because the device is offline or LAPS is failing). PASS otherwise. NOT_APPLICABLE when there are no in-scope computers. Computers without an operating system value are excluded and noted.',
+      'Scope: enabled computers with isDomainController = false whose operatingSystem contains "Windows". A computer is managed when windowsLapsExpiration (msLAPS-PasswordExpirationTime) or legacyLapsExpiration (ms-Mcs-AdmPwdExpirationTime) is present; these expiration attributes are readable by authenticated users, so an empty value only shows missing AD backup evidence; hybrid devices may use Microsoft Entra ID. REVIEW when any in-scope computer lacks AD expiration evidence. REVIEW when all are managed but the latest expiration time of some computers is more than expiredGraceDays in the past (password not rotated, often because the device is offline or LAPS is failing). PASS otherwise. NOT_APPLICABLE when there are no in-scope computers. Computers without an operating system value are excluded and noted.',
     parameters: { expiredGraceDays: 30 },
   },
   expectedState: 'Every enabled domain-joined Windows computer other than domain controllers has its local administrator password managed by Windows LAPS (or legacy LAPS during migration).',
@@ -69,7 +69,7 @@ export const adLapsCoverage = defineControl({
     effort: 'medium',
   },
   implementationConsiderations: [
-    'Computers that back up their LAPS password to Microsoft Entra ID instead of Active Directory have no expiration time in AD and appear unmanaged here; confirm them in the Entra admin center and record an exception.',
+    'Computers that back up their LAPS password to Microsoft Entra ID instead of Active Directory have no expiration time in AD and require review here; confirm backup and rotation in the Entra admin center.',
     'Scripts or tools that relied on a shared local administrator password stop working once LAPS rotates it; move them to domain accounts with scoped rights.',
     'Windows LAPS is built into Windows 10/11 and Windows Server 2019 and later with the April 2023 updates; older supported systems need legacy LAPS or an upgrade.',
     'Protect who can read LAPS passwords as carefully as administrator group membership.',
@@ -116,7 +116,7 @@ export const adLapsCoverage = defineControl({
       fact('Enabled Windows computers (excluding DCs)', inScope.length),
       fact('Managed by Windows LAPS', windowsLaps),
       fact('Managed by legacy LAPS only', legacyOnly),
-      fact('Not managed by LAPS', unmanaged.length),
+      fact('Without AD-backed LAPS expiration evidence', unmanaged.length),
       fact(`LAPS expiration more than ${grace} days overdue`, expired.length),
     ];
     if (legacyOnly > 0) {
@@ -125,9 +125,9 @@ export const adLapsCoverage = defineControl({
     const expiredObjects = expired.map((e) => computerObject(e.computer, `LAPS password expired about ${e.overdue} days ago; ${lastLogonDetail(e.computer, ctx.assessedAt)}`));
     if (unmanaged.length > 0) {
       const pct = Math.round((unmanaged.length / inScope.length) * 100);
-      return fail({
-        reason: `${plural(unmanaged.length, 'Windows computer')} (${pct}% of ${inScope.length}) have no LAPS-managed local administrator password.`,
-        summary: `LAPS coverage is incomplete in ${[...new Set(unmanaged.map((c) => c.domain))].join(', ')}.`,
+      return review({
+        reason: `${plural(unmanaged.length, 'Windows computer')} (${pct}% of ${inScope.length}) have no AD-backed LAPS expiration evidence; verify whether hybrid devices back up to Microsoft Entra ID before concluding they are unmanaged.`,
+        summary: `LAPS coverage could not be confirmed from AD in ${[...new Set(unmanaged.map((c) => c.domain))].join(', ')}.`,
         facts,
         affectedObjects: [
           ...unmanaged.map((c) => computerObject(c, `No LAPS password expiration time; ${c.operatingSystem ?? 'OS unknown'}; ${lastLogonDetail(c, ctx.assessedAt)}`)),
@@ -156,7 +156,7 @@ export const adLapsCoverage = defineControl({
 
 export const adUnsupportedComputers = defineControl({
   id: 'AD-CMP-002',
-  version: '1.0.0',
+  version: '1.1.0',
   lifecycle: 'stable',
   title: 'No enabled computers run unsupported Windows versions',
   technology: 'ad',
@@ -173,7 +173,7 @@ export const adUnsupportedComputers = defineControl({
   optionalEvidence: [],
   evaluation: {
     logic:
-      'For each enabled computer with isDomainController = false, the operatingSystem string is matched against the AdminSecOps Windows lifecycle table (end of extended support for servers, end of servicing for clients). FAIL when any computer runs a version whose end-of-support date is before the assessment date (ctx.assessedAt). Computers whose OS is not in the table (for example Windows 11, LTSC editions, non-Windows) are counted in a note, not failed. PASS otherwise. Extended Security Updates are not modelled.',
+      'For each enabled computer with isDomainController = false, the operatingSystem string is matched against the AdminSecOps Windows lifecycle table (end of extended support for servers, end of servicing for clients). FAIL when any computer runs a version whose end-of-support date is before the assessment date (ctx.assessedAt). Computers whose OS is not in the table (for example Windows 11, LTSC editions, non-Windows) produce REVIEW because support is unknown. PASS only when every in-scope computer matches a supported version. Extended Security Updates are not modelled.',
     parameters: {},
   },
   expectedState: 'All enabled computers run Windows versions that are within Microsoft support on the assessment date.',
@@ -238,6 +238,15 @@ export const adUnsupportedComputers = defineControl({
         affectedObjects: unsupported.map((s) =>
           computerObject(s.computer, `${s.computer.operatingSystem ?? ''}: support ended ${s.status.endOfSupport}; ${lastLogonDetail(s.computer, ctx.assessedAt)}`),
         ),
+        notes,
+      });
+    }
+    if (unknown > 0) {
+      return review({
+        reason: `Support status could not be determined for ${plural(unknown, 'enabled computer')} from directory metadata.`,
+        summary: 'Unknown releases, editions and non-Windows products need separate lifecycle evidence.',
+        facts,
+        affectedObjects: statuses.filter((s) => s.status === undefined).map((s) => computerObject(s.computer, `Support status unknown: ${s.computer.operatingSystem ?? 'OS not reported'}`)),
         notes,
       });
     }

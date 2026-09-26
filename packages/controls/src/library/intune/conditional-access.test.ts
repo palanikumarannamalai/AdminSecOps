@@ -13,6 +13,13 @@ const compliant = (overrides: Parameters<typeof caPolicy>[0] = {}) =>
   });
 
 describe('INTUNE-CA-001 Conditional Access requires a compliant device', () => {
+  it('does not pass an Office 365 policy with excluded resources', () => {
+    const result = run(intuneCaRequireCompliantDevice, {
+      'intune.deviceOverview': enrolled,
+      'entra.conditionalAccessPolicies': [compliant({ includeApplications: ['Office365'], excludeApplications: ['excluded-resource'] })],
+    });
+    expect(result.status).toBe('REVIEW');
+  });
   it('passes with an enabled all-users compliant-device policy', () => {
     const result = run(intuneCaRequireCompliantDevice, {
       'intune.deviceOverview': enrolled,
@@ -33,6 +40,7 @@ describe('INTUNE-CA-001 Conditional Access requires a compliant device', () => {
       ],
     });
     expect(result.status).toBe('PASS');
+    expect(result.notes.join(' ')).toContain('Hybrid joined status does not prove Intune compliance');
   });
 
   it('passes with MFA AND compliant device and notes exclusions', () => {

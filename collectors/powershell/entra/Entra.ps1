@@ -185,6 +185,16 @@ function Get-AsoEntraConditionalAccessPolicy {
         }
         $appsOut = ConvertTo-AsoIncludeExclude -InputObject $apps -Name @('includeApplications', 'excludeApplications', 'includeUserActions', 'includeAuthenticationContextClassReferences')
         $flows = Get-AsoPropertyValue $cond 'authenticationFlows'
+        $devices = Get-AsoPropertyValue $cond 'devices'
+        $devicesOut = $null
+        if ($null -ne $devices) {
+            $filter = Get-AsoPropertyValue $devices 'deviceFilter'
+            $devicesOut = [ordered]@{
+                includeDevices = ConvertTo-AsoStringArray (Get-AsoPropertyValue $devices 'includeDevices')
+                excludeDevices = ConvertTo-AsoStringArray (Get-AsoPropertyValue $devices 'excludeDevices')
+                deviceFilter   = if ($null -ne $filter) { [ordered]@{ mode = ConvertTo-AsoString (Get-AsoPropertyValue $filter 'mode'); rule = ConvertTo-AsoString (Get-AsoPropertyValue $filter 'rule') } } else { $null }
+            }
+        }
 
         $grantOut = $null
         if ($null -ne $grant) {
@@ -194,7 +204,7 @@ function Get-AsoEntraConditionalAccessPolicy {
                 builtInControls             = ConvertTo-AsoStringArray (Get-AsoPropertyValue $grant 'builtInControls')
                 customAuthenticationFactors = ConvertTo-AsoStringArray (Get-AsoPropertyValue $grant 'customAuthenticationFactors')
                 termsOfUse                  = ConvertTo-AsoStringArray (Get-AsoPropertyValue $grant 'termsOfUse')
-                authenticationStrength      = if ($null -ne $strength) { [ordered]@{ id = [string](Get-AsoPropertyValue $strength 'id'); displayName = ConvertTo-AsoString (Get-AsoPropertyValue $strength 'displayName') } } else { $null }
+                authenticationStrength      = if ($null -ne $strength) { [ordered]@{ id = [string](Get-AsoPropertyValue $strength 'id'); displayName = ConvertTo-AsoString (Get-AsoPropertyValue $strength 'displayName'); requirementsSatisfied = ConvertTo-AsoString (Get-AsoPropertyValue $strength 'requirementsSatisfied') } } else { $null }
             }
         }
         $sessionOut = $null
@@ -230,6 +240,7 @@ function Get-AsoEntraConditionalAccessPolicy {
                     platforms           = ConvertTo-AsoIncludeExclude -InputObject (Get-AsoPropertyValue $cond 'platforms') -Name @('includePlatforms', 'excludePlatforms')
                     locations           = ConvertTo-AsoIncludeExclude -InputObject (Get-AsoPropertyValue $cond 'locations') -Name @('includeLocations', 'excludeLocations')
                     authenticationFlows = if ($null -ne $flows) { [ordered]@{ transferMethods = ConvertTo-AsoString (Get-AsoPropertyValue $flows 'transferMethods') } } else { $null }
+                    devices             = $devicesOut
                 }
                 grantControls    = $grantOut
                 sessionControls  = $sessionOut

@@ -26,8 +26,8 @@ export interface PrioritizationInput {
 /**
  * Deterministic "what should I fix first?" ordering. This is an ordering, not a
  * security score. The sort key is lexicographic in this order:
- *   1. severity (critical > high > medium > low > informational)
- *   2. status (FAIL before REVIEW: confirmed issues before ones needing judgement)
+ *   1. status (FAIL before REVIEW: evidenced findings before ones needing judgement)
+ *   2. severity (critical > high > medium > low > informational)
  *   3. confidence (high > medium > low)
  *   4. exposure tags (count of PRIORITY_TAGS present, max 3)
  *   5. effort (low effort first, so quick wins surface within equal risk)
@@ -40,7 +40,7 @@ export function sortKeyFor(input: PrioritizationInput): number {
   const confidence = CONFIDENCE_RANK[input.confidence];
   const tagCount = Math.min(input.tags.filter((t) => t in PRIORITY_TAGS).length, 3);
   const effort = input.effort === 'low' ? 2 : input.effort === 'medium' ? 1 : 0;
-  return severity * 10000 + status * 1000 + confidence * 100 + tagCount * 10 + effort;
+  return status * 100000 + severity * 10000 + confidence * 100 + tagCount * 10 + effort;
 }
 
 export function tierFor(input: PrioritizationInput): PriorityTier {
@@ -53,13 +53,13 @@ export function tierFor(input: PrioritizationInput): PriorityTier {
 
 export function factorsFor(input: PrioritizationInput): string[] {
   const factors = [
-    `Severity: ${input.severity}`,
-    input.status === 'FAIL' ? 'Confirmed misconfiguration (FAIL)' : 'Requires administrator review (REVIEW)',
+    `${input.status === 'REVIEW' ? 'Potential impact if confirmed' : 'Severity'}: ${input.severity}`,
+    input.status === 'FAIL' ? 'Collected evidence does not meet this check (FAIL)' : 'Requires administrator review (REVIEW)',
     `Confidence: ${input.confidence}`,
   ];
   for (const tag of input.tags) {
     const label = PRIORITY_TAGS[tag];
-    if (label !== undefined) factors.push(label);
+    if (label !== undefined) factors.push(input.status === 'REVIEW' ? `Potential concern to verify: ${label}` : label);
   }
   factors.push(`Estimated effort: ${input.effort}`);
   return factors;

@@ -1,7 +1,7 @@
 import type { DatasetData } from '@adminsecops/schemas';
 import { defineControl } from '../../define.js';
 import { eqi } from '../../helpers.js';
-import { aggregateVerdicts, fail_, na_, pass_, unknown_ } from '../shared/verdicts.js';
+import { aggregateVerdicts, fail_, na_, pass_, review_, unknown_ } from '../shared/verdicts.js';
 import { resourceSubject } from './common.js';
 import { AZ_REF } from './references.js';
 
@@ -143,12 +143,12 @@ export const azStorageSecureTransfer = defineControl({
     }),
 });
 
-const MODERN_TLS = new Set(['tls1_2', 'tls1_3']);
+const MODERN_TLS = new Set(['tls1_2']);
 const LEGACY_TLS = new Set(['tls1_0', 'tls1_1']);
 
 export const azStorageMinimumTls = defineControl({
   id: 'AZ-STG-003',
-  version: '1.0.0',
+  version: '1.0.1',
   lifecycle: 'stable',
   title: 'Storage accounts require TLS 1.2 or later',
   technology: 'azure',
@@ -156,7 +156,7 @@ export const azStorageMinimumTls = defineControl({
   subcategory: 'Storage accounts',
   description: 'Checks that every storage account sets its minimum TLS version to TLS 1.2 or later.',
   rationale:
-    'TLS 1.0 and 1.1 have known weaknesses. Setting the minimum TLS version on the account ensures that, whatever the platform default, the account itself rejects legacy protocol versions and satisfies Azure Policy and audit requirements.',
+    'Explicit TLS 1.2 configuration records the intended minimum. Microsoft retired TLS 1.0 and 1.1 for Blob Storage in February 2026; a legacy configuration value alone does not prove that legacy TLS connections are accepted or that an organization violates a compliance framework.',
   severity: 'low',
   confidence: 'high',
   applicability: { description: 'All Azure storage accounts.' },
@@ -164,7 +164,7 @@ export const azStorageMinimumTls = defineControl({
   optionalEvidence: [],
   evaluation: {
     logic:
-      'For each storage account: PASS when minimumTlsVersion is TLS1_2 or TLS1_3. FAIL when it is TLS1_0 or TLS1_1, or when it is not set (null or empty): Microsoft documents that an account without the property accepts TLS 1.0 or later. An unrecognized value cannot be evaluated and is reported for review.',
+      'PASS when minimumTlsVersion is explicitly TLS1_2. REVIEW legacy TLS1_0/TLS1_1 configuration after service retirement; it is not proof of effective legacy TLS exposure. Missing or unrecognized values, including TLS1_3 (not a supported configurable minimum), cannot pass. TLS 1.3 negotiation is distinct from minimum-version configuration.',
     parameters: {},
   },
   expectedState: 'Minimum TLS version is TLS 1.2 on every storage account.',
@@ -185,7 +185,7 @@ export const azStorageMinimumTls = defineControl({
   impact: 'Requests using TLS versions older than the configured minimum are rejected.',
   rollback: ['Change "Minimum TLS version" back to the previous value on the storage account Configuration page.'],
   validation: ['Re-run the AdminSecOps Azure collector and confirm AZ-STG-003 is PASS.'],
-  references: [AZ_REF.storageMinimumTls, AZ_REF.mcsb],
+  references: [AZ_REF.storageMinimumTls, AZ_REF.storageTlsRetirement, AZ_REF.mcsb],
   frameworkMappings: [
     { framework: 'NIST-800-53r5', id: 'SC-8(1)' },
     { framework: 'NIST-800-53r5', id: 'SC-13' },
@@ -202,8 +202,8 @@ export const azStorageMinimumTls = defineControl({
       classify: (a) => {
         const value = (a.minimumTlsVersion ?? '').trim().toLowerCase();
         if (MODERN_TLS.has(value)) return pass_(`Minimum TLS version ${a.minimumTlsVersion ?? ''}.`);
-        if (LEGACY_TLS.has(value)) return fail_(`Minimum TLS version is ${a.minimumTlsVersion ?? ''} (${location(a)}).`);
-        if (value === '') return fail_(`Minimum TLS version is not set, which permits TLS 1.0 and later (${location(a)}).`);
+        if (LEGACY_TLS.has(value)) return review_(`Legacy minimum TLS configuration ${a.minimumTlsVersion ?? ''}; review and set TLS1_2. This does not establish effective legacy TLS support after service retirement (${location(a)}).`);
+        if (value === '') return unknown_(`Minimum TLS version is not set or not reported; explicit TLS1_2 configuration could not be confirmed (${location(a)}).`);
         return unknown_(`Unrecognized minimum TLS version "${a.minimumTlsVersion ?? ''}".`);
       },
     }),

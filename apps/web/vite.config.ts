@@ -65,12 +65,13 @@ function hostedHtml(): Plugin {
 
 export default defineConfig(({ mode }) => {
   const hosted = mode === 'hosted';
+  const online = mode === 'online';
   return {
     plugins: hosted ? [react(), hostedHtml()] : [react()],
     resolve: { alias: webAliases },
     base: hosted ? HOSTED_BASE : '/',
     define: {
-      'import.meta.env.VITE_ADMINSECOPS_MODE': JSON.stringify(hosted ? 'hosted' : 'local'),
+      'import.meta.env.VITE_ADMINSECOPS_MODE': JSON.stringify(online ? 'online' : hosted ? 'hosted' : 'local'),
     },
     server: {
       host: '127.0.0.1',
@@ -80,7 +81,7 @@ export default defineConfig(({ mode }) => {
     },
     preview: { host: '127.0.0.1', port: 4173 },
     build: {
-      outDir: hosted ? 'dist-hosted' : 'dist',
+      outDir: online ? 'dist-online' : hosted ? 'dist-hosted' : 'dist',
       emptyOutDir: true,
       // No source maps: they would expose local build paths and are not needed to run the app.
       sourcemap: false,

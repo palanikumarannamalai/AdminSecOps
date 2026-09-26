@@ -5,7 +5,7 @@ import { M365_REF } from './references.js';
 
 export const m365SafeAttachmentsSpo = defineControl({
   id: 'M365-MDO-001',
-  version: '1.0.0',
+  version: '1.0.1',
   lifecycle: 'stable',
   title: 'Safe Attachments for SharePoint, OneDrive and Teams is enabled',
   technology: 'm365',
@@ -66,7 +66,7 @@ export const m365SafeAttachmentsSpo = defineControl({
   ],
   frameworkMappings: [
     { framework: 'NIST-800-53r5', id: 'SI-3' },
-    { framework: 'CISA-SCuBA', id: 'MS.DEFENDER.3.1v1' },
+    { framework: 'CISA-SCuBA', id: 'MS.DEFENDER.3.1v1', note: 'Historical Defender mapping; current Security Suite crosswalk not verified. Feature enablement does not establish full baseline compliance.' },
     { framework: 'MITRE-ATTACK', id: 'T1566.001' },
   ],
   tags: ['malware-protection', 'defender-for-office-365', 'sharepoint', 'teams'],

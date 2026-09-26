@@ -1,6 +1,6 @@
 import type { AffectedObject } from '@adminsecops/schemas';
 import { defineControl } from '../../define.js';
-import { affected, fact, fail, pass, plural, review } from '../../helpers.js';
+import { affected, fact, fail, notAssessed, pass, plural, review } from '../../helpers.js';
 import { INTUNE_REF } from './references.js';
 import {
   deviceCount,
@@ -106,7 +106,7 @@ export const intuneNoPolicyNoncompliant = defineControl({
 
 export const intunePlatformCoverage = defineControl({
   id: 'INTUNE-CMP-002',
-  version: '1.0.0',
+  version: '1.0.1',
   lifecycle: 'stable',
   title: 'Every platform with enrolled devices has an assigned compliance policy',
   technology: 'intune',
@@ -125,7 +125,7 @@ export const intunePlatformCoverage = defineControl({
   optionalEvidence: [],
   evaluation: {
     logic:
-      'NOT_APPLICABLE when no devices are enrolled. Each compliance policy is mapped to a platform from its OData type (windows10/windows81 -> Windows; macOS; iOS; android, androidWorkProfile, androidDeviceOwner, aospDeviceOwner -> Android). A policy counts as assigned when it has at least one assignment that is not an exclusion. FAIL when a platform with enrolled devices has no assigned policy, listing each platform and its device count. PASS otherwise. Notes identify platforms covered only through group assignments (coverage of every device cannot be confirmed from assignments alone), policies with no assignments, and enrolled Linux devices (Linux compliance is configured in the settings catalog and is not evaluated).',
+      'NOT_APPLICABLE when no devices are enrolled. Each compliance policy is mapped to a platform from its OData type (windows10/windows81 -> Windows; macOS; iOS; android, androidWorkProfile, androidDeviceOwner, aospDeviceOwner -> Android). A policy counts as assigned only with a recognized include target (group, all devices or all licensed users). Enrolled devices with no supported platform counts are NOT_ASSESSED. FAIL when a platform with enrolled devices has no assigned policy, listing each platform and its device count. PASS otherwise. Notes identify platforms covered only through group assignments (coverage of every device cannot be confirmed from assignments alone), policies with no assignments, and enrolled Linux devices (Linux compliance is configured in the settings catalog and is not evaluated).',
     parameters: {},
   },
   expectedState:
@@ -176,6 +176,7 @@ export const intunePlatformCoverage = defineControl({
       assignedByPlatform.set(platform, [...(assignedByPlatform.get(platform) ?? []), policy]);
     }
     const inUse = PLATFORMS.filter((p) => deviceCount(overview, p) > 0);
+    if (inUse.length === 0) return notAssessed({ reason: 'Devices are enrolled but no supported platform counts were reported; platform coverage cannot be established.', summary: 'Device platform coverage is unknown.' });
     const uncovered = inUse.filter((p) => (assignedByPlatform.get(p) ?? []).length === 0);
     const groupOnly = inUse.filter((p) => {
       const assigned = assignedByPlatform.get(p) ?? [];
@@ -219,8 +220,8 @@ export const intunePlatformCoverage = defineControl({
       });
     }
     return pass({
-      reason: `Every platform with enrolled devices (${inUse.map((p) => PLATFORM_LABELS[p]).join(', ')}) has at least one assigned compliance policy.`,
-      summary: 'All platforms in use are covered by an assigned compliance policy.',
+      reason: `Every counted platform with enrolled devices (${inUse.map((p) => PLATFORM_LABELS[p]).join(', ')}) has at least one assigned compliance policy.`,
+      summary: 'Policy assignments exist for the counted platforms; per-device applicability is not verified.',
       facts,
       notes,
     });
@@ -229,7 +230,7 @@ export const intunePlatformCoverage = defineControl({
 
 export const intuneWindowsBitLocker = defineControl({
   id: 'INTUNE-CMP-003',
-  version: '1.0.0',
+  version: '1.0.1',
   lifecycle: 'stable',
   title: 'An assigned Windows compliance policy requires BitLocker',
   technology: 'intune',
@@ -249,7 +250,7 @@ export const intuneWindowsBitLocker = defineControl({
   optionalEvidence: ['intune.deviceOverview'],
   evaluation: {
     logic:
-      'NOT_APPLICABLE when the optional device overview is available and reports zero Windows devices. Considers Windows 10/11 compliance policies (windows10CompliancePolicy) with at least one non-exclusion assignment. PASS when any of them has bitLockerEnabled = true ("Require BitLocker", validated through device health attestation). REVIEW when none does but one requires "Encryption of data storage on device" (storageRequireEncryption): that setting checks for encryption without health attestation, and whether it is sufficient is an administrator decision. FAIL when no assigned Windows policy requires either.',
+      'NOT_APPLICABLE when the optional device overview is available and reports zero Windows devices. Considers Windows 10/11 compliance policies (windows10CompliancePolicy) with at least one recognized include assignment. PASS when any of them has bitLockerEnabled = true ("Require BitLocker", validated through device health attestation). REVIEW when none does but one requires "Encryption of data storage on device" (storageRequireEncryption): that setting checks for encryption without health attestation, and whether it is sufficient is an administrator decision. FAIL when no assigned Windows policy requires either.',
     parameters: {},
   },
   expectedState:

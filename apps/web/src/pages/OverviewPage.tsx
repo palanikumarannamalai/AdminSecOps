@@ -185,7 +185,13 @@ export function OverviewPage() {
         }
       />
 
-      <EnvironmentPanel />
+      <dl className="overview-metrics" aria-label="Assessment summary">
+        <div><dt>Assessed</dt><dd>{summary.assessmentCoverage.assessed}</dd><dd className="metric-caption">Controls with evidence</dd></div>
+        <div><dt>Findings</dt><dd>{result.findings.length}</dd><dd className="metric-caption">Prioritized for review</dd></div>
+        <div><dt>Needs review</dt><dd>{summary.byStatus.REVIEW}</dd><dd className="metric-caption">Require your judgment</dd></div>
+        <div><dt>Not assessed</dt><dd>{summary.byStatus.NOT_ASSESSED + summary.byStatus.ERROR}</dd><dd className="metric-caption">Unknown, never passing</dd></div>
+      </dl>
+      <details className="environment-details"><summary>Environment and collection details</summary><EnvironmentPanel /></details>
 
       <section aria-labelledby="modules-heading" className="section">
         <h2 id="modules-heading" className="section__title">

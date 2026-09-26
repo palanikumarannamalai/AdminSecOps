@@ -26,7 +26,7 @@ export interface AssessmentListItem {
   assessedAt: string;
   processedAt: string;
   integrityVerified: boolean;
-  source: 'upload' | 'sample';
+  source: 'upload' | 'sample' | 'cloud';
   summary: AssessmentSummary;
 }
 

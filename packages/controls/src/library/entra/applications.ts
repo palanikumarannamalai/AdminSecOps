@@ -157,7 +157,7 @@ export const entraDataAccessAppPermissions = permissionControl('data');
 
 export const entraAppSecretLifetime = defineControl({
   id: 'ENTRA-APP-003',
-  version: '1.0.0',
+  version: '1.0.2',
   lifecycle: 'stable',
   title: 'Application client secrets are short-lived',
   technology: 'entra',
@@ -172,10 +172,10 @@ export const entraAppSecretLifetime = defineControl({
   requiredEvidence: ['entra.applications'],
   evaluation: {
     logic:
-      'For each password credential whose endDateTime is after the assessment date, compute the validity period from startDateTime to endDateTime. FAIL when any period exceeds maxSecretLifetimeDays. Credentials without dates are noted.',
-    parameters: { maxSecretLifetimeDays: 365 },
+      'For each unexpired password credential, compare its total validity to maxSecretLifetimeDays (default 180, aligned to CISA SCuBA MS.AAD.5.6v1). FAIL when exceeded; REVIEW for missing dates. This checks existing credentials, not enforcement of application management policies.',
+    parameters: { maxSecretLifetimeDays: 180 },
   },
-  expectedState: 'No active client secret is valid for more than 12 months; certificates or managed identities are preferred.',
+  expectedState: 'No active client secret is valid for more than 180 days; managed identity or federated/certificate credentials are preferred.',
   remediation: {
     summary: 'Rotate long-lived secrets to short-lived ones (or certificates) and enforce a maximum lifetime.',
     steps: [
@@ -224,6 +224,7 @@ export const entraAppSecretLifetime = defineControl({
     if (offenders.length > 0) {
       return fail({ reason: `${plural(offenders.length, 'client secret')} are valid for more than ${max} days.`, summary: 'Long-lived application secrets exist.', facts, affectedObjects: offenders, notes });
     }
+    if (undated > 0) return review({ reason: 'Some client secret validity dates are missing; their lifetimes cannot be established.', summary: 'Secret lifetime coverage is incomplete.', confidence: 'medium', facts, notes });
     return pass({ reason: `No active client secret is valid for more than ${max} days.`, summary: 'Application secrets are short-lived.', facts, notes });
   },
 });

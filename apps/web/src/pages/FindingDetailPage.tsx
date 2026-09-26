@@ -143,11 +143,12 @@ export function FindingDetail({ finding, assessmentId }: { finding: Finding; ass
       <PageHeader
         eyebrow={`Priority rank ${finding.priority.rank} - ${moduleLabel(moduleForTechnology(finding.technology))}`}
         title={finding.title}
+        titleId="finding-title"
       />
       <div className="finding__badges">
         <StatusBadge status={finding.status} />
-        <SeverityBadge severity={finding.severity} />
-        <ConfidenceBadge confidence={finding.confidence} />
+        {finding.status === 'REVIEW' ? <span>Potential impact if confirmed: <SeverityBadge severity={finding.severity} /></span> : <SeverityBadge severity={finding.severity} />}
+        {finding.status === 'REVIEW' ? <span className="badge">Confirmation pending</span> : <ConfidenceBadge confidence={finding.confidence} />}
         <TierBadge tier={finding.priority.tier} />
         <EffortBadge effort={finding.effort} />
       </div>
@@ -156,14 +157,16 @@ export function FindingDetail({ finding, assessmentId }: { finding: Finding; ass
         <ul>
           {FINDING_SECTIONS.map((s) => (
             <li key={s.id}>
-              <a href={`#section-${s.id}`}>{s.title}</a>
+              <a href={`#section-${s.id}`} onClick={event => { event.preventDefault(); const section = document.getElementById(`section-${s.id}`); if (section) { section.tabIndex = -1; section.focus({ preventScroll: true }); section.scrollIntoView({ block: 'start' }); } }}>{s.title}</a>
             </li>
           ))}
         </ul>
       </nav>
 
       <Section id="what" title={titleOf('what')}>
-        <p className="lead">{finding.description}</p>
+        <p className="lead">{finding.observedState.summary}</p>
+        {finding.status === 'REVIEW' ? <p role="note">This check needs verification. It does not establish a confirmed security gap. Validate the evidence, exclusions and alternative controls before making changes.</p> : null}
+        <p>{finding.description}</p>
         <dl className="dl-grid">
           <div className="dl-grid__item">
             <dt>Status</dt>
@@ -172,13 +175,13 @@ export function FindingDetail({ finding, assessmentId }: { finding: Finding; ass
             </dd>
           </div>
           <div className="dl-grid__item">
-            <dt>Severity</dt>
+            <dt>{finding.status === 'REVIEW' ? 'Potential impact if confirmed' : 'Severity'}</dt>
             <dd>
               <SeverityBadge severity={finding.severity} />
             </dd>
           </div>
           <div className="dl-grid__item">
-            <dt>Confidence</dt>
+            <dt>{finding.status === 'REVIEW' ? 'Evidence confidence (confirmation pending)' : 'Confidence'}</dt>
             <dd>
               <ConfidenceBadge confidence={finding.confidence} />
             </dd>
@@ -295,7 +298,7 @@ export function FindingDetail({ finding, assessmentId }: { finding: Finding; ass
               Example for you to review, adapt and run yourself. AdminSecOps never runs scripts or changes your
               environment. Test in a non-production environment first.
             </p>
-            <pre className="code">
+            <pre className="code" tabIndex={0} aria-label="Script example">
               <code>{script}</code>
             </pre>
           </div>

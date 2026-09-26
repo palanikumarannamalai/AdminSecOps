@@ -47,6 +47,7 @@
     "apps/cli/src/**/*.test.ts",
     "tests/**/*.ts",
     "scripts/**/*.ts",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "apps/control-plane/src/**/*.test.ts"
   ]
 }

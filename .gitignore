@@ -65,3 +65,5 @@ testResults.xml
 dist-hosted/
 test-results/
 playwright-report/
+
+**/dist-online/

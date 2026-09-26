@@ -148,7 +148,7 @@ Describe 'Envelope writer, hashing and UTF-8 without BOM' {
         $e.assessmentId | Should -Be $script:written.AssessmentId
         $e.collector.name | Should -Be 'AdminSecOps.Collector'
         $e.collector.module | Should -Be 'Entra'
-        $e.collector.moduleVersion | Should -Be '0.1.0'
+        $e.collector.moduleVersion | Should -Be '0.2.0'
         $e.source.system | Should -Be 'MicrosoftGraph'
         $e.source.operations.GetType().IsArray | Should -BeTrue
         $e.status | Should -Be 'Success'

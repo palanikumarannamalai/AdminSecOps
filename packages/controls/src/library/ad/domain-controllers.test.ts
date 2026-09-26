@@ -58,6 +58,9 @@ describe('AD-DC-001 LDAP signing', () => {
 });
 
 describe('AD-DC-002 LDAP channel binding', () => {
+  it('requires review when both the registry value and OS version are unknown', () => {
+    expect(run(adLdapChannelBinding, { 'ad.domainControllerSettings': [dcSetting(DC1, { ldapEnforceChannelBinding: null })] }).status).toBe('REVIEW');
+  });
   it('passes when always enforced', () => {
     expect(run(adLdapChannelBinding, { 'ad.domainControllerSettings': [dcSetting(DC1)] }).status).toBe('PASS');
   });

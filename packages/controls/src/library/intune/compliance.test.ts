@@ -37,6 +37,12 @@ describe('INTUNE-CMP-001 devices without a compliance policy are not compliant',
 });
 
 describe('INTUNE-CMP-002 compliance policy per platform', () => {
+  it('does not pass enrolled devices with no supported platform counts', () => {
+    expect(run(intunePlatformCoverage, { 'intune.deviceOverview': deviceOverview({ linux: 2 }), 'intune.compliancePolicies': [] }).status).toBe('NOT_ASSESSED');
+  });
+  it('does not count an unknown assignment target as an include assignment', () => {
+    expect(run(intunePlatformCoverage, { 'intune.deviceOverview': deviceOverview({ windows: 2 }), 'intune.compliancePolicies': [compliancePolicy({ targets: ['#microsoft.graph.futureAssignmentTarget'] })] }).status).toBe('FAIL');
+  });
   it('passes when every platform in use has an assigned policy (with prefixed and unprefixed OData types)', () => {
     const result = run(intunePlatformCoverage, {
       'intune.deviceOverview': deviceOverview({ windows: 40, ios: 10, android: 5 }),

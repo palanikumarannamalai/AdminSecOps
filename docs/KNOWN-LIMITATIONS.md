@@ -76,6 +76,19 @@ only partially. Placeholder or planned capabilities are not presented as impleme
 - Reports: HTML and JSON only. PDF, executive and remediation-tracker formats are planned.
 - No exceptions / risk-acceptance workflow yet.
 
+## Online (hosted control plane) collection
+
+See [ONLINE-WORKLOADS.md](ONLINE-WORKLOADS.md#not-available-online-and-why).
+
+- Exchange Online and Defender for Office 365 settings, Teams tenant-wide policies and
+  beta-only properties are not available to delegated Microsoft Graph v1.0. The affected
+  controls are always NOT_ASSESSED online.
+- Teams per-team settings are owner-chosen, not tenant policy. At most 200 teams are read
+  per assessment, and teams the signed-in administrator cannot read make the evidence
+  Partial.
+- The live behaviour of the new SharePoint, Teams and Intune endpoints has only been
+  validated against synthetic Microsoft Graph responses, not against a live tenant.
+
 ## Hosted browser mode
 
 See [HOSTED-BROWSER-MODE.md](HOSTED-BROWSER-MODE.md#hosted-mode-limitations).
