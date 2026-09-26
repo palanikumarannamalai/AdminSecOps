@@ -80,6 +80,10 @@ export function SignInPage() {
               Understand your Microsoft environment, prioritize findings, and turn evidence into a
               clear next step.
             </p>
+            <p className="notice" role="note">
+              <strong>Test release.</strong> No live tenant has been validated in this release —
+              connect an authorised test tenant, not production.
+            </p>
             <a className="button button--primary button--large" href="/auth/login">
               Sign in with Microsoft <span aria-hidden="true">→</span>
             </a>
@@ -212,9 +216,12 @@ export function SignInPage() {
             <summary>Permissions, licensing and data handling</summary>
             <p>
               Reading SharePoint settings needs Global Reader or SharePoint Administrator. Intune
-              needs a licence and a role with Intune read access. Connect Azure subscriptions and
-              Exchange Online separately after sign-in. Their delegated permissions may carry your
-              account's write authority; AdminSecOps executes only fixed read operations.
+              needs a licence and a role with Intune read access. Connect Azure subscriptions
+              separately after sign-in. Its delegated permission may carry your account's write
+              authority; AdminSecOps executes only fixed read operations. Exchange Online assessment
+              is not enabled in the hosted service. The only Exchange connection Microsoft offers
+              for this data requires a management-scoped permission, so it stays off until there is
+              a read-only path or an explicit opt-in.
             </p>
             <p>
               Raw evidence is processed in memory by the hosted service. Results are stored for 30

@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Launch review corrections:
+  - The hosted service no longer offers the Exchange Online connector: its only supported
+    connection needs the management-scoped `Exchange.Manage` permission. The README, landing
+    page, sign-in page and `docs/ONLINE-CONNECTORS.md` say so, and the connector guide lists
+    the exact scopes each enabled connector requests.
+  - The sign-in page, landing page, README and connector guide warn that no live tenant has
+    been validated in this release.
+  - The README disclaimer no longer names an employer.
+
 - Online connectors (hosted collector 0.3.0; engine and control library unchanged at 0.3.0):
   - **Entra.** Collects the remaining six datasets: PIM assignment instances and
     eligibilities, applications, service principals, API permission grants and directory

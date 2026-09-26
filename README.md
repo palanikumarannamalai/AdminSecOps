@@ -4,14 +4,16 @@
 Security assessment and remediation guidance for Microsoft administrators.
 
 AdminSecOps is a free, independent community project by Palanikumar Annamalai. It is not
-affiliated with or endorsed by Microsoft, QatarEnergy or the author's employer.
+affiliated with or endorsed by Microsoft or any current or former employer.
 
 AdminSecOps collects configuration evidence through fixed read operations, evaluates it
 with deterministic controls and explains findings, remediation, rollback and verification.
 It does not automatically remediate your environment.
 
-**Status: online test release.** Implemented connectors are not a guarantee of complete
-coverage. Validate results in an authorised test environment before relying on them.
+**Status: online test release.** No live tenant has been validated in this release —
+connect an authorised test tenant, not production. Implemented connectors are not a
+guarantee of complete coverage. Validate results in an authorised test environment before
+relying on them.
 
 - [Launch the online app](https://app.adminsecops.com)
 - [About the project and author](https://www.palanikumar.net/tools/adminsecops)
@@ -28,8 +30,13 @@ coverage. Validate results in an authorised test environment before relying on t
 ## Online coverage
 
 Microsoft Graph supplies Entra ID, SharePoint/OneDrive tenant settings, Teams app and
-per-team settings, and Intune evidence. Azure and Exchange Online have separate connection
-and consent flows. Public DNS supplies mail authentication records.
+per-team settings, and Intune evidence. Azure has a separate connection and consent flow.
+Public DNS supplies mail authentication records.
+
+Exchange Online assessment is not enabled in the hosted service. The only Exchange connection
+Microsoft offers for this data requires a management-scoped permission, so it stays off until
+there is a read-only path or an explicit opt-in. See
+[docs/ONLINE-CONNECTORS.md](docs/ONLINE-CONNECTORS.md#exchange-online-fixed-server-side-runner).
 
 Coverage depends on permissions, roles, licensing and successful collection. Teams tenant
 policies and on-premises AD, AD CS, Group Policy and Windows collection are not available
