@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Pool } from 'pg';
 import type { AssessmentResult } from '@adminsecops/schemas';
-import { PostgresStore } from './store.js';
+import { PostgresStore, utcDay } from './store.js';
 
 describe('Postgres tenant boundary', () => {
   it('rejects a result for another tenant before accessing the database', async () => {
@@ -33,6 +33,65 @@ describe('Postgres tenant boundary', () => {
     expect(query).toHaveBeenLastCalledWith(expect.stringContaining('WHERE tenant_id=$1'), ['tenant-a']);
     await store.listJobs('tenant-a');
     expect(query).toHaveBeenLastCalledWith(expect.stringContaining('WHERE tenant_id=$1'), ['tenant-a']);
+  });
+
+  it('creates the usage tables in the idempotent startup migration', async () => {
+    const query = vi.fn().mockResolvedValue({ rows: [{ table_name: 'aso_sessions' }, { table_name: 'aso_jobs' }] });
+    await new PostgresStore({ query } as unknown as Pool).initialize();
+    const sql = String(query.mock.calls[0]?.[0]).replace(/\s+/g, ' ');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS aso_usage_daily ( day date NOT NULL, counter text NOT NULL, value bigint NOT NULL DEFAULT 0, PRIMARY KEY(day,counter))');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS aso_usage_orgs ( day date NOT NULL, org_hash text NOT NULL, PRIMARY KEY(day,org_hash))');
+  });
+
+  it('upserts allowlisted daily counters and the organisation hash only', async () => {
+    const query = vi.fn().mockResolvedValue({ rows: [] });
+    const store = new PostgresStore({ query } as unknown as Pool);
+    await store.recordUsage({ assessments_completed: 1, controls_evaluated: 40 }, 'f'.repeat(64));
+    expect(query).toHaveBeenCalledWith(expect.stringContaining('ON CONFLICT(day,counter) DO UPDATE SET value=aso_usage_daily.value+EXCLUDED.value'), [utcDay(), ['assessments_completed', 'controls_evaluated'], [1, 40]]);
+    expect(query).toHaveBeenLastCalledWith(expect.stringContaining('INSERT INTO aso_usage_orgs(day,org_hash)'), [utcDay(), 'f'.repeat(64)]);
+    query.mockClear();
+    await expect(store.recordUsage({ 'aaaaaaaa-0000-4000-8000-000000000001': 1 })).rejects.toThrow('Unknown usage counter');
+    expect(query).not.toHaveBeenCalled();
+  });
+
+  it('summarises usage per day with totals for every counter and distinct organisations', async () => {
+    const query = vi.fn()
+      .mockResolvedValueOnce({ rows: [{ day: '2026-09-25', counter: 'assessments_started', value: '2' }, { day: '2026-09-26', counter: 'assessments_started', value: '3' }, { day: '2026-09-26', counter: 'exports_html', value: '1' }] })
+      .mockResolvedValueOnce({ rows: [{ n: '2' }] });
+    const summary = await new PostgresStore({ query } as unknown as Pool).usageSummary(7);
+    expect(query.mock.calls[0]?.[1]).toEqual([utcDay(-6)]);
+    expect(summary.from).toBe(utcDay(-6));
+    expect(summary.to).toBe(utcDay());
+    expect(summary.totals).toMatchObject({ assessments_started: 5, exports_html: 1, assessments_failed: 0, failed_TIMEOUT: 0 });
+    expect(summary.distinctOrganisations).toBe(2);
+    // One distinct count across the whole window, not a sum of daily counts.
+    expect(String(query.mock.calls[1]?.[0])).toContain('count(DISTINCT org_hash)');
+    expect(String(query.mock.calls[1]?.[0])).not.toContain('GROUP BY');
+    expect(query.mock.calls[1]?.[1]).toEqual([utcDay(-6)]);
+    expect(summary.days).toEqual([{ day: '2026-09-25', counters: { assessments_started: 2 } }, { day: '2026-09-26', counters: { assessments_started: 3, exports_html: 1 } }]);
+    const all = vi.fn().mockResolvedValue({ rows: [] });
+    expect((await new PostgresStore({ query: all } as unknown as Pool).usageSummary(0)).from).toBeNull();
+    expect(all.mock.calls[0]?.[1]).toEqual([null]);
+    await new PostgresStore({ query: all } as unknown as Pool).usageSummary(26);
+    expect(all.mock.calls[2]?.[1]).toEqual([utcDay(-25)]);
+  });
+
+  it('keeps 30-day results and 90-day audit retention, deletes old usage rows and reports expired jobs', async () => {
+    const query = vi.fn((sql: string) => Promise.resolve({ rows: [], rowCount: sql.includes("status='running' AND") ? 2 : sql.includes("status='queued' AND") ? 1 : 0 }));
+    const store = new PostgresStore({ query } as unknown as Pool);
+    expect(await store.cleanup()).toEqual({ timedOut: 2, queueExpired: 1 });
+    const statements = query.mock.calls.map(([sql]) => String(sql));
+    expect(statements).toContain("DELETE FROM aso_assessments WHERE created_at<now()-interval '30 days'");
+    expect(statements).toContain("DELETE FROM aso_audit WHERE created_at<now()-interval '90 days'");
+    expect(query).toHaveBeenCalledWith('DELETE FROM aso_usage_daily WHERE day<$1::date', [utcDay(-400)]);
+    expect(query).toHaveBeenCalledWith('DELETE FROM aso_usage_orgs WHERE day<$1::date', [utcDay(-400)]);
+    await store.cleanup(30);
+    expect(query).toHaveBeenLastCalledWith('DELETE FROM aso_usage_orgs WHERE day<$1::date', [utcDay(-30)]);
+  });
+
+  it('computes UTC days', () => {
+    expect(utcDay(0, Date.UTC(2026, 8, 26, 23, 59))).toBe('2026-09-26');
+    expect(utcDay(-400, Date.UTC(2026, 8, 26))).toBe('2025-08-22');
   });
 });
 

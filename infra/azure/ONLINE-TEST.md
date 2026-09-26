@@ -58,8 +58,9 @@ OIDC code flow uses PKCE, state, nonce, signature/issuer/audience/tenant validat
 allowlist. Server session IDs are hashed in PostgreSQL. Graph tokens use AES-256-GCM encryption.
 Cookies are Secure, HttpOnly and SameSite=Lax; mutating API calls require matching Origin and the
 application header. Login and job rate limits are per instance; keep the test app at one instance.
-Only health, static assets and the sign-in endpoints are public. Every assessment/job read is scoped
-to the authenticated tenant.
+Only health, static assets and the sign-in endpoints are public. `GET /api/usage` ignores the session
+and requires its own bearer secret (below); it returns 404 unless `USAGE_API_SECRET` is set. Every
+assessment/job read is scoped to the authenticated tenant.
 
 Secrets are held in Azure app settings, not source control. Deployment-machine recovery copies use
 Windows DPAPI under the user's .AdminSecOps-test directory. The client credential expires after
@@ -69,6 +70,8 @@ Basic FTP/SCM publishing authentication is disabled; deployment uses Entra beare
 Raw collected package data is processed in memory. Derived results are stored for 30 days;
 audit events for 90 days; expired sessions and completed-job encrypted tokens are removed.
 Backups can retain deleted data until their retention expires. No billing/remediation/AI features exist.
+Anonymous aggregate usage counts (tables `aso_usage_daily` and `aso_usage_orgs`) are deleted after
+`USAGE_RETENTION_DAYS` (default 400). The same `cleanup()` pass applies all of these deletions.
 A failed or interrupted worker job is marked failed after 15 minutes; queued jobs expire after one hour.
 There is no full scheduler or cross-instance distributed API rate limiter yet.
 
@@ -91,6 +94,30 @@ GRAPH_SCOPES accepts only the read-only scopes in READ_ONLY_GRAPH_SCOPES (config
 online set is listed in docs/ONLINE-WORKLOADS.md. Scopes absent from GRAPH_SCOPES are not requested,
 and datasets that need them are reported Unauthorized and not assessed.
 The Node runtime supplies PORT. DATABASE_URL must not disable TLS certificate verification.
+
+Optional usage settings (see docs/PRIVACY.md, "Usage counts in the online service"):
+
+- `USAGE_COUNTING` - `true` (default) or `false`. When on, the server keeps anonymous daily counts
+  of assessments started, completed and failed (by fixed reason code), collectors that returned data,
+  controls evaluated, report downloads by format and distinct organisations. No tenant ID, domain,
+  user ID, error text or finding is stored.
+- `USAGE_HASH_SALT` - at least 32 random characters. Keys the one-way hash used to count distinct
+  organisations per day. Set it whenever counting is on; without it, every other counter still runs
+  and only the distinct-organisation counter is skipped. Changing it restarts distinct counting.
+- `USAGE_API_SECRET` - at least 32 random characters. Enables `GET /api/usage?days=N` for the
+  author's insights page. `N` is a whole number of UTC days from 0 to 400 including today (default
+  30; 0 = all retained days; for example 7, 30, 90, or the day of the month for month-to-date);
+  anything else returns 400. `distinctOrganisations` counts distinct organisation hashes across
+  the whole window, not a sum of daily counts. The caller sends
+  `Authorization: Bearer <secret>`; the server compares SHA-256 digests in constant time. Without
+  the setting the endpoint returns 404; a missing or wrong secret returns 401. A session cookie is
+  neither required nor accepted. The response has `Cache-Control: no-store` and the shape
+  `{ service, from, to, totals, distinctOrganisations, days: [{ day, counters }] }`.
+- `USAGE_RETENTION_DAYS` - whole days from 1 to 3650, default 400 (about 13 months).
+
+Generate the two secrets separately, for example with
+`node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`, and store them only
+as app settings.
 
 The online-test.json ARM template provisions the App Service plan, HTTPS-only site and database.
 It intentionally excludes credential values, Entra registration, firewall IPs and runtime settings.

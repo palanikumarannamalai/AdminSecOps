@@ -13,7 +13,7 @@ const config = loadConfig({ PUBLIC_URL: 'https://admin.example.com', AZURE_TENAN
 const token = 'a'.repeat(43);
 function fixture(overrides: Partial<StoredSession> = {}) {
   const current: StoredSession = { idHash: hashToken(token), tenantId: config.tenantId, userId: config.allowedUserIds[0]!, displayName: 'Test Admin', expiresAt: new Date(Date.now() + 60_000), encryptedTokens: encryptTokens({ accessToken: 'test-only', expiresAt: Date.now() + 600_000 }, config.tokenEncryptionKey), ...overrides };
-  const store: Store = { putSession: vi.fn(() => Promise.resolve()), getSession: vi.fn(() => Promise.resolve(current)), deleteSession: vi.fn(() => Promise.resolve()), createJob: vi.fn(() => Promise.resolve({ id: 'job', status: 'queued' })), listJobs: vi.fn(() => Promise.resolve([])), listAssessments: vi.fn(() => Promise.resolve([])), getAssessment: vi.fn(() => Promise.resolve(null)) };
+  const store: Store = { putSession: vi.fn(() => Promise.resolve()), getSession: vi.fn(() => Promise.resolve(current)), deleteSession: vi.fn(() => Promise.resolve()), createJob: vi.fn(() => Promise.resolve({ id: 'job', status: 'queued' })), listJobs: vi.fn(() => Promise.resolve([])), listAssessments: vi.fn(() => Promise.resolve([])), getAssessment: vi.fn(() => Promise.resolve(null)), recordUsage: vi.fn(() => Promise.resolve()), usageSummary: vi.fn((days: number) => Promise.resolve({ from: days ? '2026-09-20' : null, to: '2026-09-26', totals: { assessments_started: 2 }, distinctOrganisations: 1, days: [{ day: '2026-09-26', counters: { assessments_started: 2 } }] })) };
   return store;
 }
 const headers = { cookie: `__Host-adminsecops=${token}`, origin: config.publicUrl, 'x-adminsecops-client': 'web' };
@@ -245,6 +245,74 @@ describe('hosted HTTP boundary', () => {
       expect((await expiredApp.inject({ method: 'POST', url: '/api/jobs', headers, payload: {} })).statusCode).toBe(202);
       expect(JSON.parse(vi.mocked(expiredStore.createJob).mock.calls[0]?.[3] as string)).toEqual({ gaps: { azure: 'expired' } });
       await expiredApp.close();
+    });
+  });
+
+  describe('usage API', () => {
+    const secret = 'usage-secret-for-tests-only-0123456789';
+    const withSecret = { ...config, usage: { ...config.usage, apiSecret: secret } };
+    it('is not found unless USAGE_API_SECRET is set, even with a session', async () => {
+      const store = fixture();
+      const app = await buildServer({ config, store });
+      for (const extra of [{}, headers, { authorization: `Bearer ${secret}` }]) expect((await app.inject({ url: '/api/usage', headers: extra })).statusCode).toBe(404);
+      expect(store.usageSummary).not.toHaveBeenCalled();
+      await app.close();
+    });
+    it('rejects a missing or wrong secret and never accepts the session cookie alone', async () => {
+      const store = fixture();
+      const app = await buildServer({ config: withSecret, store });
+      for (const extra of [{}, headers, { authorization: 'Bearer wrong' }, { authorization: `Bearer ${secret}x` }, { authorization: secret }, { authorization: `Basic ${secret}` }, { ...headers, authorization: 'Bearer wrong' }]) {
+        const response = await app.inject({ url: '/api/usage', headers: extra });
+        expect(response.statusCode).toBe(401);
+        expect(response.headers['www-authenticate']).toBe('Bearer');
+      }
+      expect(store.usageSummary).not.toHaveBeenCalled();
+      expect(store.getSession).not.toHaveBeenCalled();
+      await app.close();
+    });
+    it('returns aggregate counters with the right secret, without a session', async () => {
+      const store = fixture();
+      const app = await buildServer({ config: withSecret, store });
+      const response = await app.inject({ url: '/api/usage', headers: { authorization: `Bearer ${secret}` } });
+      expect(response.statusCode).toBe(200);
+      expect(response.headers['cache-control']).toBe('no-store');
+      expect(response.json()).toEqual({ service: 'adminsecops', from: '2026-09-20', to: '2026-09-26', totals: { assessments_started: 2 }, distinctOrganisations: 1, days: [{ day: '2026-09-26', counters: { assessments_started: 2 } }] });
+      expect(store.usageSummary).toHaveBeenLastCalledWith(30);
+      for (const days of [0, 1, 7, 26, 90, 400]) {
+        expect((await app.inject({ url: `/api/usage?days=${days}`, headers: { authorization: `Bearer ${secret}` } })).statusCode).toBe(200);
+        expect(store.usageSummary).toHaveBeenLastCalledWith(days);
+      }
+      for (const days of ['401', '-7', '07', '7.5', '1e2', 'all', '', '7&days=30']) expect((await app.inject({ url: `/api/usage?days=${days}`, headers: { authorization: `Bearer ${secret}` } })).statusCode).toBe(400);
+      expect(store.getSession).not.toHaveBeenCalled();
+      await app.close();
+    });
+    it('counts a started assessment with a salted organisation hash and never the tenant ID', async () => {
+      const store = fixture();
+      const salt = 'usage-salt-for-tests-only-0123456789abc';
+      const app = await buildServer({ config: { ...config, usage: { ...config.usage, hashSalt: salt } }, store });
+      expect((await app.inject({ method: 'POST', url: '/api/jobs', headers, payload: {} })).statusCode).toBe(202);
+      expect(store.recordUsage).toHaveBeenCalledWith({ assessments_started: 1 }, expect.stringMatching(/^[0-9a-f]{64}$/));
+      expect(JSON.stringify(vi.mocked(store.recordUsage).mock.calls)).not.toContain(config.tenantId);
+      await app.close();
+    });
+    it('still queues the assessment when the usage write fails', async () => {
+      const store = fixture();
+      vi.mocked(store.recordUsage).mockRejectedValue(new Error('database down'));
+      const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      const app = await buildServer({ config, store });
+      expect((await app.inject({ method: 'POST', url: '/api/jobs', headers, payload: {} })).statusCode).toBe(202);
+      await vi.waitFor(() => expect(error).toHaveBeenCalledWith('Usage counter update failed.'));
+      error.mockRestore();
+      await app.close();
+    });
+    it('rejects invalid usage settings', () => {
+      const base = { PUBLIC_URL: 'https://admin.example.com', AZURE_TENANT_ID: config.tenantId, AZURE_CLIENT_ID: config.clientId, AZURE_CLIENT_SECRET: 's', ALLOWED_USER_IDS: config.allowedUserIds[0], TOKEN_ENCRYPTION_KEY: config.tokenEncryptionKey, DATABASE_URL: 'postgresql://localhost/test', GRAPH_SCOPES: 'User.Read' };
+      expect(config.usage).toEqual({ counting: true, hashSalt: null, apiSecret: null, retentionDays: 400 });
+      expect(() => loadConfig({ ...base, USAGE_API_SECRET: 'short' })).toThrow('USAGE_API_SECRET must be at least 32 characters');
+      expect(() => loadConfig({ ...base, USAGE_HASH_SALT: 'short' })).toThrow('USAGE_HASH_SALT must be at least 32 characters');
+      for (const days of ['0', '1.5', 'x', '4000']) expect(() => loadConfig({ ...base, USAGE_RETENTION_DAYS: days })).toThrow('USAGE_RETENTION_DAYS');
+      expect(() => loadConfig({ ...base, USAGE_COUNTING: 'no' })).toThrow('USAGE_COUNTING');
+      expect(loadConfig({ ...base, USAGE_COUNTING: 'false', USAGE_RETENTION_DAYS: '30' }).usage).toMatchObject({ counting: false, retentionDays: 30 });
     });
   });
 
