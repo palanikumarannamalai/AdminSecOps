@@ -16,7 +16,7 @@ Azure Monitor is selected for environment log routing. A diagnostic destination 
 Select the intended MSDN subscription explicitly; do not deploy against an arbitrary default context. `<admin-upn>` is the administrator account that owns the test subscription and deploys these templates:
 
 ```powershell
-$subscriptionId = '1f93383f-91f1-4b62-b288-2ddee3ccbd0c'
+$subscriptionId = 'aaaaaaaa-0000-4000-8000-000000000003'
 $ctx = Get-AzContext -ListAvailable | Where-Object { $_.Subscription.Id -eq $subscriptionId -and $_.Account.Id -eq '<admin-upn>' } | Select-Object -First 1
 if (-not $ctx) { throw 'Sign in to the AdminSecOps Azure subscription first.' }
 Test-AzSubscriptionDeployment -Location uaenorth -TemplateFile C:\AdminSecOps\infra\azure\foundation.json -DefaultProfile $ctx

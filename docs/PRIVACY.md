@@ -28,7 +28,9 @@ Microsoft access. Authentication necessarily uses tokens and session cookies; th
 not assessment evidence. Raw configuration evidence is processed in memory. Assessment
 results are retained for 30 days and audit events for 90 days. Downloaded reports remain
 under your control and are not removed by server retention. Review the requested consent
-and [connector permissions](ONLINE-CONNECTORS.md) before connecting a tenant.
+and [connector permissions](ONLINE-CONNECTORS.md) before connecting a tenant, and confirm the
+app name and publisher on Microsoft's consent screen before granting (see
+[Customer activation](ONLINE-CONNECTORS.md#customer-activation)).
 
 ## Where data goes in the local application
 

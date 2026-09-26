@@ -54,8 +54,8 @@ describe('online assessment flow', () => {
     expect(input.getAttribute('aria-invalid')).toBe('true');
     expect(screen.queryByRole('link', { name: 'Sign in to customer tenant' })).toBeNull();
     await user.clear(input);
-    await user.type(input, ' C15F03D1-1ADC-4B27-B475-C65192C029A7 ');
-    expect(screen.getByRole('link', { name: 'Sign in to customer tenant' }).getAttribute('href')).toBe('/auth/login?tenantId=c15f03d1-1adc-4b27-b475-c65192c029a7');
+    await user.type(input, ' AAAAAAAA-0000-4000-8000-000000000002 ');
+    expect(screen.getByRole('link', { name: 'Sign in to customer tenant' }).getAttribute('href')).toBe('/auth/login?tenantId=aaaaaaaa-0000-4000-8000-000000000002');
     expect(screen.getByRole('link', { name: 'Sign in with Microsoft' }).getAttribute('href')).toBe('/auth/login');
   });
 

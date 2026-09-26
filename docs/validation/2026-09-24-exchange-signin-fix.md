@@ -10,4 +10,4 @@ Validation: 33 auth/server tests passed. Live tenant Exchange consent and collec
 
 Microsoft resource metadata was read directly from the Exchange service principal. Microsoft's support example uses the canonical resource URI: https://learn.microsoft.com/en-us/answers/questions/1636448/error-aadsts650053-the-application-x-asked-for-sco
 
-Deployment 4d6878ac-03db-45fd-abcd-e316f9d4f70f completed and became active. Deployed compiled auth and server files contain the correction. Post-deployment health and frontend returned HTTP 200, protected connector routes returned 401 without a session, and Microsoft sign-in returned the expected 302. Build, focused lint and diff checks passed. User retry is still required to verify the Microsoft consent flow end to end.
+Deployment `<deployment-id>` completed and became active. Deployed compiled auth and server files contain the correction. Post-deployment health and frontend returned HTTP 200, protected connector routes returned 401 without a session, and Microsoft sign-in returned the expected 302. Build, focused lint and diff checks passed. User retry is still required to verify the Microsoft consent flow end to end.

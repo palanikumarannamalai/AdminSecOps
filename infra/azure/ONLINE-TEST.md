@@ -5,9 +5,10 @@ Status: multitenant administrator onboarding test release (21 September 2026).
 ## Test site and scope
 
 - URL: https://app.adminsecops.com (custom domain configured 24 September 2026; see CUSTOM-DOMAIN.md).
-- Registration home tenant: Palani Lab, c15f03d1-1adc-4b27-b475-c65192c029a7.
+- Registration home tenant: Contoso (fictional example), aaaaaaaa-0000-4000-8000-000000000002.
 - Open onboarding accepts Microsoft work accounts with a supported active tenant-wide directory role.
-- Entra app client ID: bb1cbc8b-51c1-472d-93a6-0476478eb71e.
+- Entra app client ID: `<client-id>`. Copy it from **Application (client) ID** on the app
+  registration's Overview page in the Microsoft Entra admin center; the App Service holds it in `AZURE_CLIENT_ID`.
 - Callback: https://app.adminsecops.com/auth/callback.
 - Multitenant test release; customer administrator consent is required in each organization.
 - Microsoft sign-in and delegated read-only Graph consent required. No administrator password stored.

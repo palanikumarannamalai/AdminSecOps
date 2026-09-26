@@ -10,6 +10,19 @@
   - The sign-in page, landing page, README and connector guide warn that no live tenant has
     been validated in this release.
   - The README disclaimer no longer names an employer.
+  - The landing page and README no longer list Exchange Online as online coverage;
+    Exchange Online and on-premises collection are available only in the local edition.
+  - Real identifiers removed from the tree (history is unchanged). The tenant and subscription
+    IDs and tenant name in the infra docs and one web test are now fictional
+    (`aaaaaaaa-0000-4000-8000-00000000000N`, Contoso). The administrator account and
+    application (client) ID are placeholders (`<admin-upn>`, `<client-id>`). The App Service
+    deployment IDs in `docs/validation/` are now `<deployment-id>`.
+  - `npm run scan:secrets` (part of `npm run verify`) now fails on any GUID that is not
+    obviously fictional, produced by the seeded fixture generator, or listed with its source
+    in `scripts/known-guids.ts`. The allowlist holds 60 Microsoft-published identifiers
+    checked against Microsoft Learn, plus the project's own and hand-written test values.
+  - `docs/ONLINE-CONNECTORS.md` and `docs/PRIVACY.md` ask administrators to confirm the app
+    name and publisher on Microsoft's consent screen before granting.
 
 - Online connectors (hosted collector 0.3.0; engine and control library unchanged at 0.3.0):
   - **Entra.** Collects the remaining six datasets: PIM assignment instances and
