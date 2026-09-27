@@ -224,8 +224,9 @@ export function SignInPage() {
               a read-only path or an explicit opt-in.
             </p>
             <p>
-              Raw evidence is processed in memory by the hosted service. Results are stored for 30
-              days and audit events for 90 days. Missing data is reported as not assessed, never as
+              Raw evidence is processed in memory by the hosted service. Results are retained in the live database for 30
+              days and audit events for 90 days. Database backups may retain deleted records for up to seven additional days.
+              Downloaded reports remain under your control. Missing data is reported as not assessed, never as
               passing. This test release does not provide security certification.
             </p>
           </details>
