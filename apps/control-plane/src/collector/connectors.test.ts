@@ -542,7 +542,8 @@ describe('Entra PIM, application and synchronization datasets', () => {
   it('collects PIM pages when the service rejects wildcard language negotiation', async () => {
     const mock = mockServices();
     const fetch: typeof globalThis.fetch = (input, init) => {
-      if (/roleAssignmentScheduleInstances|roleEligibilitySchedules/.test(String(input)) &&
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+      if (/roleAssignmentScheduleInstances|roleEligibilitySchedules/.test(url) &&
           new Headers(init?.headers).get('accept-language') !== 'en-US') {
         return Promise.resolve(failure(400, 'UnknownError', 'CultureNotFoundException: * is an invalid culture identifier.'));
       }
