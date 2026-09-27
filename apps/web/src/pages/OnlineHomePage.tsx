@@ -106,7 +106,7 @@ export function OnlineHomePage() {
         <a className="button" href="/auth/login?consent=true">Reconnect and review Microsoft consent</a>
       </div> : null}
       <p className="muted">To switch organizations, sign out first, then sign in with the other organization's account or enter its directory ID. Each assessment uses the current signed-in tenant.</p>
-      <p className="muted">Raw evidence is processed in memory. Assessment results are stored for 30 days and audit events for 90 days. Missing permissions or unavailable datasets remain unknown; they are never treated as passing.</p>
+      <p className="muted">Raw evidence is processed in memory. Assessment results are retained in the live database for 30 days and audit events for 90 days. Database backups may retain deleted records for up to seven additional days. Downloaded reports remain under your control. Missing permissions or unavailable datasets remain unknown; they are never treated as passing.</p>
     </Panel>
     {connectors.length > 0 ? <Panel title="Additional data sources" id="connectors">
       <p>Each source needs its own Microsoft sign-in and consent, uses your signed-in permissions, and only reads configuration. Sources that are not connected are reported as not assessed; they never count as passing.</p>
@@ -137,6 +137,7 @@ export function OnlineAboutPage() {
   return <div className="page"><PageHeader title="About this online test release" /><Panel title="Read-only Microsoft 365 assessment" id="privacy">
     <p>ConfigReview collects supported Microsoft Graph evidence (Microsoft Entra ID, SharePoint and OneDrive tenant settings, Teams app and per-team settings, and Intune compliance configuration) from your signed-in Microsoft organization, and public SPF and DMARC DNS records of its mail domains. Azure subscriptions and Exchange Online are read only after you connect them separately. Sign-in requires a supported administrator or reader role, and a tenant administrator must consent on Microsoft's screen to the permissions. The hosted backend evaluates the existing control library and stores assessment results in PostgreSQL.</p>
     <p>Evidence can contain user names, object identifiers and security configuration. Access requires Microsoft sign-in. Downloaded reports also contain this information; share them only with authorized recipients.</p>
+    <p>Assessment results are retained in the live database for 30 days and audit events for 90 days. Database backups may retain deleted records for up to seven additional days. Downloaded reports remain under your control.</p>
     <p>This release does not modify tenant settings. It does not assess every Microsoft workload, provide a security certification, or treat uncollected evidence as a passing check.</p>
   </Panel></div>;
 }
