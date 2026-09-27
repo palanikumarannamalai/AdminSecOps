@@ -42,7 +42,7 @@ export default defineConfig({
     : {
         command:
           'node e2e/prepare-site.ts && node e2e/static-server.ts .e2e-site .e2e-site/staticwebapp.config.json 4380',
-        url: 'http://127.0.0.1:4380/tools/adminsecops/app/',
+        url: 'http://127.0.0.1:4380/tools/configreview/app/',
         reuseExistingServer: false,
         timeout: 60_000,
       },

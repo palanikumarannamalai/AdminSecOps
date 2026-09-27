@@ -24,4 +24,4 @@ Build assets: index-CCqMZXoE.js and index-BQXCOon4.css.
 Rollback package: out/adminsecops-before-redesign-20260926.zip.
 Authenticated live customer collection is not part of visual verification; no customer tenant was connected or assessed during this task.
 
-Azure deployment e10ec3e4-eac6-42fa-9882-39e103477ef8 completed and became active. Live browser verified the new landing heading, self-hosted Manrope, no horizontal overflow or page errors, the unchanged /auth/login link, and API health HTTP 200. Live screenshot saved in the local review artifacts.
+Azure deployment `<deployment-id>` completed and became active. Live browser verified the new landing heading, self-hosted Manrope, no horizontal overflow or page errors, the unchanged /auth/login link, and API health HTTP 200. Live screenshot saved in the local review artifacts.

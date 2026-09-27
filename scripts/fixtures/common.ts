@@ -21,11 +21,20 @@ export const COLLECTOR = { name: 'AdminSecOps.Collector', version: '0.1.0' } as 
 export const COLLECTOR_HOST = { powershellVersion: '7.4.6', platform: 'Win32NT' } as const;
 export const MODULE_VERSION = '0.1.0';
 
+/**
+ * Every GUID `guid()` has produced in this process. The secret scan builds the fixtures and
+ * allows exactly these values: they are hashes of fixed seeds, so they are fictional by
+ * construction.
+ */
+export const GENERATED_GUIDS = new Set<string>();
+
 /** Deterministic GUID (8-4-4-4-12, RFC 4122 version 4 / variant bits set) derived from a seed. */
 export function guid(seed: string): string {
   const hex = createHash('sha256').update(`adminsecops-fixture:${seed}`).digest('hex');
   const variant = ((Number.parseInt(hex.charAt(16), 16) & 0x3) | 0x8).toString(16);
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-${variant}${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+  const value = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-${variant}${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+  GENERATED_GUIDS.add(value);
+  return value;
 }
 
 /** Deterministic opaque identifier in the style of Graph object IDs (URL-safe base64). */

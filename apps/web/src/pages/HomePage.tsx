@@ -15,7 +15,7 @@ import { IS_HOSTED } from '../mode';
 const STEPS = [
   {
     title: 'Collect',
-    text: 'Run the read-only AdminSecOps Collector (PowerShell) with an account that has the documented read permissions.',
+    text: 'Run the read-only ConfigReview Collector (PowerShell) with an account that has the documented read permissions.',
   },
   { title: 'Package', text: 'The collector writes an evidence package: a ZIP with a manifest of SHA-256 hashes and one JSON file per dataset.' },
   { title: 'Assess locally', text: 'Upload the package here. The local engine verifies integrity and evaluates the control library.' },
@@ -210,7 +210,7 @@ export function HomePage() {
 
   return (
     <div className="page">
-      <PageHeader title={PRODUCT_TAGLINE} eyebrow="AdminSecOps" description={<p>{PRODUCT_DESCRIPTION}</p>} />
+      <PageHeader title={PRODUCT_TAGLINE} eyebrow="ConfigReview" description={<p>{PRODUCT_DESCRIPTION}</p>} />
 
       <section className="panel how" aria-labelledby="how-heading">
         <h2 id="how-heading" className="panel__title">
@@ -228,7 +228,7 @@ export function HomePage() {
           ))}
         </ol>
         <p className="how__note">
-          Evidence never leaves this machine. Processing, storage and reports are local; AdminSecOps makes no changes to
+          Evidence never leaves this machine. Processing, storage and reports are local; ConfigReview makes no changes to
           your environment and sends no telemetry.
         </p>
       </section>

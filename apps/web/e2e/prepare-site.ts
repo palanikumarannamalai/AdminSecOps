@@ -1,6 +1,6 @@
 // Builds a throw-away site tree for browser tests of the hosted application:
-//   .e2e-site/tools/adminsecops/app/   <- dist-hosted
-//   .e2e-site/tools/adminsecops/       <- stub overview page (the real one lives in palanikumar.net)
+//   .e2e-site/tools/configreview/app/   <- dist-hosted
+//   .e2e-site/tools/configreview/       <- stub overview page (the real one lives in palanikumar.net)
 //   .e2e-site/staticwebapp.config.json <- route headers from hosted-headers.json
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -15,7 +15,7 @@ mkdirSync(path.join(site, 'tools', 'adminsecops'), { recursive: true });
 cpSync(dist, path.join(site, 'tools', 'adminsecops', 'app'), { recursive: true });
 writeFileSync(
   path.join(site, 'tools', 'adminsecops', 'index.html'),
-  '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>AdminSecOps overview (test stub)</title></head><body><h1>AdminSecOps overview</h1></body></html>',
+  '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>ConfigReview overview (test stub)</title></head><body><h1>ConfigReview overview</h1></body></html>',
 );
 writeFileSync(
   path.join(site, 'favicon.svg'),

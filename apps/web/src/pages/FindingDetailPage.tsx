@@ -295,7 +295,7 @@ export function FindingDetail({ finding, assessmentId }: { finding: Finding; ass
               <CopyButton text={script} label="Copy script" />
             </div>
             <p className="script__note" role="note">
-              Example for you to review, adapt and run yourself. AdminSecOps never runs scripts or changes your
+              Example for you to review, adapt and run yourself. ConfigReview never runs scripts or changes your
               environment. Test in a non-production environment first.
             </p>
             <pre className="code" tabIndex={0} aria-label="Script example">

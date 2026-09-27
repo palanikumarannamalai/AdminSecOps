@@ -11,7 +11,7 @@ export function validatePackageFile(file: { name: string; size: number } | null 
   if (!file.name.toLowerCase().endsWith('.zip')) {
     return {
       ok: false,
-      message: `"${file.name}" is not a .zip file. Upload the evidence package ZIP produced by the AdminSecOps Collector.`,
+      message: `"${file.name}" is not a .zip file. Upload the evidence package ZIP produced by the ConfigReview Collector.`,
     };
   }
   if (file.size === 0) return { ok: false, message: `"${file.name}" is empty.` };

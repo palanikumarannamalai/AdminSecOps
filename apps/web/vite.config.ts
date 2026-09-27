@@ -23,10 +23,10 @@ export const webAliases: AliasOptions = [
 ];
 
 /** Public path of the hosted application on www.palanikumar.net. */
-export const HOSTED_BASE = '/tools/adminsecops/app/';
-export const HOSTED_CANONICAL = 'https://www.palanikumar.net/tools/adminsecops/app';
+export const HOSTED_BASE = '/tools/configreview/app/';
+export const HOSTED_CANONICAL = 'https://www.palanikumar.net/tools/configreview/app';
 
-/** AdminSecOps shield as an inline icon: no extra request, allowed by img-src data:. */
+/** ConfigReview shield as an inline icon: no extra request, allowed by img-src data:. */
 const HOSTED_ICON =
   'data:image/svg+xml,' +
   encodeURIComponent(
@@ -35,9 +35,9 @@ const HOSTED_ICON =
 
 const HOSTED_NOSCRIPT = [
   '<noscript>',
-  '<h1>AdminSecOps Browser Assessment</h1>',
+  '<h1>ConfigReview Browser Assessment</h1>',
   '<p>This application needs JavaScript. Evidence is processed in your browser and is not uploaded to palanikumar.net.</p>',
-  '<p><a href="/tools/adminsecops">Return to the AdminSecOps overview</a></p>',
+  '<p><a href="/tools/configreview">Return to the ConfigReview overview</a></p>',
   '</noscript>',
 ].join('');
 
@@ -47,7 +47,7 @@ const HOSTED_NOSCRIPT = [
  */
 function hostedHtml(): Plugin {
   const meta = [
-    '<meta name="description" content="Explore a free Microsoft security assessment in your browser using fictional samples or locally processed AdminSecOps evidence." />',
+    '<meta name="description" content="Explore a free Microsoft security assessment in your browser using fictional samples or locally processed ConfigReview evidence." />',
     '<meta name="robots" content="noindex" />',
     `<link rel="canonical" href="${HOSTED_CANONICAL}" />`,
     `<link rel="icon" href="${HOSTED_ICON}" type="image/svg+xml" />`,
@@ -56,7 +56,7 @@ function hostedHtml(): Plugin {
     name: 'adminsecops-hosted-html',
     transformIndexHtml(html) {
       return html
-        .replace('<title>AdminSecOps</title>', `<title>AdminSecOps Browser Assessment | Palanikumar Annamalai</title>\n    ${meta}`)
+        .replace('<title>ConfigReview</title>', `<title>ConfigReview Browser Assessment | Palanikumar Annamalai</title>\n    ${meta}`)
         .replace('<html lang="en">', '<html lang="en-GB">')
         .replace(/<noscript>.*?<\/noscript>/s, HOSTED_NOSCRIPT);
     },

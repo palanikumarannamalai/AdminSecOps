@@ -1,39 +1,48 @@
-# AdminSecOps
+# ConfigReview
 
 **You're the admin. Are you secure?**
 Security assessment and remediation guidance for Microsoft administrators.
 
-AdminSecOps is a free, independent community project by Palanikumar Annamalai. It is not
-affiliated with or endorsed by Microsoft, QatarEnergy or the author's employer.
+ConfigReview is a free, independent community project by Palanikumar Annamalai. It is not
+affiliated with or endorsed by Microsoft or any current or former employer.
 
-AdminSecOps collects configuration evidence through fixed read operations, evaluates it
+ConfigReview collects configuration evidence through fixed read operations, evaluates it
 with deterministic controls and explains findings, remediation, rollback and verification.
 It does not automatically remediate your environment.
 
-**Status: online test release.** Implemented connectors are not a guarantee of complete
-coverage. Validate results in an authorised test environment before relying on them.
+**Status: online test release.** No live tenant has been validated in this release —
+connect an authorised test tenant, not production. Implemented connectors are not a
+guarantee of complete coverage. Validate results in an authorised test environment before
+relying on them.
 
-- [Launch the online app](https://app.adminsecops.com)
-- [About the project and author](https://www.palanikumar.net/tools/adminsecops)
+- [Launch the online app](https://configreview.apps.palanikumar.net)
+- [About the project and author](https://www.palanikumar.net/tools/configreview)
 - [Contribute](CONTRIBUTING.md) · [Roadmap](docs/ROADMAP.md) · [Changes](CHANGELOG.md)
 
 ## Choose how to use it
 
 | Mode | Where assessment data is processed | Getting started |
 |---|---|---|
-| Online app | Hosted service; results retained 30 days and audit events 90 days | Sign in with Microsoft at app.adminsecops.com; grant the required tenant consent |
-| Static browser edition | Your browser tab; no assessment API | [Explore fictional samples](https://www.palanikumar.net/tools/adminsecops/app/) — this is the older browser edition |
+| Online app | Hosted service; results retained 30 days and audit events 90 days | Sign in with Microsoft at configreview.apps.palanikumar.net; grant the required tenant consent |
+| Static browser edition | Your browser tab; no assessment API | [Explore fictional samples](https://www.palanikumar.net/tools/configreview/app/) — this is the older browser edition |
 | Local application / CLI | Your machine; you manage evidence and results | Build from source below; use the PowerShell collector for local evidence |
 
 ## Online coverage
 
 Microsoft Graph supplies Entra ID, SharePoint/OneDrive tenant settings, Teams app and
-per-team settings, and Intune evidence. Azure and Exchange Online have separate connection
-and consent flows. Public DNS supplies mail authentication records.
+per-team settings, and Intune evidence. Azure has a separate connection and consent flow.
+Public DNS supplies mail authentication records.
+
+Exchange Online assessment is not enabled in the hosted service. The only Exchange connection
+Microsoft offers for this data requires a management-scoped permission, so it stays off until
+there is a read-only path or an explicit opt-in. See
+[docs/ONLINE-CONNECTORS.md](docs/ONLINE-CONNECTORS.md#exchange-online-fixed-server-side-runner).
+
+Exchange Online and on-premises collection are available only in the local edition.
 
 Coverage depends on permissions, roles, licensing and successful collection. Teams tenant
-policies and on-premises AD, AD CS, Group Policy and Windows collection are not available
-online. The current connector release still needs end-to-end validation in authorised
+policies are not available online, and on-premises means AD, AD CS, Group Policy and
+Windows. The current connector release still needs end-to-end validation in authorised
 customer tenants; an implemented connector is not a claim that all live scenarios pass.
 
 Missing, failed or unauthorised evidence is **Not assessed**, never Pass. Coverage counts
@@ -63,13 +72,13 @@ Collect evidence from your environment (read-only; see
 Import-Module .\collectors\powershell\AdminSecOps.Collector.psd1
 Get-AdminSecOpsPermission -Module All        # what access is needed and why
 Test-AdminSecOpsPrerequisite -Module Entra
-Invoke-AdminSecOpsCollection -Module Entra, M365, Exchange -OutputPath C:\AdminSecOps-Evidence
+Invoke-AdminSecOpsCollection -Module Entra, M365, Exchange -OutputPath C:\ConfigReview-Evidence
 ```
 
 Assess offline from the command line:
 
 ```powershell
-node apps/cli/dist/main.js assess C:\AdminSecOps-Evidence\adminsecops-assessment-<timestamp>.zip --out .\reports
+node apps/cli/dist/main.js assess C:\ConfigReview-Evidence\adminsecops-assessment-<timestamp>.zip --out .\reports
 ```
 
 Run the end-to-end demonstration on sanitized data: `npm run demo`.

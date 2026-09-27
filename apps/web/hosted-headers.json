@@ -1,9 +1,9 @@
 {
-  "$comment": "Azure Static Web Apps route rules for the hosted AdminSecOps application (/tools/adminsecops/app/). Merged into the palanikumar.net staticwebapp.config.json by its scripts/build-adminsecops-app.mjs. The /tools/adminsecops/app route rewrites the canonical (no trailing slash) URL to the app's index.html. connect-src 'none' guarantees the page cannot send evidence anywhere (no fetch, XHR, WebSocket, EventSource or beacon).",
+  "$comment": "Azure Static Web Apps route rules for the hosted AdminSecOps application (/tools/configreview/app/). Merged into the palanikumar.net staticwebapp.config.json by its scripts/build-adminsecops-app.mjs. The /tools/configreview/app route rewrites the canonical (no trailing slash) URL to the app's index.html. connect-src 'none' guarantees the page cannot send evidence anywhere (no fetch, XHR, WebSocket, EventSource or beacon).",
   "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'none'; manifest-src 'self'; worker-src 'none'; frame-src 'none'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests",
   "routes": [
     {
-      "route": "/tools/adminsecops/app/assets/*",
+      "route": "/tools/configreview/app/assets/*",
       "headers": {
         "Content-Security-Policy": "@csp",
         "X-Robots-Tag": "noindex",
@@ -11,7 +11,7 @@
       }
     },
     {
-      "route": "/tools/adminsecops/app/*",
+      "route": "/tools/configreview/app/*",
       "headers": {
         "Content-Security-Policy": "@csp",
         "X-Robots-Tag": "noindex",
@@ -19,8 +19,8 @@
       }
     },
     {
-      "route": "/tools/adminsecops/app",
-      "rewrite": "/tools/adminsecops/app/index.html",
+      "route": "/tools/configreview/app",
+      "rewrite": "/tools/configreview/app/index.html",
       "headers": {
         "Content-Security-Policy": "@csp",
         "X-Robots-Tag": "noindex",

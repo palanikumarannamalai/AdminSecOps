@@ -40,7 +40,7 @@ describe('FindingDetail', () => {
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(base.title);
     expect(screen.getAllByText('ADCS-TPL-001').length).toBeGreaterThan(0);
     expect(screen.getByText(base.evidence[0]!.sha256!)).toBeTruthy();
-    expect(screen.getByText(/AdminSecOps never runs scripts/)).toBeTruthy();
+    expect(screen.getByText(/ConfigReview never runs scripts/)).toBeTruthy();
     const fix = document.getElementById('section-fix')!;
     expect(within(fix).getAllByRole('listitem')).toHaveLength(base.remediation.steps.length);
     expect(fix.querySelector('pre > code')?.textContent).toBe(base.remediation.scriptExample);

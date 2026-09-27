@@ -89,7 +89,7 @@ export function OnlineHomePage() {
   const connectedLabel = connectors.find((c) => c.id === justConnected)?.label;
   const active = jobs.some((job) => ['queued', 'running', 'collecting', 'processing'].includes(job.status));
   return <div className="page">
-    <PageHeader title="Your security workspace" eyebrow="AdminSecOps online · Test release"
+    <PageHeader title="Your security workspace" eyebrow="ConfigReview online · Test release"
       description={<p>Connect your workloads, run an assessment, and understand your next priorities. Open Coverage in any assessment to see exactly what was tested.</p>} />
     {connectedLabel !== undefined ? <p className="notice" role="status">{connectedLabel} is connected. It is included in the next assessment you run.</p> : null}
     <Panel title="Microsoft tenant connection" id="connection">
@@ -135,7 +135,7 @@ export function OnlineHomePage() {
 
 export function OnlineAboutPage() {
   return <div className="page"><PageHeader title="About this online test release" /><Panel title="Read-only Microsoft 365 assessment" id="privacy">
-    <p>AdminSecOps collects supported Microsoft Graph evidence (Microsoft Entra ID, SharePoint and OneDrive tenant settings, Teams app and per-team settings, and Intune compliance configuration) from your signed-in Microsoft organization, and public SPF and DMARC DNS records of its mail domains. Azure subscriptions and Exchange Online are read only after you connect them separately. Sign-in requires a supported administrator or reader role, and a tenant administrator must consent on Microsoft's screen to the permissions. The hosted backend evaluates the existing control library and stores assessment results in PostgreSQL.</p>
+    <p>ConfigReview collects supported Microsoft Graph evidence (Microsoft Entra ID, SharePoint and OneDrive tenant settings, Teams app and per-team settings, and Intune compliance configuration) from your signed-in Microsoft organization, and public SPF and DMARC DNS records of its mail domains. Azure subscriptions and Exchange Online are read only after you connect them separately. Sign-in requires a supported administrator or reader role, and a tenant administrator must consent on Microsoft's screen to the permissions. The hosted backend evaluates the existing control library and stores assessment results in PostgreSQL.</p>
     <p>Evidence can contain user names, object identifiers and security configuration. Access requires Microsoft sign-in. Downloaded reports also contain this information; share them only with authorized recipients.</p>
     <p>This release does not modify tenant settings. It does not assess every Microsoft workload, provide a security certification, or treat uncollected evidence as a passing check.</p>
   </Panel></div>;

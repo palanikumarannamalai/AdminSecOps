@@ -88,14 +88,14 @@ function defaultMessageFor(status: number): string {
   if (IS_ONLINE) {
     if (status === 401) return 'Your session has expired. Sign in again.';
     if (status === 403) return 'You do not have access to this action.';
-    return `The AdminSecOps service returned HTTP ${status}. Please try again.`;
+    return `The ConfigReview service returned HTTP ${status}. Please try again.`;
   }
-  if (status === 400) return 'The request was not accepted by the local AdminSecOps service.';
-  if (status === 403) return 'The local AdminSecOps service refused the request.';
+  if (status === 400) return 'The request was not accepted by the local ConfigReview service.';
+  if (status === 403) return 'The local ConfigReview service refused the request.';
   if (status === 404) return 'The requested item was not found. It may have been deleted.';
   if (status === 413) return 'The evidence package is too large.';
-  if (status >= 500) return 'The local AdminSecOps service reported an internal error.';
-  return `The local AdminSecOps service returned HTTP ${status}.`;
+  if (status >= 500) return 'The local ConfigReview service reported an internal error.';
+  return `The local ConfigReview service returned HTTP ${status}.`;
 }
 
 /** Map an error response body ({ error: { code, message } }) to an ApiError. */
@@ -122,10 +122,10 @@ function interpret<T>(status: number, bodyText: string, guard: Guard<T> | null):
   try {
     parsed = JSON.parse(bodyText);
   } catch {
-    throw new ApiError('invalid_response', 'The local AdminSecOps service returned a response that is not valid JSON.', status);
+    throw new ApiError('invalid_response', 'The local ConfigReview service returned a response that is not valid JSON.', status);
   }
   if (!guard(parsed)) {
-    throw new ApiError('invalid_response', 'The local AdminSecOps service returned an unexpected response.', status);
+    throw new ApiError('invalid_response', 'The local ConfigReview service returned an unexpected response.', status);
   }
   return parsed;
 }
@@ -195,7 +195,7 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
       }
       throw new ApiError(
         'network_error',
-        IS_ONLINE ? 'Cannot reach the AdminSecOps service. Check your connection and try again.' : 'Cannot reach the local AdminSecOps service. Check that it is running on this machine.',
+        IS_ONLINE ? 'Cannot reach the ConfigReview service. Check your connection and try again.' : 'Cannot reach the local ConfigReview service. Check that it is running on this machine.',
         0,
       );
     }
@@ -251,7 +251,7 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
           reject(
             new ApiError(
               'network_error',
-              'The upload failed because the local AdminSecOps service could not be reached.',
+              'The upload failed because the local ConfigReview service could not be reached.',
               0,
             ),
           );

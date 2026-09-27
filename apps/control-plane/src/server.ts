@@ -29,8 +29,8 @@ function connectorSignInError(error: unknown, description: unknown): string {
   const oauth = typeof error === 'string' && knownErrors.includes(error) ? error : undefined;
   const reference = [aadsts, oauth].filter(Boolean).join(', ');
   const reason = oauth === 'invalid_scope' || oauth === 'invalid_resource' || oauth === 'invalid_client' || oauth === 'unauthorized_client'
-    ? 'The connector authorization request was rejected. Share this error identifier with the AdminSecOps maintainer.'
-    : 'Return to the home page and try Reconnect; an administrator may need to grant consent. If it fails again, share this error identifier with the AdminSecOps maintainer.';
+    ? 'The connector authorization request was rejected. Share this error identifier with the ConfigReview maintainer.'
+    : 'Return to the home page and try Reconnect; an administrator may need to grant consent. If it fails again, share this error identifier with the ConfigReview maintainer.';
   return `Microsoft sign-in or consent for the connector was not completed${reference ? ` (${reference})` : ''}. ${reason}`;
 }
 
@@ -87,7 +87,7 @@ export async function buildServer({ config, store, exchangeRunner }: { config: C
     const current = session(request);
     // Connecting must be an explicit action in this app (or a typed URL), never started by another site.
     const site = request.headers['sec-fetch-site'];
-    if (site !== undefined && site !== 'same-origin' && site !== 'none') throw failure(403, 'Start the connection from the AdminSecOps home page.');
+    if (site !== undefined && site !== 'same-origin' && site !== 'none') throw failure(403, 'Start the connection from the ConfigReview home page.');
     throttle(`connect:${current.tenantId}:${current.userId}`, 10);
     if (!isConnectorId(request.params.connector)) throw failure(404, 'Unknown connector');
     const connector = request.params.connector;
@@ -120,7 +120,7 @@ export async function buildServer({ config, store, exchangeRunner }: { config: C
         await store.putSession({ ...current, encryptedConnectors: serializeConnectorMap(map) });
         return reply.header('Set-Cookie', cookie(transactionName, '', 0)).redirect(`/?connected=${tokens.connector}`);
       } catch {
-        throw failure(401, 'Connecting failed. Use the same account as your AdminSecOps session, make sure a tenant administrator has granted consent for this connector, then try Connect again from the home page.');
+        throw failure(401, 'Connecting failed. Use the same account as your ConfigReview session, make sure a tenant administrator has granted consent for this connector, then try Connect again from the home page.');
       }
     }
     try {

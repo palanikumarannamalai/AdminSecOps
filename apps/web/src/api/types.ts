@@ -11,7 +11,7 @@ export type { AssessmentComparison, AssessmentResult, AssessmentSummary, Control
 
 export interface HealthResponse {
   status: 'ok';
-  product: 'AdminSecOps';
+  product: 'ConfigReview';
   version: string;
   engineVersion: string;
   controlLibraryVersion: string;

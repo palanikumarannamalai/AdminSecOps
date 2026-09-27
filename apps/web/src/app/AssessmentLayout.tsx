@@ -31,7 +31,7 @@ function HostedAssessmentBar({ result }: { result: AssessmentResult }) {
     <div className="assessment-bar">
       {isSample ? (
         <p className="notice notice--sample" role="note">
-          Fictional sample data. Contoso and Fabrikam are invented organisations used to demonstrate AdminSecOps.
+          Fictional sample data. Contoso and Fabrikam are invented organisations used to demonstrate ConfigReview.
         </p>
       ) : null}
       <div className="assessment-bar__actions" role="group" aria-label="Assessment actions">

@@ -1,6 +1,6 @@
 # Connector deployment — 2026-09-24
 
-Deployed to https://app.adminsecops.com/ with deployment ID 2da0c347-229f-47c9-be18-78389eaaabad (Azure status 4, active). Includes hosted collector 0.3.0 and control library 0.4.0 (105 controls).
+Deployed to https://app.adminsecops.com/ with deployment ID `<deployment-id>` (Azure status 4, active). Includes hosted collector 0.3.0 and control library 0.4.0 (105 controls).
 
 The owner explicitly approved Graph OnPremDirectorySynchronization.Read.All, Azure Service Management user_impersonation and Exchange Online Exchange.Manage. Added these delegated permissions to the app registration, preserving existing entries. No customer tenant consent or role assignment was performed.
 
