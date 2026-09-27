@@ -56,7 +56,7 @@ export function SignInPage() {
           <button onClick={() => scrollTo('platform')}>Platform</button>
           <button onClick={() => scrollTo('how-it-works')}>How it works</button>
           <button onClick={() => scrollTo('trust')}>Trust &amp; privacy</button>
-          <a href="https://github.com/palanikumarannamalai/AdminSecOps">GitHub</a>
+          <a href="https://github.com/palanikumarannamalai/configreview">GitHub</a>
         </nav>
         <div className="inline-actions">
           <ThemeToggle />
@@ -237,7 +237,7 @@ export function SignInPage() {
         </a>
         <span>A community project by Palanikumar Annamalai</span>
         <a href="https://www.palanikumar.net/tools/configreview">Meet the author</a>
-        <a href="https://github.com/palanikumarannamalai/AdminSecOps/blob/main/CONTRIBUTING.md">
+        <a href="https://github.com/palanikumarannamalai/configreview/blob/main/CONTRIBUTING.md">
           Contribute
         </a>
       </footer>
