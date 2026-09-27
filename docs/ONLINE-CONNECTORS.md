@@ -305,7 +305,7 @@ Do these in order. Nothing here grants application permissions or changes custom
 ## Customer activation
 
 > **Confirm the publisher before you grant consent.** Microsoft's consent screen shows the
-> app name and publisher. For the hosted service the app is **AdminSecOps Online Test** and the
+> app name and publisher. For the hosted service the app is **ConfigReview by Palanikumar Annamalai** and the
 > publisher is shown as **unverified**: the registration has no Microsoft verified publisher
 > yet. Before granting, check that you started sign-in from `configreview.apps.palanikumar.net`, that the
 > app name matches, and that the permissions listed are the ones in this guide. If anything
