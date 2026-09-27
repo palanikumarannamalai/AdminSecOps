@@ -68,7 +68,7 @@ describe('api client', () => {
   it('uses a safe default message for non-JSON errors', () => {
     const error = toApiError(502, '<html><script>alert(1)</script></html>');
     expect(error.code).toBe('http_502');
-    expect(error.message).toBe('The local AdminSecOps service reported an internal error.');
+    expect(error.message).toBe('The local ConfigReview service reported an internal error.');
     expect(error.message).not.toContain('<script>');
   });
 

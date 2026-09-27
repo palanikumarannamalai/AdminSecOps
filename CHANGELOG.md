@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- The product UI is now ConfigReview at https://configreview.apps.palanikumar.net.
+  Page titles, no-JavaScript fallback, navigation, report headings and current public guides use the new name.
+  Existing evidence product markers, reportType keys, collector identifiers, npm workspace names,
+  cookies and request headers remain unchanged for compatibility with saved preview data.
+  Control IDs are unchanged. The GitHub repository retains its existing URL.
+
+
 - Launch review corrections:
   - The hosted service no longer offers the Exchange Online connector: its only supported
     connection needs the management-scoped `Exchange.Manage` permission. The README, landing

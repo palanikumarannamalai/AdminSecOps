@@ -10,7 +10,7 @@ import { loadSampleFiles, SAMPLES } from './samples';
 import type { AssessmentListItem, AssessmentResult, CreatedAssessment, SampleName } from './types';
 
 /*
- * In-browser implementation of the AdminSecOps client (hosted mode).
+ * In-browser implementation of the ConfigReview client (hosted mode).
  *
  * Evidence packages chosen by the visitor are read with File.arrayBuffer() and processed in
  * memory by the same engine packages the local service uses: ZIP limits, SHA-256 integrity

@@ -34,7 +34,7 @@ application (app-only) permissions.
 | Connector | Scopes requested | Read-only? |
 |---|---|---|
 | Microsoft Graph (sign-in) | `openid profile offline_access` plus `GRAPH_SCOPES`. The hosted service requests `AuditLog.Read.All Directory.Read.All Organization.Read.All Policy.Read.All RoleManagement.Read.Directory User.Read.All UserAuthenticationMethod.Read.All SharePointTenantSettings.Read.All TeamworkAppSettings.Read.All Team.ReadBasic.All DeviceManagementConfiguration.Read.All DeviceManagementManagedDevices.Read.All OnPremDirectorySynchronization.Read.All` | Yes. `loadConfig` refuses to start if `GRAPH_SCOPES` contains anything outside `READ_ONLY_GRAPH_SCOPES` (`apps/control-plane/src/config.ts`) |
-| Azure Resource Manager | `https://management.azure.com/user_impersonation openid profile offline_access` | The scope itself is not read-only: it lets the app call ARM with the signed-in user's Azure RBAC. Read-only access comes from the role you assign — use **Reader**. AdminSecOps sends only the fixed GET operations listed below, enforced by `validateArmUrl` |
+| Azure Resource Manager | `https://management.azure.com/user_impersonation openid profile offline_access` | The scope itself is not read-only: it lets the app call ARM with the signed-in user's Azure RBAC. Read-only access comes from the role you assign — use **Reader**. ConfigReview sends only the fixed GET operations listed below, enforced by `validateArmUrl` |
 | Public DNS | None (no Microsoft token) | Yes; public DNS queries only |
 | Exchange Online | Not requested: the connector is disabled in the hosted service | — |
 
@@ -176,7 +176,7 @@ delegated access token: `Connect-ExchangeOnline -AccessToken … -UserPrincipalN
 > **Boundary: owner decision required.** `Exchange.Manage` is **not a read-only permission**.
 > Microsoft documents no read-only delegated Exchange permission. The token carries the
 > signed-in user's whole Exchange RBAC; for an Exchange or Global Administrator that includes
-> write. AdminSecOps limits what it does, not what the token could do:
+> write. ConfigReview limits what it does, not what the token could do:
 >
 > - It runs one repository-owned script with a fixed table of `Get-*` cmdlets.
 >   `Connect-ExchangeOnline -CommandName` loads only those cmdlets. That is a load filter, not
@@ -307,7 +307,7 @@ Do these in order. Nothing here grants application permissions or changes custom
 > **Confirm the publisher before you grant consent.** Microsoft's consent screen shows the
 > app name and publisher. For the hosted service the app is **AdminSecOps Online Test** and the
 > publisher is shown as **unverified**: the registration has no Microsoft verified publisher
-> yet. Before granting, check that you started sign-in from `app.adminsecops.com`, that the
+> yet. Before granting, check that you started sign-in from `configreview.apps.palanikumar.net`, that the
 > app name matches, and that the permissions listed are the ones in this guide. If anything
 > differs, stop and do not grant consent.
 
@@ -318,7 +318,7 @@ Customers do this in the browser only:
 2. **Connect Azure Resource Manager** on the home page.
    - If the tenant restricts user consent, an administrator consents to Azure Service
      Management `user_impersonation`.
-   - Give the signing-in account **Reader** on the subscriptions to assess. AdminSecOps does
+   - Give the signing-in account **Reader** on the subscriptions to assess. ConfigReview does
      not assign it.
 3. **Connect Exchange Online** is not offered by the hosted service. A self-hosted deployment
    that enables it needs an administrator to consent to `Exchange.Manage`; sign in with Global
@@ -332,7 +332,7 @@ private networks, and it must not: no inbound customer ports, no browser access 
 systems, no remote execution. The 42 on-premises controls therefore stay **Unsupported
 online**. This is the proposed secure design. Nothing below exists yet.
 
-- **Agent.** A signed AdminSecOps on-premises agent: a Windows service built from this
+- **Agent.** A signed ConfigReview on-premises agent: a Windows service built from this
   repository's PowerShell collectors, compiled and code-signed. The customer installs it on
   a domain-joined server. It runs as a dedicated **gMSA** that is a normal domain user with
   read access. It is not a Domain Admin; it gets only the read rights the AD, AD CS and GPO

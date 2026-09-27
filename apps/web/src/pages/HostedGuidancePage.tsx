@@ -41,9 +41,9 @@ export function HostedGuidancePage() {
         </p>
       </Panel>
 
-      <Panel title="What AdminSecOps is and is not" id="guidance-scope">
+      <Panel title="What ConfigReview is and is not" id="guidance-scope">
         <p>
-          AdminSecOps performs a point-in-time configuration assessment of Microsoft environments from read-only
+          ConfigReview performs a point-in-time configuration assessment of Microsoft environments from read-only
           evidence, with deterministic, documented controls and remediation guidance.
         </p>
         <p>
@@ -56,14 +56,14 @@ export function HostedGuidancePage() {
 
       <Panel title="How to collect evidence" id="guidance-collect">
         <ul className="bullets">
-          <li>This application analyses the fictional samples and compatible AdminSecOps evidence packages (.zip).</li>
+          <li>This application analyses the fictional samples and compatible ConfigReview evidence packages (.zip).</li>
           <li>
             Browser security restrictions prevent a website from directly inspecting Active Directory, AD CS, Group Policy
             or Windows hosts, and this application does not sign in to Microsoft services. It cannot collect evidence
             itself.
           </li>
           <li>
-            Live evidence collection is a separate, read-only administrative operation performed with the AdminSecOps
+            Live evidence collection is a separate, read-only administrative operation performed with the ConfigReview
             PowerShell collector on a computer you control.
           </li>
           <li>Test collection in a non-production environment first.</li>
@@ -78,7 +78,7 @@ export function HostedGuidancePage() {
         </ul>
         <p>
           Collector documentation and the advanced download are on the{' '}
-          <a href={OVERVIEW_URL}>AdminSecOps overview page</a>.
+          <a href={OVERVIEW_URL}>ConfigReview overview page</a>.
         </p>
       </Panel>
 

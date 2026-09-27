@@ -10,7 +10,7 @@ const base = `/assessments/${ASSESSMENT_ID}`;
 describe('application routes', () => {
   it('renders the home page with tagline, samples and assessments', async () => {
     renderApp('/');
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe("You're the admin. Are you secure?");
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Evidence-based security configuration review for Microsoft environments.');
     await waitFor(() => expect(screen.getByRole('button', { name: 'Load sample' })).toBeTruthy());
     const table = await screen.findByRole('table');
     expect(within(table).getAllByRole('row')).toHaveLength(3);

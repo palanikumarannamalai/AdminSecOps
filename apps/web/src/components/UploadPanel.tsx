@@ -97,7 +97,7 @@ export function UploadPanel({
       >
         <p className="dropzone__title">{IS_HOSTED ? 'Drop an evidence package here to import it' : 'Drop an evidence package here'}</p>
         <p className="dropzone__hint" id={hintId}>
-          A .zip file produced by the AdminSecOps Collector, up to {formatBytes(MAX_UPLOAD_BYTES)}.{' '}
+          A .zip file produced by the ConfigReview Collector, up to {formatBytes(MAX_UPLOAD_BYTES)}.{' '}
           {IS_HOSTED
             ? 'It is processed in this browser and is not uploaded to any server.'
             : 'It is processed on this machine only.'}

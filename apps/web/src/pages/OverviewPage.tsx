@@ -237,7 +237,7 @@ export function OverviewPage() {
           </p>
           <CoverageBar assessed={summary.assessmentCoverage.assessed} applicable={summary.assessmentCoverage.applicable} />
           <p className="muted small">
-            Coverage shows how much of the control library the collected evidence allowed AdminSecOps to evaluate
+            Coverage shows how much of the control library the collected evidence allowed ConfigReview to evaluate
             (PASS, FAIL or REVIEW). It is not a security score: high coverage with many failures is not secure, and low
             coverage means parts of the environment were not checked.
           </p>

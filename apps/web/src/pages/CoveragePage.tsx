@@ -36,7 +36,7 @@ export function CoveragePage() {
         title="Assessment coverage by workload"
         description={
           <p>
-            Which Microsoft services this assessment actually examined. Catalogue controls are the checks AdminSecOps has
+            Which Microsoft services this assessment actually examined. Catalogue controls are the checks ConfigReview has
             for a workload; only controls with a Pass, Fail or Review result were assessed. Workloads without usable
             evidence are not assessed and never count as passing, whether the connector was not connected, consent was
             missing, the source is unsupported online or collection failed.

@@ -14,7 +14,7 @@ export function createFakeApi(overrides: Partial<ApiClient> = {}): ApiClient {
     health: vi.fn(() =>
       Promise.resolve({
         status: 'ok' as const,
-        product: 'AdminSecOps' as const,
+        product: 'ConfigReview' as const,
         version: '0.1.0',
         engineVersion: '0.1.0',
         controlLibraryVersion: '0.1.0',

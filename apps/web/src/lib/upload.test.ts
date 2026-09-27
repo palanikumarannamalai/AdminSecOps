@@ -4,7 +4,7 @@ import { safeHttpsUrl } from './url';
 
 describe('validatePackageFile', () => {
   it('accepts a zip within the size limit', () => {
-    expect(validatePackageFile({ name: 'AdminSecOps-Evidence.ZIP', size: 1024 })).toEqual({ ok: true });
+    expect(validatePackageFile({ name: 'ConfigReview-Evidence.ZIP', size: 1024 })).toEqual({ ok: true });
     expect(validatePackageFile({ name: 'e.zip', size: MAX_UPLOAD_BYTES })).toEqual({ ok: true });
   });
 

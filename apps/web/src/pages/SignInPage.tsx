@@ -46,11 +46,11 @@ export function SignInPage() {
         Skip to main content
       </a>
       <header className="marketing-nav">
-        <a className="brand" href="/" aria-label="AdminSecOps home">
+        <a className="brand" href="/" aria-label="ConfigReview home">
           <span className="brand-symbol" aria-hidden="true">
             ◈
           </span>{' '}
-          AdminSecOps
+          ConfigReview
         </a>
         <nav aria-label="Product">
           <button onClick={() => scrollTo('platform')}>Platform</button>
@@ -218,7 +218,7 @@ export function SignInPage() {
               Reading SharePoint settings needs Global Reader or SharePoint Administrator. Intune
               needs a licence and a role with Intune read access. Connect Azure subscriptions
               separately after sign-in. Its delegated permission may carry your account's write
-              authority; AdminSecOps executes only fixed read operations. Exchange Online assessment
+              authority; ConfigReview executes only fixed read operations. Exchange Online assessment
               is not enabled in the hosted service. The only Exchange connection Microsoft offers
               for this data requires a management-scoped permission, so it stays off until there is
               a read-only path or an explicit opt-in.
@@ -233,10 +233,10 @@ export function SignInPage() {
       </main>
       <footer className="marketing-footer">
         <a className="brand" href="/">
-          ◈ AdminSecOps
+          ◈ ConfigReview
         </a>
         <span>A community project by Palanikumar Annamalai</span>
-        <a href="https://www.palanikumar.net/tools/adminsecops">Meet the author</a>
+        <a href="https://www.palanikumar.net/tools/configreview">Meet the author</a>
         <a href="https://github.com/palanikumarannamalai/AdminSecOps/blob/main/CONTRIBUTING.md">
           Contribute
         </a>

@@ -6,7 +6,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page, type Request } from '@playwright/test';
 import yazl from 'yazl';
 
-const APP = '/tools/adminsecops/app/';
+const APP = '/tools/configreview/app/';
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const IMPORT_WARNING =
   'Evidence is processed locally in your browser. Do not use a shared or untrusted computer. Assessment evidence can contain account identifiers, security settings and weaknesses.';
@@ -76,7 +76,7 @@ function assertNoEgress(traffic: Traffic, baseURL: string): void {
     expect(['GET', 'HEAD'], `${r.method()} ${r.url()}`).toContain(r.method());
     expect(r.postData(), `request body sent to ${r.url()}`).toBeNull();
     expect(
-      url.pathname === '/favicon.svg' || url.pathname.startsWith('/tools/adminsecops'),
+      url.pathname === '/favicon.svg' || url.pathname.startsWith('/tools/configreview'),
       url.pathname,
     ).toBe(true);
   }
@@ -122,18 +122,18 @@ async function axe(page: Page): Promise<void> {
 // Tests
 // ---------------------------------------------------------------------------------------------
 
-test.describe('hosted AdminSecOps application', () => {
+test.describe('hosted ConfigReview application', () => {
   test('first screen offers samples, import and guidance, with the import warning and metadata', async ({
     page,
     baseURL,
   }) => {
     const traffic = watch(page);
     await start(page);
-    await expect(page).toHaveTitle('AdminSecOps Browser Assessment | Palanikumar Annamalai');
+    await expect(page).toHaveTitle('ConfigReview Browser Assessment | Palanikumar Annamalai');
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',
-      'https://www.palanikumar.net/tools/adminsecops/app',
+      'https://www.palanikumar.net/tools/configreview/app',
     );
     for (const name of [
       'Explore Contoso sample',
@@ -147,8 +147,8 @@ test.describe('hosted AdminSecOps application', () => {
     }
     await expect(page.getByText(IMPORT_WARNING).first()).toBeVisible();
     await expect(
-      page.getByRole('link', { name: 'Return to AdminSecOps overview' }),
-    ).toHaveAttribute('href', '/tools/adminsecops');
+      page.getByRole('link', { name: 'Return to ConfigReview overview' }),
+    ).toHaveAttribute('href', '/tools/configreview');
     await expect(page.getByRole('button', { name: 'Delete local data' })).toBeVisible();
     assertNoEgress(traffic, baseURL!);
   });
@@ -164,7 +164,7 @@ test.describe('hosted AdminSecOps application', () => {
     expect(response?.headers()['x-robots-tag']).toBe('noindex');
     const blocked = await page.evaluate(async () => {
       try {
-        await fetch('/tools/adminsecops/', { method: 'POST', body: 'evidence' });
+        await fetch('/tools/configreview/', { method: 'POST', body: 'evidence' });
         return false;
       } catch {
         return true;

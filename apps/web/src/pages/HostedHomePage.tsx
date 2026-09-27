@@ -44,11 +44,11 @@ export function HostedHomePage() {
   return (
     <div className="page">
       <PageHeader
-        eyebrow="AdminSecOps"
+        eyebrow="ConfigReview"
         title="Microsoft security assessment in your browser"
         description={
           <p>
-            Explore a Microsoft security assessment using fictional sample environments, or analyse a compatible AdminSecOps
+            Explore a Microsoft security assessment using fictional sample environments, or analyse a compatible ConfigReview
             evidence package locally in your browser. Your evidence is processed on this device and is not uploaded to
             palanikumar.net.
           </p>
@@ -76,7 +76,7 @@ export function HostedHomePage() {
           </li>
           <li className="start__option">
             <h3 className="start__title">Import an evidence package</h3>
-            <p className="muted small">Analyse an AdminSecOps evidence package (.zip) from your computer, in this browser only.</p>
+            <p className="muted small">Analyse an ConfigReview evidence package (.zip) from your computer, in this browser only.</p>
             <button type="button" className="button" onClick={focusImport}>
               Import evidence
             </button>
@@ -114,7 +114,7 @@ export function HostedHomePage() {
       <AssessmentsPanel />
 
       <p className="muted small disclaimer">
-        AdminSecOps performs a point-in-time configuration assessment. It is not a penetration test, a compliance
+        ConfigReview performs a point-in-time configuration assessment. It is not a penetration test, a compliance
         certification or a guarantee of security. Results depend on the evidence provided.
       </p>
     </div>

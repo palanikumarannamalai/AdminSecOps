@@ -11,7 +11,7 @@ export function AboutPage() {
     <div className="page page--narrow">
       <PageHeader eyebrow="About" title={`About ${PRODUCT_NAME}`} description={<p>{PRODUCT_DESCRIPTION}</p>} />
 
-      <Panel title="What AdminSecOps is" id="about-what">
+      <Panel title="What ConfigReview is" id="about-what">
         <p>
           {PRODUCT_TAGLINE} {PRODUCT_NAME} helps Microsoft administrators without a dedicated security team assess the
           configuration of Microsoft 365, Entra ID, Azure, Intune, Active Directory and Windows, and understand what to fix
@@ -26,7 +26,7 @@ export function AboutPage() {
       <Panel title="Privacy and local processing" id="about-privacy">
         <ul className="bullets">
           <li>
-            Evidence packages are processed on this machine by the local AdminSecOps service. Evidence, results and
+            Evidence packages are processed on this machine by the local ConfigReview service. Evidence, results and
             reports are not uploaded anywhere.
           </li>
           <li>This dashboard only talks to the local service. It loads no external scripts, fonts or analytics.</li>

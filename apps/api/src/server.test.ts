@@ -57,7 +57,7 @@ describe('API server', () => {
   it('reports health with security headers', async () => {
     const res = await app.inject({ method: 'GET', url: '/api/health', headers: { host: HOST } });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toMatchObject({ status: 'ok', product: 'AdminSecOps' });
+    expect(res.json()).toMatchObject({ status: 'ok', product: 'ConfigReview' });
     expect(res.headers['content-security-policy']).toContain("default-src 'self'");
     expect(res.headers['x-content-type-options']).toBe('nosniff');
     expect(res.headers['x-frame-options']).toBe('DENY');

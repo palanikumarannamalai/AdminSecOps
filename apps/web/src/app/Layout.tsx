@@ -115,7 +115,7 @@ export function Layout() {
           <button className="button mobile-menu" aria-expanded={menuOpen} aria-controls="workspace-nav" onClick={() => setMenuOpen(!menuOpen)}>Menu</button>
           {IS_HOSTED ? (
             <a className="button button--small topbar__overview" href={OVERVIEW_URL}>
-              Return to AdminSecOps overview
+              Return to ConfigReview overview
             </a>
           ) : null}
         </div>
