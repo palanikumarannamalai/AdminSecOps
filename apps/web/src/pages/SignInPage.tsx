@@ -122,13 +122,13 @@ export function SignInPage() {
             One workspace for your Microsoft environment
           </h2>
           <ul>
-            {['Entra ID', 'Microsoft 365', 'Intune', 'Azure', 'Exchange Online'].map((n) => (
+            {['Entra ID', 'Microsoft 365', 'Intune', 'Azure'].map((n) => (
               <li key={n}>{n}</li>
             ))}
           </ul>
           <p className="muted small">
-            Coverage depends on connected workloads, permissions and licensing. On-premises checks
-            are not available online.
+            Coverage depends on connected workloads, permissions and licensing. Exchange Online
+            assessment and on-premises collection are available only in the local edition.
           </p>
         </section>
         <section className="marketing-features" id="how-it-works" aria-labelledby="workflow-title">
