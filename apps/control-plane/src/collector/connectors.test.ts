@@ -539,6 +539,20 @@ describe('Entra PIM, application and synchronization datasets', () => {
     expect(status(result, 'HYB-SYNC-002')).toBe('PASS');
   });
 
+  it('collects PIM pages when the service rejects wildcard language negotiation', async () => {
+    const mock = mockServices();
+    const fetch: typeof globalThis.fetch = (input, init) => {
+      if (/roleAssignmentScheduleInstances|roleEligibilitySchedules/.test(String(input)) &&
+          new Headers(init?.headers).get('accept-language') !== 'en-US') {
+        return Promise.resolve(failure(400, 'UnknownError', 'CultureNotFoundException: * is an invalid culture identifier.'));
+      }
+      return mock.fetch(input, init);
+    };
+    const bundle = await collectOnline(options(mock, { fetch }));
+    expect(dataset(bundle, 'entra.roleAssignmentScheduleInstances').collectionStatus).toBe('Success');
+    expect(dataset(bundle, 'entra.roleEligibilitySchedules').collectionStatus).toBe('Success');
+  });
+
   it('marks PIM datasets NotApplicable without requests when P2 / ID Governance is not licensed', async () => {
     const mock = mockServices({
       '/v1.0/subscribedSkus': () => json({ value: [{ skuId: 'c7df2760-2c81-4ef7-b578-5b5392b571df', skuPartNumber: 'SPE_E3', capabilityStatus: 'Enabled', consumedUnits: 1, prepaidUnits: { enabled: 1 }, servicePlans: [plan('AAD_PREMIUM')] }] }),
