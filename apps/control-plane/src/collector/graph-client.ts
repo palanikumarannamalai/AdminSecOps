@@ -172,7 +172,8 @@ export const GRAPH_POLICY: ServicePolicy = {
   validate: validateGraphUrl,
   validateNext: (raw) => validateGraphUrl(raw),
   nextLinkProperty: '@odata.nextLink',
-  headers: { Accept: 'application/json', Prefer: 'include-unknown-enum-members' },
+  // PIM rejects Node fetch's default wildcard language with CultureNotFoundException.
+  headers: { Accept: 'application/json', 'Accept-Language': 'en-US', Prefer: 'include-unknown-enum-members' },
 };
 
 /**
