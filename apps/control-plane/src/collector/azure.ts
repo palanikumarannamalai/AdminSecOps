@@ -123,9 +123,9 @@ async function perSubscription(
   }
   if (known.ids.length === 0) {
     state.forcedStatus = {
-      status: 'Unauthorized',
+      status: 'NotCollected',
       code: 'NO_ACCESSIBLE_SUBSCRIPTIONS',
-      message: 'No enabled subscription of this tenant is visible to the signed-in account. Assign the Azure Reader role on the subscriptions to assess (or confirm the tenant has none); these controls are not assessed.',
+      message: 'No enabled subscription of this tenant is visible to the signed-in account. This does not distinguish a tenant with no subscriptions from subscriptions this account cannot see. Confirm the scope and Reader access; these controls are not assessed.',
     };
     return null;
   }

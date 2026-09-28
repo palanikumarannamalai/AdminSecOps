@@ -1,3 +1,5 @@
+import { registerOnPrem } from './onprem.js';
+import type { OnPremStore } from './onprem-store.js';
 import Fastify, { type FastifyRequest } from 'fastify';
 import { CONTROL_LIBRARY, CONTROL_LIBRARY_VERSION } from '@adminsecops/controls';
 import { compareAssessments } from '@adminsecops/engine';
@@ -36,7 +38,7 @@ function connectorSignInError(error: unknown, description: unknown): string {
 
 const isConnectorId = (value: unknown): value is ConnectorId => typeof value === 'string' && (CONNECTOR_IDS as readonly string[]).includes(value);
 
-export async function buildServer({ config, store, exchangeRunner }: { config: Config; store: Store; exchangeRunner?: ExchangeRunner }) {
+export async function buildServer({ config, store, exchangeRunner, onPremStore }: { config: Config; store: Store; exchangeRunner?: ExchangeRunner; onPremStore?: OnPremStore }) {
   const app = Fastify({ logger: false, bodyLimit: 16_384, trustProxy: false });
   const auth = createAuth(config);
   const sessions = new WeakMap<FastifyRequest, StoredSession>();
@@ -60,6 +62,7 @@ export async function buildServer({ config, store, exchangeRunner }: { config: C
   app.addHook('onRequest', async (request, reply) => {
     reply.header('Cache-Control', 'no-store').header('X-Content-Type-Options', 'nosniff').header('Referrer-Policy', 'no-referrer').header('X-Frame-Options', 'DENY').header('Strict-Transport-Security', 'max-age=31536000');
     const route = request.url.split('?')[0] ?? '';
+    if (onPremStore && route === '/api/onprem/ingest' && request.method === 'POST') return;
     if (route === '/api/health' || !route.startsWith('/api/') && route !== '/auth/logout' && !route.startsWith('/auth/connect/')) return;
     const token = readCookie(request, sessionName);
     if (!token || !/^[\w-]{43}$/.test(token)) throw failure(401, 'Sign in required');
@@ -72,6 +75,7 @@ export async function buildServer({ config, store, exchangeRunner }: { config: C
     sessions.set(request, current);
     if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && (request.headers.origin !== config.publicUrl || request.headers['x-adminsecops-client'] !== 'web')) throw failure(403, 'Invalid request origin');
   });
+  if (onPremStore) registerOnPrem(app, onPremStore, session);
   app.get('/api/health', () => ({ status: 'ok' }));
   app.get<{ Querystring: { tenantId?: string; consent?: string } }>('/auth/login', async (request, reply) => {
     throttle(`login:${request.ip}`, 30);
@@ -158,7 +162,7 @@ export async function buildServer({ config, store, exchangeRunner }: { config: C
     // Scopes the online collector uses that were not granted (when Microsoft reported grants) or not requested by this deployment.
     const missingScopes = ONLINE_REQUIRED_GRAPH_PERMISSIONS.filter(scope => granted !== null ? !granted.includes(scope) : !requested.has(scope));
     const connectors = await describeConnectors(config, current, exchangeRunner);
-    return { authenticated: true, user: { displayName: current.displayName, tenantId: current.tenantId, userId: current.userId }, connection: { connected: true, requiredScopes: ONLINE_REQUIRED_GRAPH_PERMISSIONS, grantedScopes: granted, missingScopes }, connectors };
+    return { authenticated: true, onPremEnabled: onPremStore !== undefined, user: { displayName: current.displayName, tenantId: current.tenantId, userId: current.userId }, connection: { connected: true, requiredScopes: ONLINE_REQUIRED_GRAPH_PERMISSIONS, grantedScopes: granted, missingScopes }, connectors };
   });
   app.get('/api/jobs', async request => ({ jobs: await store.listJobs(session(request).tenantId) }));
   app.post('/api/jobs', async (request, reply) => {

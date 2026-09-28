@@ -337,7 +337,7 @@ export const intuneWindowsBitLocker = defineControl({
     if (assigned.length === 0) {
       return fail({
         reason:
-          'No Windows 10/11 compliance policy is assigned, so BitLocker is not required on any Windows device.',
+          'No Windows 10/11 compliance policy is assigned, so this evidence does not establish a BitLocker compliance requirement. Other configuration policies or actual device encryption are not assessed by this check.',
         summary: 'Windows devices are not evaluated for BitLocker encryption.',
         facts,
         affectedObjects: windows

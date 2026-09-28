@@ -16,7 +16,7 @@ as passing, and the overview reports coverage, not a security score.
 | Public DNS | Implemented | On | SPF and DMARC records (`exchange.mailDnsRecords`) |
 | Azure Resource Manager | Implemented, separate consent and token | **Off** until `ONLINE_CONNECTORS` contains `azure` | 8 Azure datasets, 12 Azure controls |
 | Exchange Online | Implemented (fixed server-side PowerShell runner); available for explicit connection | Requires separate sign-in and management-scoped consent; live validation pending | 10 Exchange / Defender for Office 365 datasets |
-| On-premises (AD, AD CS, GPO, Windows) | **Design only**, not implemented | Not available | 42 controls stay not assessed online |
+| On-premises (AD, AD CS, GPO, Windows) | Manual ZIP upload and scheduled Windows collector (preview) | Local directory/host read access; separate upload credential for scheduling | Separate snapshot; enable ONPREM_ENABLED after database setup |
 
 The test deployment was activated on 2026-09-24 after explicit approval of the three delegated permissions. Hosted health, sign-in configuration, protected routes and the Exchange runtime probe passed; live tenant collection still requires interactive connection and validation. See `docs/validation/2026-09-24-connector-deployment.md`. On 2026-09-26 the Exchange connector was switched off in the hosted service (`ONLINE_CONNECTORS=azure`); the Exchange section below explains why.
 
@@ -324,51 +324,9 @@ Customers do this in the browser only:
    Reader or View-Only Organization Management.
 4. Run an assessment and open **Coverage** to see what was assessed.
 
-## On-premises connector (design only; not implemented)
+## On-premises collection preview
 
-The online service cannot reach Active Directory, AD CS, Group Policy or Windows hosts in
-private networks, and it must not: no inbound customer ports, no browser access to internal
-systems, no remote execution. The 42 on-premises controls therefore stay **Unsupported
-online**. This is the proposed secure design. Nothing below exists yet.
-
-- **Agent.** A signed ConfigReview on-premises agent: a Windows service built from this
-  repository's PowerShell collectors, compiled and code-signed. The customer installs it on
-  a domain-joined server. It runs as a dedicated **gMSA** that is a normal domain user with
-  read access. It is not a Domain Admin; it gets only the read rights the AD, AD CS and GPO
-  collectors document.
-- **Outbound only.** The agent polls `https://<service>/agent/v1/...` over TLS 1.2+. It opens
-  no listening port and needs no inbound firewall rule or VPN.
-- **Explicit enrollment per tenant.** A tenant administrator creates a one-time enrollment
-  code in the web UI (role-gated, 15-minute expiry, single use). The agent sends it with a
-  locally generated key pair (TPM or DPAPI-protected). The service binds the agent's public
-  key to that tenant and records who enrolled it. Administrators can revoke it at any time.
-- **No arbitrary execution.** The service can only request a **collection run** by
-  `datasetId` from the fixed catalogue compiled into the signed agent. It can never send
-  code, commands, script blocks or parameters beyond dataset IDs and limits. The agent
-  rejects anything else.
-- **Signed, validated evidence.** The agent builds the standard evidence package (manifest
-  with SHA-256 per file, as the PowerShell collector already does) and signs the manifest
-  with its enrolled key. The service accepts a package only if:
-  - the signature matches the agent enrolled for **that tenant**;
-  - the assessment ID and nonce match an outstanding request;
-  - it passes the existing schema, sensitive-content and size checks.
-  Replays and packages from another tenant's agent are rejected.
-- **Least data, bounded.** The same allow-listed fields as the PowerShell collector. There
-  are size and time limits, and the evidence is processed in memory like online evidence.
-- **Honest status.** An agent that is offline, unenrolled, outdated or failing produces
-  datasets marked not connected or failed, never passing.
-
-**Decision needed from the owner before implementation.** Shipping an installed agent is the
-only safe way to cover on-premises controls. It conflicts with the "no manual scripts"
-preference in one way: a customer administrator must install a signed service once on a
-domain-joined server. The owner needs to decide:
-
-1. whether this installation step is acceptable;
-2. who owns code signing (certificate and build pipeline);
-3. whether the hosted service may expose the outbound-only agent API.
-
-Until then the web UI shows on-premises sources as **Not supported online**, with no install
-link.
+Both manual upload and scheduled outbound collection are implemented behind the ONPREM_ENABLED feature flag. See [On-premises collection](ONPREM-COLLECTION.md) for deployment, security boundaries, validation and limitations. Customer administrators run the collector inside their network. This preview uses unsigned PowerShell scripts and Windows Task Scheduler, not a signed Windows service. Cloud and on-premises snapshots remain separate. Live AD validation remains necessary.
 
 ## Sources (official documentation, checked 2026-09-22)
 
@@ -380,4 +338,3 @@ link.
 ## Hosted data retention
 
 Assessment results are retained in the live database for 30 days and audit events for 90 days. Database backups may retain deleted records for up to seven additional days. Downloaded reports remain under your control. Raw collection evidence is processed in memory. The hosted backup retention setting was verified as seven days on 2026-09-27. This wording distinguishes live-database cleanup from expiry of backup copies; it does not change either setting.
-

@@ -1,3 +1,4 @@
+import { OnPremPanel } from '../components/OnPremPanel';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { z } from 'zod';
@@ -121,6 +122,7 @@ export function OnlineHomePage() {
       <ConnectorList connectors={connectors} onError={setError} />
     </Panel> : null}
     {error !== null ? <p role="alert" className="error-text">{error}</p> : null}
+    {session.onPremEnabled ? <OnPremPanel tenantId={session.user.tenantId} /> : null}
     <Panel title="Assessment jobs" id="jobs">
       <p className="muted">Status refreshes every five seconds.</p>
       {jobs.length === 0 ? <p>No jobs to display yet.</p> : <ul className="sample-list">{jobs.map((job) => <li key={job.id} className="sample-list__item"><div>

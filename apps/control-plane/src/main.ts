@@ -1,3 +1,4 @@
+import { PostgresOnPremStore } from './onprem-store.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fastifyStatic from '@fastify/static';
@@ -16,7 +17,9 @@ const pool=new Pool({connectionString:config.databaseUrl,max:5,connectionTimeout
 pool.on('error',()=>console.error('Database connection error.'));
 const store=new PostgresStore(pool);
 await store.initialize();
-const app=await buildServer({config,store,...(exchangeRunner?{exchangeRunner}:{})});
+const onPremStore=process.env.ONPREM_ENABLED === 'true' ? new PostgresOnPremStore(pool) : undefined;
+if(onPremStore) await onPremStore.initialize();
+const app=await buildServer({config,store,...(onPremStore?{onPremStore}:{}),...(exchangeRunner?{exchangeRunner}:{})});
 app.addHook('onSend',async(request,reply,payload)=>{
   if(!request.url.includes('/report.html')) reply.header('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'; object-src 'none'");
   return payload;

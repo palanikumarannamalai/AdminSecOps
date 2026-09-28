@@ -15,6 +15,7 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $settings = Join-Path $repoRoot 'collectors/powershell/PSScriptAnalyzerSettings.psd1'
 $targets = @(
     (Join-Path $repoRoot 'collectors/powershell'),
+    (Join-Path $repoRoot 'collectors/onprem'),
     (Join-Path $repoRoot 'scripts')
 )
 
