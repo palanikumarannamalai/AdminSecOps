@@ -102,7 +102,7 @@ export function OnlineHomePage() {
         <h3 id="readiness-heading">Before you run</h3>
         <p>Microsoft Graph checks cover Entra, SharePoint, limited Teams settings and Intune compliance. Licences and readable evidence are checked during collection; a connection does not guarantee full coverage.</p>
         <ul className="bullets">{connectors.map((c) => <li key={c.id}><strong>{c.label}:</strong> {CONNECTOR_STATE[c.state].label}. {c.state === 'connected' ? 'Collection will be attempted.' : c.reason}</li>)}</ul>
-        <p>AD, AD CS, Group Policy and Windows host checks cannot run online. These remain separate coverage gaps, not passing checks.</p>
+        <p>AD, AD CS, Group Policy and Windows host checks use a collector inside your network. {session.onPremEnabled ? 'Use On-premises collection below for manual or scheduled uploads. Results are saved as a separate snapshot.' : 'On-premises uploads are not enabled on this deployment.'} Missing evidence remains untested.</p>
         <p>{missingScopes.length > 0 ? `${missingScopes.length} required permissions are missing. ` : ''}You can run a partial assessment. Review Coverage afterwards for the exact checks, licence decisions and collection failures.</p>
       </section>
       <div className="inline-actions"><button className="button button--primary" disabled={starting || active || !session.connection.connected} onClick={() => void run()}>

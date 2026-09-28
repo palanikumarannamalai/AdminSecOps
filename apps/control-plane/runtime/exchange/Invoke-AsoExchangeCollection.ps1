@@ -43,6 +43,8 @@ $script:Operations = [ordered]@{
     mailboxForwarding    = @{ Cmdlet = 'Get-EXOMailbox'; Properties = @('UserPrincipalName', 'RecipientTypeDetails', 'ForwardingSmtpAddress', 'ForwardingAddress', 'DeliverToMailboxAndForward') }
     smtpAuthMailboxes    = @{ Cmdlet = 'Get-EXOCASMailbox'; Properties = @('PrimarySmtpAddress', 'SmtpClientAuthenticationDisabled') }
     atpPolicy            = @{ Cmdlet = 'Get-AtpPolicyForO365'; Properties = @('EnableATPForSPOTeamsODB', 'EnableSafeDocs', 'AllowSafeDocsOpen') }
+    inboxRules           = @{ Cmdlet = 'Get-InboxRule'; Properties = @('RecordKind','Mailbox','Identity','Name','Enabled','ScannedMailboxes','UnscannedMailboxes','Complete') }
+    transportRules       = @{ Cmdlet = 'Get-TransportRule'; Properties = @('Identity','Name','State','Mode','Priority','HasRedirect','HasCopy','HasBlindCopy','HasAddedRecipients') }
 }
 
 function Write-AsoResult {
@@ -86,6 +88,41 @@ function Invoke-AsoOperation {
     try {
         $truncated = $false
         switch ($Id) {
+            'inboxRules' {
+                # Bound the fan-out. Inbox rules require a role beyond Global Reader.
+                $boxes = @(Get-EXOMailbox -RecipientTypeDetails UserMailbox,SharedMailbox -ResultSize 26 -ErrorAction Stop)
+                $truncated = $boxes.Count -gt 25
+                $scope = @($boxes | Select-Object -First 25)
+                $rows = [System.Collections.Generic.List[object]]::new()
+                $scanned = 0
+                $timer = [System.Diagnostics.Stopwatch]::StartNew()
+                foreach ($box in $scope) {
+                    if ($timer.Elapsed.TotalSeconds -ge 45) { $truncated = $true; break }
+                    try {
+                        $rules = @(Get-InboxRule -Mailbox $box.PrimarySmtpAddress -IncludeHidden -ResultSize 201 -ErrorAction Stop)
+                        if ($rules.Count -gt 200) { $truncated = $true }
+                        foreach ($rule in @($rules | Select-Object -First 200)) {
+                            foreach ($field in @('ForwardTo','RedirectTo','ForwardAsAttachmentTo')) {
+                                if ($null -eq $rule.PSObject.Properties[$field]) { $truncated = $true }
+                            }
+                            $r = Select-AsoProperty -InputObject $rule -Property @('Identity','Name','Enabled','ForwardTo','RedirectTo','ForwardAsAttachmentTo')
+                            if ($r.ForwardTo -or $r.RedirectTo -or $r.ForwardAsAttachmentTo) {
+                                $rows.Add([pscustomobject]@{ RecordKind='rule';Mailbox=[string]$box.PrimarySmtpAddress;Identity=$r.Identity;Name=$r.Name;Enabled=$r.Enabled })
+                            }
+                        }
+                        $scanned++
+                    } catch { $truncated = $true }
+                }
+                $raw = @([pscustomobject]@{ RecordKind='coverage';ScannedMailboxes=$scanned;UnscannedMailboxes=($boxes.Count-$scanned);Complete=(-not $truncated) }) + @($rows.ToArray())
+            }
+            'transportRules' {
+                $rules = @(Get-TransportRule -ExcludeConditionActionDetails:$false -ResultSize ($MaxItems + 1) -ErrorAction Stop)
+                if ($rules.Count -gt $MaxItems) { $truncated = $true }
+                $raw = @(foreach ($rule in @($rules | Select-Object -First $MaxItems)) {
+                    $r = Select-AsoProperty -InputObject $rule -Property @('Identity','Name','State','Mode','Priority','RedirectMessageTo','CopyTo','BlindCopyTo','AddToRecipients')
+                    [pscustomobject]@{ Identity=$r.Identity;Name=$r.Name;State=$r.State;Mode=$r.Mode;Priority=$r.Priority;HasRedirect=(Test-AsoAction -Object $rule -Name 'RedirectMessageTo');HasCopy=(Test-AsoAction -Object $rule -Name 'CopyTo');HasBlindCopy=(Test-AsoAction -Object $rule -Name 'BlindCopyTo');HasAddedRecipients=(Test-AsoAction -Object $rule -Name 'AddToRecipients') }
+                })
+            }
             'mailboxForwarding' {
                 $raw = @(Get-EXOMailbox -Filter 'ForwardingSmtpAddress -ne $null -or ForwardingAddress -ne $null' -Properties ForwardingSmtpAddress, ForwardingAddress, DeliverToMailboxAndForward -ResultSize ($MaxItems + 1) -ErrorAction Stop)
                 $raw = @($raw | Where-Object { $_.ForwardingSmtpAddress -or $_.ForwardingAddress })
@@ -102,12 +139,49 @@ function Invoke-AsoOperation {
         }
         if ($raw.Count -gt $MaxItems) { $truncated = $true; $raw = @($raw | Select-Object -First $MaxItems) }
         $items = [System.Collections.Generic.List[object]]::new()
-        foreach ($o in $raw) { $items.Add((Select-AsoProperty -InputObject $o -Property $op.Properties)) }
+        foreach ($o in $raw) {
+            $item = Select-AsoProperty -InputObject $o -Property $op.Properties
+            if ($Id -eq 'mailboxForwarding') {
+                $resolved = Resolve-AsoForwardingRecipient -Identity ([string]$item.ForwardingAddress)
+                $item['ResolvedForwardingSmtpAddress'] = $resolved.address
+                $item['ResolvedForwardingRecipientType'] = $resolved.type
+            }
+            $items.Add($item)
+        }
         return @{ status = 'ok'; items = [object[]]$items.ToArray(); truncated = $truncated }
     }
     catch {
         return @{ status = (Get-AsoFailureCode -ErrorRecord $_) }
     }
+}
+
+function Test-AsoAction {
+    param($Object, [string] $Name)
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property) { return $null }
+    return [bool]$property.Value
+}
+
+function Resolve-AsoForwardingRecipient {
+    param([string] $Identity)
+    $unknown = @{ address = $null; type = $null }
+    if (-not $Identity) { return $unknown }
+    if (-not $script:RecipientTimer.IsRunning) { $script:RecipientTimer.Start() }
+    if ($script:RecipientCache.ContainsKey($Identity)) { return $script:RecipientCache[$Identity] }
+    if ($script:RecipientCache.Count -ge 100 -or $script:RecipientTimer.Elapsed.TotalSeconds -ge 60) { return $unknown }
+    $script:RecipientCache[$Identity] = $unknown
+    try {
+        $recipient = @(Get-Recipient -Identity $Identity -ErrorAction Stop)
+        if ($recipient.Count -ne 1) { return $unknown }
+        $r = Select-AsoProperty -InputObject $recipient[0] -Property @('RecipientTypeDetails','ExternalEmailAddress','PrimarySmtpAddress')
+        $address = $null
+        if ($r.RecipientTypeDetails -in @('MailContact','MailUser')) { $address = $r.ExternalEmailAddress }
+        elseif ($r.RecipientTypeDetails -in @('UserMailbox','SharedMailbox','RoomMailbox','EquipmentMailbox')) { $address = $r.PrimarySmtpAddress }
+        # Groups and unknown types stay unresolved; a group's primary address does not describe its members.
+        $result = @{ address = $address; type = $r.RecipientTypeDetails }
+        $script:RecipientCache[$Identity] = $result
+        return $result
+    } catch { return $unknown }
 }
 
 function Get-AsoModuleVersion {
@@ -154,7 +228,7 @@ try {
     }
     Import-Module -Name ExchangeOnlineManagement -RequiredVersion $script:ModuleVersion -ErrorAction Stop
 
-    $cmdlets = @($script:Operations.Values | ForEach-Object { $_.Cmdlet })
+    $cmdlets = @($script:Operations.Values | ForEach-Object { $_.Cmdlet }) + @('Get-Recipient')
     try {
         Connect-ExchangeOnline -AccessToken $token -UserPrincipalName $upn -CommandName $cmdlets -ShowBanner:$false -SkipLoadingFormatData -ErrorAction Stop | Out-Null
     }
@@ -165,6 +239,8 @@ try {
     }
     try {
         $info = @(Get-ConnectionInformation -ErrorAction SilentlyContinue) | Select-Object -First 1
+        $script:RecipientCache = @{}
+        $script:RecipientTimer = [System.Diagnostics.Stopwatch]::new()
         if ($null -ne $info -and $null -ne $info.PSObject.Properties['TenantID']) { $result.connectedTenantId = [string]$info.TenantID }
         # The caller discards everything when the connected tenant is not the verified tenant.
         foreach ($id in $script:Operations.Keys) {

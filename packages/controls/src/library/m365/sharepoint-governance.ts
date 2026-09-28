@@ -12,6 +12,7 @@ const common = {
 
 export const m365SharePointInvitationIdentity = defineControl({
   ...common,
+  version: '1.0.1',
   id: 'M365-SPO-005',
   title: 'SharePoint guest invitations require the invited account',
   description: 'Checks the SharePoint tenant invitation account-matching setting. This does not establish effective Entra B2B redemption behavior or protect anonymous links.',
@@ -22,7 +23,7 @@ export const m365SharePointInvitationIdentity = defineControl({
   implementationConsiderations: ['This flag alone does not prove how Entra B2B invitations are redeemed.', 'Anyone links do not require the invited account; review M365-SPO-001 separately.'],
   impact: 'Guests using another account or an alias may need a new invitation.',
   rollback: ['Restore the recorded invitation setting after reviewing the reason for rollback.'],
-  validation: ['Run a new assessment and verify the collected flag.', 'Confirm that an approved guest invitation is redeemed by the intended account.'],
+  validation: ['Run a new assessment and verify the collected flag.', 'If Graph omits it, use an authorised SharePoint administrator in SharePoint Online Management Shell: Get-SPOTenant | Select-Object RequireAcceptingAccountMatchInvitedAccount,EnableAzureADB2BIntegration. Do not change either setting to make the test pass.', 'Confirm that an approved guest invitation is redeemed by the intended account.'],
   references: [M365_REF.graphSharePointSettings, M365_REF.manageSharing],
   applies: ctx => ctx.data('m365.sharePointSettings').sharingCapability.trim().toLowerCase() === 'disabled' ? { applicable: false, reason: 'External sharing is disabled.' } : { applicable: true },
   evaluate: ctx => {
@@ -30,7 +31,7 @@ export const m365SharePointInvitationIdentity = defineControl({
     const mode = s.sharingCapability.trim().toLowerCase();
     if (!['externalusersharingonly', 'externaluserandguestsharing', 'existingexternalusersharingonly'].includes(mode)) return review({ reason: 'The sharing capability is unrecognized; invitation applicability needs review.', summary: 'Invitation scope is uncertain.', confidence: 'low' });
     const enabled = s.isRequireAcceptingUserToMatchInvitedUserEnabled;
-    if (enabled === null) return notAssessed({ reason: 'Microsoft Graph did not return the invitation account-matching setting.', summary: 'Invitation setting unavailable.' });
+    if (enabled === null) return notAssessed({ reason: 'Microsoft Graph did not return the invitation account-matching setting. This is a collection gap, not evidence that matching is disabled.', summary: 'Invitation setting needs administrator verification.', confidence: 'low', notes: ['An authorised SharePoint administrator can read RequireAcceptingAccountMatchInvitedAccount and EnableAzureADB2BIntegration with Get-SPOTenant. This release cannot import that result into the cloud assessment; the control remains unassessed until evidence is collected.'] });
     const facts = [fact('Require invited account', enabled)];
     const notes = ['Tenant flag only: Entra B2B redemption and Anyone links are not validated by this check.'];
     return enabled ? pass({ reason: 'The SharePoint invitation account-matching setting is enabled.', summary: 'Invited-account matching is configured.', facts, notes }) : review({ reason: 'SharePoint does not require the invited account through this setting. Confirm Entra B2B redemption controls and partner requirements before changing it.', summary: 'Guest invitation identity needs review.', facts, notes });

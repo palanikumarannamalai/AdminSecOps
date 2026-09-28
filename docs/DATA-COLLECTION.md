@@ -31,7 +31,7 @@ Licence prerequisites are detected: when a feature is not licensed the dataset i
 - **identifiers** - names, UPNs or account names of users, groups, devices or mailboxes.
 - **identifiers-and-activity** - identifiers plus activity metadata such as last sign-in time.
 
-## Datasets (57)
+## Datasets (59)
 
 ### Entra
 
@@ -67,6 +67,8 @@ Licence prerequisites are detected: when a feature is not licensed the dataset i
 
 | Dataset | Description | Read operations | Permissions | Prerequisites | Personal data |
 |---|---|---|---|---|---|
+| `exchange.inboxRules` | Bounded mailbox scan including hidden Inbox rules. Only forwarding-rule identifiers and enabled state are stored; no message content or conditions. | `Get-EXOMailbox`<br>`Get-InboxRule -IncludeHidden` | Exchange role permitting Get-InboxRule on the assessed mailboxes; Global Reader and View-Only Organization Management are insufficient | - | identifiers |
+| `exchange.transportRules` | Mail-flow rule state and recipient redirection/copy actions. Conditions, exceptions, recipient lists and message content are not stored. | `Get-TransportRule -ExcludeConditionActionDetails:$false` | Exchange Online: View-Only Organization Management (or Global Reader) | - | identifiers |
 | `exchange.organizationConfig` | Organization-wide Exchange Online settings including mailbox auditing and modern authentication. | `Get-OrganizationConfig` | Exchange Online: View-Only Organization Management (or Global Reader) | - | none |
 | `exchange.transportConfig` | Organization-wide transport settings including SMTP AUTH. | `Get-TransportConfig` | Exchange Online: View-Only Organization Management (or Global Reader) | - | none |
 | `exchange.adminAuditLogConfig` | Whether unified audit log ingestion is enabled for the organization. | `Get-AdminAuditLogConfig` | Exchange Online: View-Only Organization Management (or Global Reader) | - | none |
@@ -74,7 +76,7 @@ Licence prerequisites are detected: when a feature is not licensed the dataset i
 | `exchange.dkimSigningConfigs` | DKIM signing configuration per domain. | `Get-DkimSigningConfig` | Exchange Online: View-Only Organization Management (or Global Reader) | - | none |
 | `exchange.outboundSpamPolicies` | Outbound spam policies including the automatic external forwarding mode. | `Get-HostedOutboundSpamFilterPolicy` | Exchange Online: View-Only Organization Management (or Global Reader) | - | none |
 | `exchange.remoteDomains` | Remote domain settings including whether automatic forwarding is allowed. | `Get-RemoteDomain` | Exchange Online: View-Only Organization Management (or Global Reader) | - | none |
-| `exchange.mailboxForwarding` | Only mailboxes that have ForwardingSmtpAddress or ForwardingAddress set. Inbox rules and message content are not collected. | `Get-EXOMailbox -Filter "ForwardingSmtpAddress -ne $null -or ForwardingAddress -ne $null" -Properties ForwardingSmtpAddress,ForwardingAddress,DeliverToMailboxAndForward` | Exchange Online: View-Only Organization Management (or Global Reader) | - | identifiers |
+| `exchange.mailboxForwarding` | Only mailboxes that have ForwardingSmtpAddress or ForwardingAddress set. Inbox rules use a separate dataset; message content is not collected. | `Get-EXOMailbox -Filter "ForwardingSmtpAddress -ne $null -or ForwardingAddress -ne $null" -Properties ForwardingSmtpAddress,ForwardingAddress,DeliverToMailboxAndForward` | Exchange Online: View-Only Organization Management (or Global Reader) | - | identifiers |
 | `exchange.smtpAuthMailboxes` | Only mailboxes where SmtpClientAuthenticationDisabled is explicitly set (overriding the organization setting). | `Get-EXOCASMailbox -Properties SmtpClientAuthenticationDisabled` | Exchange Online: View-Only Organization Management (or Global Reader) | - | identifiers |
 | `exchange.atpPolicy` | Safe Attachments for SharePoint, OneDrive and Microsoft Teams, and Safe Documents. | `Get-AtpPolicyForO365` | Exchange Online: View-Only Organization Management (or Global Reader) | Microsoft Defender for Office 365 Plan 1 or Plan 2 | none |
 | `exchange.mailDnsRecords` | Public SPF (TXT) and DMARC (_dmarc TXT) records for each authoritative accepted domain. | `Resolve-DnsName -Type TXT <domain>`<br>`Resolve-DnsName -Type TXT _dmarc.<domain>` | None (public DNS) | - | none |

@@ -11,6 +11,8 @@ import {
   exchangeRemoteDomains,
   exchangeSmtpAuthMailboxes,
   exchangeTransportConfig,
+  exchangeInboxRules,
+  exchangeTransportRules,
 } from '@adminsecops/schemas';
 import { createSystemTxtResolver, isQueryableDomain, type TxtLookup, type TxtResolver } from './dns.js';
 import {
@@ -120,7 +122,9 @@ async function operation(state: DatasetState, context: CollectionContext, id: Ex
   }
   if (op.truncated) {
     state.partial = true;
-    state.errors.push(message('RESULT_LIMIT', `${EXCHANGE_OPERATIONS[id].cmdlet} returned more objects than the collection limit; results are incomplete.`));
+    state.errors.push(id === 'inboxRules'
+      ? message('INBOX_SCAN_INCOMPLETE', 'Inbox-rule coverage is incomplete because of scan limits, unread mailboxes or unavailable action properties.')
+      : message('RESULT_LIMIT', `${EXCHANGE_OPERATIONS[id].cmdlet} returned more objects than the collection limit; results are incomplete.`));
   }
   return op.items;
 }
@@ -192,11 +196,17 @@ const remoteDomains: DatasetCollector = async (state, context) => {
 const mailboxForwarding: DatasetCollector = async (state, context) => {
   const items = await operation(state, context, 'mailboxForwarding');
   if (items === null) return null;
+  if (items.some(m => v(m, 'ForwardingAddress') !== null)) {
+    state.operations.push('Get-Recipient -Identity <forwarding recipient> (maximum 100 lookups, 60-second lookup budget)');
+    state.warnings.push(message('RECIPIENT_RESOLUTION_SCOPE', 'Recipient resolution covers immediate mail contact, mail user and mailbox destinations. Groups, failed lookups and destinations beyond the lookup budget require review; forwarding chains are not evaluated.'));
+  }
   return items.map((m) => ({
     userPrincipalName: v(m, 'UserPrincipalName'),
     recipientTypeDetails: v(m, 'RecipientTypeDetails'),
     forwardingSmtpAddress: v(m, 'ForwardingSmtpAddress'),
     forwardingAddress: v(m, 'ForwardingAddress'),
+    resolvedForwardingSmtpAddress: v(m, 'ResolvedForwardingSmtpAddress'),
+    resolvedForwardingRecipientType: v(m, 'ResolvedForwardingRecipientType'),
     deliverToMailboxAndForward: v(m, 'DeliverToMailboxAndForward'),
   }));
 };
@@ -206,6 +216,21 @@ const smtpAuthMailboxes: DatasetCollector = async (state, context) => {
   if (items === null) return null;
   state.warnings.push(message('IDENTIFIER_PRIMARY_SMTP', 'Get-EXOCASMailbox does not return UserPrincipalName; userPrincipalName contains the primary SMTP address.'));
   return items.map((m) => ({ userPrincipalName: v(m, 'PrimarySmtpAddress'), smtpClientAuthenticationDisabled: v(m, 'SmtpClientAuthenticationDisabled') }));
+};
+
+const inboxRules: DatasetCollector = async (state, context) => {
+  const items = await operation(state, context, 'inboxRules');
+  if (items === null) return null;
+  const coverage = items.find(i => i['RecordKind'] === 'coverage');
+  if (!coverage) throw new GraphRequestError('invalid-response', 'Inbox-rule collection did not report its coverage.');
+  state.warnings.push(message('INBOX_RULE_SCOPE', 'At most 25 user/shared mailboxes and 200 rules per mailbox are checked, including hidden rules. Global Reader cannot read Inbox rules. No role is granted automatically; unread mailboxes remain untested.'));
+  return { complete: v(coverage, 'Complete') === true && !state.partial, scannedMailboxes: v(coverage, 'ScannedMailboxes'), unscannedMailboxes: v(coverage, 'UnscannedMailboxes'), rules: items.filter(i => i['RecordKind'] === 'rule').map(i => ({ mailbox: v(i, 'Mailbox'), id: v(i, 'Identity'), name: v(i, 'Name'), enabled: v(i, 'Enabled') })) };
+};
+
+const transportRules: DatasetCollector = async (state, context) => {
+  const items = await operation(state, context, 'transportRules');
+  if (items === null) return null;
+  return { complete: !state.partial, rules: items.map(i => ({ id: v(i, 'Identity'), name: v(i, 'Name'), state: v(i, 'State'), mode: v(i, 'Mode'), priority: v(i, 'Priority'), hasRedirect: v(i, 'HasRedirect'), hasCopy: v(i, 'HasCopy'), hasBlindCopy: v(i, 'HasBlindCopy'), hasAddedRecipients: v(i, 'HasAddedRecipients') })) };
 };
 
 const atpPolicy: DatasetCollector = async (state, context) => {
@@ -304,4 +329,6 @@ export const EXCHANGE_PLAN: readonly PlannedDataset[] = [
   { definition: exchangeAtpPolicy, collector: atpPolicy },
   // After acceptedDomains so the authoritative domain list is used when available.
   { definition: exchangeMailDnsRecords, collector: mailDnsRecords },
+  { definition: exchangeInboxRules, collector: inboxRules },
+  { definition: exchangeTransportRules, collector: transportRules },
 ];

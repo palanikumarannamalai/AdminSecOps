@@ -3,7 +3,7 @@
 The hosted control plane (`apps/control-plane`, hosted collector **0.3.0**) reads evidence
 server-side, read-only, with the signed-in administrator's **delegated** authority. It never
 uses application (app-only) permissions, never changes tenant, Azure or Exchange settings,
-and never assigns roles. Customers use only the browser: there is nothing to download or run.
+and never assigns roles. Cloud customers use the browser. On-premises collection requires the separate Windows collector inside the network.
 
 Every source that cannot be read produces datasets with an explicit status and code. The
 Coverage page turns those into **Not connected**, **Consent or permission required**,
@@ -15,7 +15,7 @@ as passing, and the overview reports coverage, not a security score.
 | Microsoft Graph (existing sign-in) | Implemented | On | Entra ID (all 17 datasets), SharePoint/OneDrive, Teams settings, Intune |
 | Public DNS | Implemented | On | SPF and DMARC records (`exchange.mailDnsRecords`) |
 | Azure Resource Manager | Implemented, separate consent and token | **Off** until `ONLINE_CONNECTORS` contains `azure` | 8 Azure datasets, 12 Azure controls |
-| Exchange Online | Implemented (fixed server-side PowerShell runner); available for explicit connection | Requires separate sign-in and management-scoped consent; live validation pending | 10 Exchange / Defender for Office 365 datasets |
+| Exchange Online | Implemented (fixed server-side PowerShell runner); available for explicit connection | Requires separate sign-in and management-scoped consent; live validation pending | 12 Exchange / Defender for Office 365 datasets, plus separate public DNS evidence |
 | On-premises (AD, AD CS, GPO, Windows) | Manual ZIP upload and scheduled Windows collector (preview) | Local directory/host read access; separate upload credential for scheduling | Separate snapshot; enable ONPREM_ENABLED after database setup |
 
 The test deployment was activated on 2026-09-24 after explicit approval of the three delegated permissions. Hosted health, sign-in configuration, protected routes and the Exchange runtime probe passed; live tenant collection still requires interactive connection and validation. See `docs/validation/2026-09-24-connector-deployment.md`. On 2026-09-26 the Exchange connector was switched off in the hosted service (`ONLINE_CONNECTORS=azure`); the Exchange section below explains why.

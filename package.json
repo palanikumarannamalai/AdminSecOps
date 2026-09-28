@@ -19,7 +19,7 @@
     "lint": "eslint . --max-warnings=0",
     "lint:ps": "pwsh -NoProfile -File scripts/Invoke-PSScriptAnalyzer.ps1",
     "test": "vitest run",
-    "test:ps": "pwsh -NoProfile -File scripts/Invoke-PesterTests.ps1",
+    "test:ps": "pwsh -NoProfile -File scripts/Test-ExchangeForwardingReplay.ps1 && pwsh -NoProfile -File scripts/Invoke-PesterTests.ps1",
     "test:all": "npm run test && npm run test:ps",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

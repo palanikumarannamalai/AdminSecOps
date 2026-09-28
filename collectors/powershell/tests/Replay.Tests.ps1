@@ -24,7 +24,7 @@ AfterAll {
 Describe 'Replay package' {
     It 'returns a summary' {
         $script:result.Mode | Should -Be 'Replay'
-        $script:result.DatasetCount | Should -Be 57
+        $script:result.DatasetCount | Should -Be 59
         $script:result.AssessmentId | Should -Match '^[0-9a-f]{8}-'
         Split-Path -Leaf $script:pkg | Should -Match '^AdminSecOps-Assessment-\d{8}-\d{6}$'
         Split-Path -Leaf $script:result.ZipPath | Should -Match '^adminsecops-assessment-\d{8}-\d{6}\.zip$'
@@ -34,7 +34,7 @@ Describe 'Replay package' {
     It 'writes manifest, evidence and log' {
         Test-Path -LiteralPath (Join-Path $script:pkg 'evidence-manifest.json') | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $script:pkg 'logs/collection-log.json') | Should -BeTrue
-        @(Get-ChildItem -LiteralPath (Join-Path $script:pkg 'evidence') -Recurse -File).Count | Should -Be 57
+        @(Get-ChildItem -LiteralPath (Join-Path $script:pkg 'evidence') -Recurse -File).Count | Should -Be 59
     }
 
     It 'lists every evidence file with a matching hash and size' {

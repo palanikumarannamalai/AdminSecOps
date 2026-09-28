@@ -20,6 +20,6 @@ The existing runtime probe passed: PowerShell 7.6.4 and ExchangeOnlineManagement
 - Arbitrary CA group targeting and complex condition combinations, full effective assignment evaluation and custom role coverage.
 - Teams tenant-wide policies, additional Defender and Intune configuration/endpoint-security modules, site-level SharePoint controls.
 - Workload selection, persistent remediation ownership/approved exceptions, schedules and value-level drift.
-- The optional on-premises agent remains a separate unimplemented component, not a downloadable working connector.
+- The on-premises collector now supports manual ZIP upload and scheduled Windows collection in preview. Live AD validation, code signing and broader operational hardening remain pending.
 
 Microsoft references: group-list-members, rbacapplication-list-roleeligibilityschedules and intune-deviceconfig-windows10compliancepolicy in Microsoft Graph v1.0, and sharepointsettings-get. No licence purchase, new resource, mail/DNS change or automated tenant remediation is part of this release.

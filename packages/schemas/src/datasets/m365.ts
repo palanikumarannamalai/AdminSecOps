@@ -137,7 +137,7 @@ export const exchangeMailboxForwarding = defineDataset({
   technology: 'm365',
   title: 'Mailbox-level forwarding',
   description:
-    'Only mailboxes that have ForwardingSmtpAddress or ForwardingAddress set. Inbox rules and message content are not collected.',
+    'Only mailboxes that have ForwardingSmtpAddress or ForwardingAddress set. Inbox rules use a separate dataset; message content is not collected.',
   source: 'ExchangeOnline',
   operations: ['Get-EXOMailbox -Filter "ForwardingSmtpAddress -ne $null -or ForwardingAddress -ne $null" -Properties ForwardingSmtpAddress,ForwardingAddress,DeliverToMailboxAndForward'],
   permissions: [EXO_ROLE],
@@ -148,6 +148,8 @@ export const exchangeMailboxForwarding = defineDataset({
       recipientTypeDetails: optString,
       forwardingSmtpAddress: optString,
       forwardingAddress: optString,
+      resolvedForwardingSmtpAddress: z.string().nullable().optional(),
+      resolvedForwardingRecipientType: z.string().nullable().optional(),
       deliverToMailboxAndForward: optBool,
     }),
   ),
@@ -315,7 +317,34 @@ export const m365TeamsTeamSettings = defineDataset({
   ),
 });
 
+export const exchangeInboxRules = defineDataset({
+  id: 'exchange.inboxRules', module: 'Exchange', technology: 'm365',
+  title: 'Inbox forwarding rule review',
+  description: 'Bounded mailbox scan including hidden Inbox rules. Only forwarding-rule identifiers and enabled state are stored; no message content or conditions.',
+  source: 'ExchangeOnline', operations: ['Get-EXOMailbox', 'Get-InboxRule -IncludeHidden'],
+  permissions: ['Exchange role permitting Get-InboxRule on the assessed mailboxes; Global Reader and View-Only Organization Management are insufficient'],
+  personalData: 'identifiers',
+  schema: z.object({
+    complete: z.boolean(), scannedMailboxes: z.number().int().nonnegative(), unscannedMailboxes: z.number().int().nonnegative(),
+    rules: z.array(z.object({ mailbox: z.string(), id: optString, name: optString, enabled: optBool })),
+  }),
+});
+
+export const exchangeTransportRules = defineDataset({
+  id: 'exchange.transportRules', module: 'Exchange', technology: 'm365',
+  title: 'Mail-flow recipient actions',
+  description: 'Mail-flow rule state and recipient redirection/copy actions. Conditions, exceptions, recipient lists and message content are not stored.',
+  source: 'ExchangeOnline', operations: ['Get-TransportRule -ExcludeConditionActionDetails:$false'],
+  permissions: [EXO_ROLE], personalData: 'identifiers',
+  schema: z.object({ complete: z.boolean(), rules: z.array(z.object({
+    id: optString, name: optString, state: optString, mode: optString, priority: optNumber,
+    hasRedirect: optBool, hasCopy: optBool, hasBlindCopy: optBool, hasAddedRecipients: optBool,
+  })) }),
+});
+
 export const M365_DATASETS = [
+  exchangeInboxRules,
+  exchangeTransportRules,
   exchangeOrganizationConfig,
   exchangeTransportConfig,
   exchangeAdminAuditLogConfig,

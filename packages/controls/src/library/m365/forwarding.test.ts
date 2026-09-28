@@ -142,6 +142,17 @@ describe('M365-EXO-004 default remote domain blocks automatic forwarding', () =>
 });
 
 describe('M365-EXO-005 mailboxes forwarding to external recipients', () => {
+  it.each([
+    ['MailContact', 'smtp:user@outside.example', 'FAIL'],
+    ['MailUser', 'smtp:user@outside.example', 'FAIL'],
+    ['UserMailbox', 'user@contoso.example', 'PASS'],
+    ['MailUniversalDistributionGroup', 'group@contoso.example', 'REVIEW'],
+    [null, 'user@contoso.example', 'REVIEW'],
+  ])('uses resolved destination only for supported recipient type %s', (resolvedForwardingRecipientType, resolvedForwardingSmtpAddress, expected) => {
+    const entry = { ...mailboxForwarding('source@contoso.example', { forwardingAddress: 'recipient-object', forwardingSmtpAddress: 'smtp:ignored@outside.example' }), resolvedForwardingRecipientType, resolvedForwardingSmtpAddress };
+    expect(run(m365MailboxExternalForwarding, { 'exchange.mailboxForwarding': [entry], 'exchange.acceptedDomains': [acceptedDomain('contoso.example')] }).status).toBe(expected);
+    if (expected !== 'REVIEW') expect(run(m365MailboxExternalForwarding, { 'exchange.mailboxForwarding': [entry], 'exchange.acceptedDomains': [] }).status).toBe('NOT_ASSESSED');
+  });
   const domains = [
     acceptedDomain('contoso.example', { default: true }),
     acceptedDomain('contoso.onmicrosoft.com'),

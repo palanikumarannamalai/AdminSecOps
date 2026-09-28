@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "datasetId": "exchange.atpPolicy",
+  "datasetId": "exchange.transportRules",
   "assessmentId": "5a5f8c5d-1a1d-4239-8702-c57600eb714c",
   "collector": {
     "name": "AdminSecOps.Collector",
@@ -8,21 +8,21 @@
     "module": "Exchange",
     "moduleVersion": "0.1.0"
   },
-  "collectedAt": "2026-08-10T09:40:32.0000000Z",
+  "collectedAt": "2026-08-10T09:40:53.0000000Z",
   "source": {
     "system": "ExchangeOnline",
     "operations": [
-      "Get-AtpPolicyForO365"
+      "Get-TransportRule -ExcludeConditionActionDetails:$false"
     ],
     "apiVersion": null
   },
-  "status": "NotApplicable",
+  "status": "NotCollected",
   "errors": [],
   "warnings": [
     {
-      "code": "PREREQUISITE_NOT_LICENSED",
-      "message": "Microsoft Defender for Office 365 (Plan 1 or Plan 2) is not licensed in this tenant, so Get-AtpPolicyForO365 is not available.",
-      "target": "Get-AtpPolicyForO365"
+      "code": "HOSTED_RULE_COLLECTION",
+      "message": "This local sample does not collect rules; use the hosted Exchange connector.",
+      "target": null
     }
   ],
   "data": null
