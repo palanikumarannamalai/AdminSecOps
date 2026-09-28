@@ -260,7 +260,7 @@ describe('resource connector authentication', () => {
     const expired = { ...tokens(), connector: 'exchange' as const, accessToken: exoToken(), expiresAt: 0 };
     const calls: URLSearchParams[] = [];
     vi.stubGlobal('fetch', vi.fn((_input: unknown, init?: RequestInit) => {
-      calls.push(new URLSearchParams(String(init?.body)));
+      calls.push(new URLSearchParams(init?.body instanceof URLSearchParams ? init.body.toString() : ''));
       return Promise.resolve(jsonResponse({ access_token: exoToken(), expires_in: 3600 }));
     }));
     try {
