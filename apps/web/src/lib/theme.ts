@@ -1,8 +1,6 @@
 /*
- * Light/dark theme. The hosted application shares the site's preference: palanikumar.net stores
- * the visitor's choice in localStorage['theme'] ('light' | 'dark') on the same origin. Without a
- * saved choice, CSS follows prefers-color-scheme (see tokens.css). The preference is a display
- * setting only; it is not sent anywhere.
+ * Uses the personal site's dark default and light/dark choices. Storage is local to this
+ * app's origin: the parent site's preference is not shared across subdomains.
  */
 export type Theme = 'light' | 'dark';
 const KEY = 'theme';
@@ -24,7 +22,7 @@ export function currentTheme(): Theme {
 
 export function applySavedTheme(): void {
   const theme = saved();
-  if (theme !== null) document.documentElement.dataset.theme = theme;
+  document.documentElement.dataset.theme = theme ?? 'dark';
 }
 
 export function setTheme(theme: Theme): void {

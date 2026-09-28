@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { currentTheme, setTheme, type Theme } from '../lib/theme';
 
-/** Light/dark switch. Shares the palanikumar.net preference (localStorage 'theme'). */
+/** Light/dark switch; the preference is saved on this app's origin. */
 export function ThemeToggle() {
   const [theme, setState] = useState<Theme>(() => currentTheme());
 
