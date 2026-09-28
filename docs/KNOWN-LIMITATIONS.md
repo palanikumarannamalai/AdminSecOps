@@ -5,12 +5,10 @@ only partially. Placeholder or planned capabilities are not presented as impleme
 
 ## Validation status
 
-- **Collectors are not validated against live services in this repository.** They were
-  written against documented Microsoft Graph, Exchange Online, Azure Resource Manager,
-  ActiveDirectory and GroupPolicy shapes and are tested with recorded, sanitized
-  responses (replay mode) and a cross-language contract test. Real tenants, subscriptions
-  and forests may return shapes, paging behaviour, throttling or errors not yet covered.
-  Run a first collection in a test environment and review `logs/collection-log.json`.
+- **Validation is incomplete.** Selected hosted Entra, collaboration and Azure paths have
+  been exercised in authorised labs. Exchange live validation and broader roles, licences,
+  throttling, larger tenants and on-premises environments still need validation. Synthetic
+  replay and contract tests complement these checks; they do not establish production readiness.
 - Collector specifics:
   - live error handling (real Graph/ARM error objects, throttling) is exercised only through
     replay and mocks; licence errors whose text is not recognised are reported as
@@ -39,10 +37,10 @@ only partially. Placeholder or planned capabilities are not presented as impleme
 
 ## Controls
 
-- 99 controls are implemented across Entra ID, hybrid identity, Microsoft 365, Intune,
+- 107 controls are implemented across Entra ID, hybrid identity, Microsoft 365, Intune,
   Azure, Active Directory, AD CS, Group Policy and Windows hosts. Coverage within each area
   is intentionally selective (high-value checks with reliable evidence).
-- **Not yet implemented modules/areas:** Microsoft Teams, Defender for Office 365 policy
+- **Not yet implemented modules/areas:** Teams tenant-wide policies beyond the two existing app/per-team checks, Defender for Office 365 policy
   depth (anti-phishing, preset policies), Microsoft Defender for Endpoint configuration,
   Intune configuration profiles, security baselines, endpoint security and ASR rules,
   Azure Policy, VMs, SQL, logging beyond the activity log, Entra workload identity and
@@ -53,8 +51,7 @@ only partially. Placeholder or planned capabilities are not presented as impleme
   applications with high-impact permissions, custom authentication strengths, custom
   outbound spam policies set to On, non-privileged accounts with SPNs). The reason is
   always stated.
-- Conditional Access analysis does not resolve group membership of included/excluded
-  groups; exclusions are reported as notes for review.
+- Conditional Access combines finite user exclusions across qualifying policies and can use complete collected role-group membership for exclusions. Other group membership and condition combinations remain unresolved; exclusions without sufficient evidence stay under review.
 - Threshold choices (for example 4 Global Administrators, 180-day KRBTGT rotation,
   90-day inactivity, 365-day secret lifetime) are explicit, documented parameters; they
   are not yet configurable per organisation in the UI.
@@ -73,7 +70,7 @@ only partially. Placeholder or planned capabilities are not presented as impleme
   100 MB upload / 256 MB uncompressed limits.
 - Comparison works at finding level (new / resolved / changed findings and control
   status changes); value-level configuration drift is planned.
-- Reports: HTML and JSON only. PDF, executive and remediation-tracker formats are planned.
+- Reports: HTML, JSON and a browser-generated CSV remediation tracker. Tracker edits remain in the downloaded file; no hosted ownership or exception workflow exists yet. PDF is planned.
 - No exceptions / risk-acceptance workflow yet.
 
 ## Online (hosted control plane) collection

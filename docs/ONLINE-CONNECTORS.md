@@ -15,7 +15,7 @@ as passing, and the overview reports coverage, not a security score.
 | Microsoft Graph (existing sign-in) | Implemented | On | Entra ID (all 17 datasets), SharePoint/OneDrive, Teams settings, Intune |
 | Public DNS | Implemented | On | SPF and DMARC records (`exchange.mailDnsRecords`) |
 | Azure Resource Manager | Implemented, separate consent and token | **Off** until `ONLINE_CONNECTORS` contains `azure` | 8 Azure datasets, 12 Azure controls |
-| Exchange Online | Implemented (fixed server-side PowerShell runner); **disabled in the hosted service** | **Off**; needs a management-scoped permission (see below) | 10 Exchange / Defender for Office 365 datasets |
+| Exchange Online | Implemented (fixed server-side PowerShell runner); available for explicit connection | Requires separate sign-in and management-scoped consent; live validation pending | 10 Exchange / Defender for Office 365 datasets |
 | On-premises (AD, AD CS, GPO, Windows) | **Design only**, not implemented | Not available | 42 controls stay not assessed online |
 
 The test deployment was activated on 2026-09-24 after explicit approval of the three delegated permissions. Hosted health, sign-in configuration, protected routes and the Exchange runtime probe passed; live tenant collection still requires interactive connection and validation. See `docs/validation/2026-09-24-connector-deployment.md`. On 2026-09-26 the Exchange connector was switched off in the hosted service (`ONLINE_CONNECTORS=azure`); the Exchange section below explains why.
@@ -36,7 +36,7 @@ application (app-only) permissions.
 | Microsoft Graph (sign-in) | `openid profile offline_access` plus `GRAPH_SCOPES`. The hosted service requests `AuditLog.Read.All Directory.Read.All Organization.Read.All Policy.Read.All RoleManagement.Read.Directory User.Read.All UserAuthenticationMethod.Read.All SharePointTenantSettings.Read.All TeamworkAppSettings.Read.All Team.ReadBasic.All DeviceManagementConfiguration.Read.All DeviceManagementManagedDevices.Read.All OnPremDirectorySynchronization.Read.All` | Yes. `loadConfig` refuses to start if `GRAPH_SCOPES` contains anything outside `READ_ONLY_GRAPH_SCOPES` (`apps/control-plane/src/config.ts`) |
 | Azure Resource Manager | `https://management.azure.com/user_impersonation openid profile offline_access` | The scope itself is not read-only: it lets the app call ARM with the signed-in user's Azure RBAC. Read-only access comes from the role you assign — use **Reader**. ConfigReview sends only the fixed GET operations listed below, enforced by `validateArmUrl` |
 | Public DNS | None (no Microsoft token) | Yes; public DNS queries only |
-| Exchange Online | Not requested: the connector is disabled in the hosted service | — |
+| Exchange Online | Separate optional Exchange.Manage consent | Reader access recommended |
 
 The connector switch is server configuration, not a user setting: `ONLINE_CONNECTORS` is read
 once at startup (`config.ts`), and `/auth/connect/{connector}` (`server.ts`), the connector view
@@ -144,13 +144,12 @@ Safety properties (`arm-client.ts`, `azure.ts`):
 
 ### Exchange Online (fixed server-side runner)
 
-> **Disabled in the hosted service.** Exchange Online assessment is not enabled in the hosted
-> service. The only Exchange connection Microsoft offers for this data requires a
-> management-scoped permission (`Exchange.Manage`), so it stays off until there is a
-> read-only path or an explicit opt-in. The hosted deployment runs with
-> `ONLINE_CONNECTORS=azure`; Exchange controls report the connector as not enabled and stay
-> not assessed. SPF and DMARC still run from public DNS. The code below remains for
-> self-hosted deployments whose owner accepts the boundary described in this section.
+> **Optional hosted connection, enabled 28 September 2026.** The runtime probe passed with
+> PowerShell 7.6.4 and ExchangeOnlineManagement 3.10.1. A user must explicitly connect
+> Exchange and review its separate management-scoped permission (`Exchange.Manage`).
+> The token can carry the signed-in account's write authority; ConfigReview only executes
+> fixed read operations. A completed live Palani Lab assessment is still required.
+> SPF and DMARC run independently from public DNS.
 
 Delegated Microsoft Graph cannot read these settings: `/admin/exchange` exposes only
 mailboxes and message trace. The alternatives were reviewed against current Microsoft

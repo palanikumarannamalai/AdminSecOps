@@ -225,6 +225,17 @@ const issue = (bundle: EvidenceBundle, datasetId: string, code: string) =>
 
 const ONLINE_WORKLOAD_CONTROLS = ['INTUNE-CMP-001', 'INTUNE-CMP-002', 'INTUNE-CMP-003', 'M365-SPO-001', 'M365-SPO-002', 'M365-SPO-003', 'M365-SPO-004', 'M365-TMS-001', 'M365-TMS-002'];
 
+it('retries an omitted SharePoint invitation setting without inventing a secure default', async () => {
+  const base = { sharingCapability: 'externalUserSharingOnly', sharingDomainRestrictionMode: 'none', sharingAllowedDomainList: [], sharingBlockedDomainList: [], isResharingByExternalUsersEnabled: false, isLegacyAuthProtocolsEnabled: false, isUnmanagedSyncAppForTenantRestricted: false, idleSessionSignOut: { isEnabled: true } };
+  const found = mockGraph({ '/admin/sharepoint/settings': (url) => json(url.searchParams.has('$select') ? { isRequireAcceptingUserToMatchInvitedUserEnabled: false } : base) });
+  const collected = await collectOnline(options(found.fetch));
+  expect(dataset(collected, 'm365.sharePointSettings').data).toMatchObject({ isRequireAcceptingUserToMatchInvitedUserEnabled: false });
+  const absent = mockGraph({ '/admin/sharepoint/settings': () => json(base) });
+  const missing = await collectOnline(options(absent.fetch));
+  expect(status(assess(missing), 'M365-SPO-005')).toBe('NOT_ASSESSED');
+  expect(issue(missing, 'm365.sharePointSettings', 'SETTING_NOT_RETURNED')).toBeDefined();
+});
+
 describe('collectOnline across workloads', () => {
   it('collects Entra, SharePoint, Teams and Intune and evaluates their controls online', async () => {
     const graph = mockGraph();

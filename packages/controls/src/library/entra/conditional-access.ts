@@ -13,6 +13,30 @@ function coversModernClients(policy: Policy): boolean {
   return types.includes('browser') && types.includes('mobileappsanddesktopclients');
 }
 
+/** Prove that the intersection of exclusions is empty across otherwise qualifying policies. */
+function combinedExclusionsCovered(policies: readonly Policy[], ctx: ControlContext): boolean {
+  const groups = new Map<string, string[]>();
+  if (policies.some((p) => p.conditions.users.excludeGroups.length > 0)) {
+    const active = ctx.fact('entra.roleAssignments');
+    const eligible = ctx.fact('entra.roleEligibilitySchedules');
+    for (const assignment of [...(active.available ? active.data : []), ...(eligible.available ? eligible.data : [])]) {
+      if (assignment.groupMembersComplete && assignment.groupMembers !== null) groups.set(assignment.principalId.toLowerCase(), [...new Set([...(groups.get(assignment.principalId.toLowerCase()) ?? []), ...assignment.groupMembers.map((m) => m.id.toLowerCase())])]);
+    }
+  }
+  let intersection: Set<string> | undefined;
+  const guid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  for (const policy of policies) {
+    const users = policy.conditions.users;
+    // Role and guest exclusions are sets of identities, not finite user IDs.
+    if (users.excludeRoles.length > 0 || ca.exclusions(policy).guestsOrExternal || users.excludeUsers.some((id) => !guid.test(id))) continue;
+    if (users.excludeGroups.some((id) => !groups.has(id.toLowerCase()))) continue;
+    const excluded = new Set([...users.excludeUsers.map((id) => id.toLowerCase()), ...users.excludeGroups.flatMap((id) => groups.get(id.toLowerCase()) ?? [])]);
+    intersection = intersection === undefined ? excluded : new Set([...intersection].filter((id) => excluded.has(id)));
+    if (intersection.size === 0) return true;
+  }
+  return false;
+}
+
 function policyObject(policy: Policy, detail?: string) {
   return affected('conditionalAccessPolicy', policy.id, policy.displayName, detail);
 }
@@ -55,7 +79,7 @@ function isTenantWide(policy: Policy): boolean {
 
 export const entraCaMfaAllUsers = defineControl({
   id: 'ENTRA-CA-001',
-  version: '1.0.2',
+  version: '1.0.3',
   lifecycle: 'stable',
   title: 'Multifactor authentication is required for all users',
   technology: 'entra',
@@ -69,7 +93,7 @@ export const entraCaMfaAllUsers = defineControl({
   confidence: 'high',
   applicability: { description: 'All Microsoft Entra tenants.' },
   requiredEvidence: ['entra.securityDefaults'],
-  optionalEvidence: ['entra.conditionalAccessPolicies'],
+  optionalEvidence: ['entra.conditionalAccessPolicies', 'entra.roleAssignments', 'entra.roleEligibilitySchedules'],
   evaluation: {
     logic:
       'PASS when security defaults are enabled, or when at least one enabled Conditional Access policy includes all users and all cloud apps, covers browser and modern clients, has no platform/location/risk conditions that narrow it, and always requires MFA or an authentication strength. REVIEW when such a policy exists only in report-only mode, only offers MFA as an alternative (OR with another control), is narrowed by conditions, or has unverified identity exclusions. FAIL otherwise. If security defaults are disabled and Conditional Access policies could not be collected the control is NOT_ASSESSED.',
@@ -138,10 +162,10 @@ export const entraCaMfaAllUsers = defineControl({
       fact('Conditional Access policies', policies.length),
       fact('Enabled policies requiring MFA for all users and apps', strict.length),
     ];
-    if (strict.some((p) => ca.exclusions(p).total === 0)) {
+    if (combinedExclusionsCovered(strict, ctx)) {
       return pass({
-        reason: `Enabled Conditional Access policy requires MFA for all users and all cloud apps (${strict.map((p) => p.displayName).join(', ')}).`,
-        summary: `${plural(strict.length, 'enabled policy', 'enabled policies')} require MFA for all users and all cloud apps.`,
+        reason: `Enabled Conditional Access policies together require MFA for all users and all cloud apps (${strict.map((p) => p.displayName).join(', ')}).`,
+        summary: 'The combined policies cover all users and all cloud apps.',
         facts,
         affectedObjects: [],
         notes: exclusionNote(strict),
@@ -178,7 +202,7 @@ export const entraCaMfaAllUsers = defineControl({
 
 export const entraCaMfaAdmins = defineControl({
   id: 'ENTRA-CA-002',
-  version: '1.0.2',
+  version: '1.0.3',
   lifecycle: 'stable',
   title: 'Multifactor authentication is required for administrator roles',
   technology: 'entra',
@@ -192,7 +216,7 @@ export const entraCaMfaAdmins = defineControl({
   confidence: 'high',
   applicability: { description: 'All Microsoft Entra tenants.' },
   requiredEvidence: ['entra.securityDefaults'],
-  optionalEvidence: ['entra.conditionalAccessPolicies'],
+  optionalEvidence: ['entra.conditionalAccessPolicies', 'entra.roleAssignments', 'entra.roleEligibilitySchedules'],
   evaluation: {
     logic:
       'PASS when security defaults are enabled or every role in the Microsoft administrator MFA template is included (directly or through "All users") and not excluded by an enabled policy that targets all cloud apps, covers modern clients, has no narrowing conditions and always requires MFA or an authentication strength. REVIEW when coverage depends on user, group or guest exclusions requiring validation. FAIL lists role templates without a qualifying policy; it does not determine actual sign-in outcomes.',
@@ -261,7 +285,7 @@ export const entraCaMfaAdmins = defineControl({
       fact('Roles without directly proven MFA policy coverage', uncovered.length),
     ];
     const uncertain = MFA_ADMIN_ROLE_TEMPLATE_IDS.filter((roleId) =>
-      !policies.some((p) => ca.coversRole(p, roleId) && ca.exclusions(p).users === 0 && ca.exclusions(p).groups === 0 && !ca.exclusions(p).guestsOrExternal),
+      !combinedExclusionsCovered(policies.filter((p) => ca.coversRole(p, roleId)), ctx),
     );
     if (uncovered.length === 0 && uncertain.length > 0) {
       return review({

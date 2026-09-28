@@ -283,7 +283,7 @@ export const entraRoleAssignments = defineDataset({
   description:
     'Active Microsoft Entra role assignments (permanent and currently activated) with the assigned principal.',
   source: 'MicrosoftGraph',
-  operations: [`GET ${GRAPH}/roleManagement/directory/roleAssignments?$expand=principal`],
+  operations: [`GET ${GRAPH}/roleManagement/directory/roleAssignments?$expand=principal`, `GET ${GRAPH}/groups/{id}/members`],
   permissions: ['Graph: RoleManagement.Read.Directory', 'Graph: Directory.Read.All'],
   personalData: 'identifiers',
   schema: z.array(
@@ -293,6 +293,8 @@ export const entraRoleAssignments = defineDataset({
       principalId: z.string(),
       directoryScopeId: z.string(),
       principal: PrincipalSchema.nullish().transform((v) => v ?? null),
+      groupMembers: z.array(PrincipalSchema).nullish().transform((v) => v ?? null),
+      groupMembersComplete: z.boolean().optional().default(false),
     }),
   ),
 });
@@ -332,8 +334,8 @@ export const entraRoleEligibilitySchedules = defineDataset({
   title: 'PIM eligible role assignments',
   description: 'Privileged Identity Management eligible role assignments.',
   source: 'MicrosoftGraph',
-  operations: [`GET ${GRAPH}/roleManagement/directory/roleEligibilitySchedules`],
-  permissions: ['Graph: RoleEligibilitySchedule.Read.Directory'],
+  operations: [`GET ${GRAPH}/roleManagement/directory/roleEligibilitySchedules?$expand=principal`, `GET ${GRAPH}/groups/{id}/members`],
+  permissions: ['Graph: RoleEligibilitySchedule.Read.Directory', 'Graph: Directory.Read.All'],
   prerequisites: ['Microsoft Entra ID P2 or Microsoft Entra ID Governance (PIM)'],
   personalData: 'identifiers',
   schema: z.array(
@@ -343,6 +345,8 @@ export const entraRoleEligibilitySchedules = defineDataset({
       principalId: z.string(),
       directoryScopeId: z.string(),
       memberType: optString,
+      groupMembers: z.array(PrincipalSchema).nullish().transform((v) => v ?? null),
+      groupMembersComplete: z.boolean().optional().default(false),
       startDateTime: optTimestamp,
       endDateTime: optTimestamp,
     }),

@@ -40,6 +40,7 @@ import {
   val,
   type DatasetCollector,
   type DatasetState,
+  type CollectionContext,
   type Rec,
 } from './runtime.js';
 
@@ -158,6 +159,41 @@ export function entraCollector(id: string): DatasetCollector {
   const collector = ENTRA_COLLECTORS[id];
   if (collector === undefined) throw new Error(`No hosted collector for ${id}`);
   return collector;
+}
+
+async function collectRoleGroupMembers(state: DatasetState, context: CollectionContext, items: unknown[]): Promise<Map<string, { groupMembers: unknown[]; groupMembersComplete: boolean }>> {
+  const groups = new Set(items.map((raw) => rec(raw)).filter((a) => principalType(rec(val(a, 'principal'))?.['@odata.type']) === 'group').map((a) => safeId(val(a, 'principalId'))).filter((id): id is string => id !== undefined));
+  const result = new Map<string, { groupMembers: unknown[]; groupMembersComplete: boolean }>();
+  let count = 0;
+  for (const id of groups) {
+    context.client.throwIfCancelled();
+    if (count++ >= context.limits.maxFanoutRequests) {
+      state.partial = true;
+      state.warnings.push(message('GROUP_MEMBERS_LIMIT', 'Role group membership collection reached its limit; remaining groups require review.'));
+      break;
+    }
+    const url = `${GRAPH_BASE}/groups/${id}/members?$select=id,displayName,userPrincipalName,userType,accountEnabled,onPremisesSyncEnabled`;
+    state.operations.push(`GET ${url}`);
+    try {
+      const page = await context.client.getAll(url);
+      const members = page.items.map((raw) => {
+        const member = rec(raw);
+        return { ...pick(member, ['id', 'displayName', 'userPrincipalName', 'userType', 'accountEnabled', 'onPremisesSyncEnabled']), principalType: principalType(member?.['@odata.type']) };
+      });
+      const complete = page.incomplete === null && members.every((m) => m.principalType === 'user' && typeof (m as Rec)['id'] === 'string' && typeof (m as Rec)['accountEnabled'] === 'boolean');
+      result.set(id, { groupMembers: members, groupMembersComplete: complete });
+      if (!complete) {
+        state.partial = true;
+        state.warnings.push(message('GROUP_MEMBERS_INCOMPLETE', 'Role group membership was partial or contained unreadable principals; review is required.', id));
+      }
+    } catch (error) {
+      if (!(error instanceof GraphRequestError)) throw error;
+      state.partial = true;
+      state.warnings.push(message('GROUP_MEMBERS_UNAVAILABLE', 'Role group members could not be read; no complete membership is assumed.', id));
+      if (error.kind === 'budget-exhausted') break;
+    }
+  }
+  return result;
 }
 
 function principalType(odataType: unknown): string {
@@ -563,11 +599,13 @@ const ENTRA_COLLECTORS: Record<string, DatasetCollector> = {
       context,
       `${GRAPH_BASE}/roleManagement/directory/roleAssignments?$expand=principal`,
     );
+    const memberships = await collectRoleGroupMembers(state, context, items);
     return items.map((raw) => {
       const a = rec(raw);
       const principal = rec(val(a, 'principal'));
       return {
         ...pick(a, ['id', 'roleDefinitionId', 'principalId', 'directoryScopeId']),
+        ...memberships.get(String(val(a, 'principalId'))),
         principal:
           principal === undefined
             ? null
@@ -638,13 +676,15 @@ const ENTRA_COLLECTORS: Record<string, DatasetCollector> = {
 
   'entra.roleEligibilitySchedules': async (state, context) => {
     if (!licensed(state, context, PIM_PLANS, 'Privileged Identity Management (Microsoft Entra ID P2 or ID Governance)')) return null;
-    const items = await getAll(state, context, `${GRAPH_BASE}/roleManagement/directory/roleEligibilitySchedules`);
+    const items = await getAll(state, context, `${GRAPH_BASE}/roleManagement/directory/roleEligibilitySchedules?$expand=principal`);
+    const memberships = await collectRoleGroupMembers(state, context, items);
     return items.map((raw) => {
       const s = rec(raw);
       // v1.0 reports the schedule in scheduleInfo; a missing expiration end means "no expiration".
       const schedule = rec(val(s, 'scheduleInfo'));
       return {
         ...pick(s, ['id', 'roleDefinitionId', 'principalId', 'directoryScopeId', 'memberType']),
+        ...memberships.get(String(val(s, 'principalId'))),
         startDateTime: firstOf(s, ['startDateTime']) ?? val(schedule, 'startDateTime'),
         endDateTime: firstOf(s, ['endDateTime']) ?? val(rec(val(schedule, 'expiration')), 'endDateTime'),
       };

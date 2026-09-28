@@ -165,6 +165,7 @@ export const DatasetAvailabilitySchema = z.object({
   technology: TechnologySchema,
   module: CollectorModuleSchema,
   state: z.enum(['available', 'partial', 'unavailable']),
+  gapCategory: z.enum(['not-connected', 'permission', 'licence', 'failed', 'not-collected', 'unsupported', 'partial']).nullable().optional(),
   collectionStatus: CollectionStatusSchema.nullable(),
   reason: z.string().max(1000),
 });
