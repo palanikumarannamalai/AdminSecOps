@@ -46,12 +46,15 @@ export function SignInPage() {
         Skip to main content
       </a>
       <header className="marketing-nav">
+        <div className="portfolio-brand">
         <a className="brand" href="/" aria-label="ConfigReview home">
           <span className="brand-symbol" aria-hidden="true">
             ◈
           </span>{' '}
           ConfigReview
         </a>
+        <a className="parent-site-link" href="https://www.palanikumar.net/">← Back to palanikumar.net</a>
+        </div>
         <nav aria-label="Product">
           <button onClick={() => scrollTo('platform')}>Platform</button>
           <button onClick={() => scrollTo('how-it-works')}>How it works</button>

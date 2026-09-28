@@ -1,13 +1,13 @@
 /* Figma: GM4PRHCrFcknELUjACFfp0. Shared product and marketing visual system. */
 @font-face {
-  font-family: Manrope;
-  src: url('/fonts/Manrope.ttf') format('truetype');
-  font-weight: 200 800;
+  font-family: Inter;
+  src: url('/fonts/Inter-Latin.woff2') format('woff2');
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 :root {
-  --font-sans: Manrope, 'Segoe UI', system-ui, sans-serif;
+  --font-sans: Inter, 'Segoe UI', system-ui, sans-serif;
   --radius: 10px;
   --radius-lg: 16px;
   --nav-width: 230px;
@@ -16,39 +16,39 @@
 }
 :root,
 :root[data-theme='light'] {
-  --color-bg: #f4f7f6;
+  --color-bg: #f5f8fc;
   --color-surface: #fff;
-  --color-surface-muted: #f4f7f6;
-  --color-border: #dfe7e5;
-  --color-border-strong: #aabdb7;
-  --color-text: #253f46;
-  --color-heading: #142d35;
-  --color-text-muted: #596e74;
-  --color-brand: #0a7465;
-  --color-brand-strong: #07594e;
-  --color-brand-soft: #e0f3ec;
-  --color-link: #086758;
-  --color-nav-bg: #10252c;
-  --color-nav-text: #bdd0d0;
-  --color-nav-muted: #9eb6b9;
-  --color-nav-active-bg: #214239;
-  --color-row-hover: #f3f8f5;
+  --color-surface-muted: #f5f8fc;
+  --color-border: #dce3ec;
+  --color-border-strong: #a4b5cb;
+  --color-text: #263750;
+  --color-heading: #0e2140;
+  --color-text-muted: #46516a;
+  --color-brand: #0078d4;
+  --color-brand-strong: #005a9e;
+  --color-brand-soft: #e8f3fc;
+  --color-link: #0067b8;
+  --color-nav-bg: #0e2140;
+  --color-nav-text: #c5d3e5;
+  --color-nav-muted: #9fb1c9;
+  --color-nav-active-bg: #18395e;
+  --color-row-hover: #edf5fc;
 }
 :root[data-theme='dark'] {
-  --color-bg: #0c191f;
-  --color-surface: #14272f;
-  --color-surface-muted: #1a3138;
-  --color-border: #2d454b;
-  --color-heading: #edf7f3;
-  --color-text: #dcebe5;
-  --color-text-muted: #a9beb9;
-  --color-brand: #8bdec4;
-  --color-brand-strong: #b3eedb;
-  --color-brand-soft: #20493e;
-  --color-link: #8bdec4;
-  --color-nav-bg: #09171c;
-  --color-nav-active-bg: #20493e;
-  --color-row-hover: #1b343a;
+  --color-bg: #0b111a;
+  --color-surface: #101b29;
+  --color-surface-muted: #152334;
+  --color-border: #263244;
+  --color-heading: #f4f7fb;
+  --color-text: #e0e7f1;
+  --color-text-muted: #aab5c5;
+  --color-brand: #55c2ff;
+  --color-brand-strong: #8fd7ff;
+  --color-brand-soft: #15354c;
+  --color-link: #55c2ff;
+  --color-nav-bg: #060b12;
+  --color-nav-active-bg: #15354c;
+  --color-row-hover: #182c40;
 }
 body {
   font-size: 14px;
@@ -160,8 +160,8 @@ a:focus-visible {
   opacity: 0.55;
 }
 .nav__link--active {
-  box-shadow: inset 3px 0 #a4e2c6;
-  color: #d7f7e6;
+  box-shadow: inset 3px 0 #55c2ff;
+  color: #e1f3ff;
 }
 .nav__link--active:before {
   opacity: 1;
@@ -169,7 +169,7 @@ a:focus-visible {
 .nav__footnote {
   font-size: 10px;
   line-height: 1.7;
-  border-top: 1px solid #2d444a;
+  border-top: 1px solid #263244;
   padding-top: 20px;
   margin-top: 32px;
 }
@@ -580,8 +580,8 @@ a:focus-visible {
   line-height: 1.8;
 }
 .marketing-trust {
-  background: #10252c;
-  color: #bdd0d0;
+  background: #0e2140;
+  color: #c5d3e5;
   padding: 70px max(28px, calc((100vw - 1280px) / 2));
   display: flex;
   align-items: center;
@@ -594,7 +594,7 @@ a:focus-visible {
   margin-bottom: 20px;
 }
 .marketing-trust .eyebrow {
-  color: #b5e9d6;
+  color: #55c2ff;
 }
 .marketing-trust .button {
   white-space: nowrap;
@@ -862,20 +862,20 @@ a:focus-visible {
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --color-bg: #0c191f;
-    --color-surface: #14272f;
-    --color-surface-muted: #1a3138;
-    --color-border: #2d454b;
-    --color-heading: #edf7f3;
-    --color-text: #dcebe5;
-    --color-text-muted: #a9beb9;
-    --color-brand: #8bdec4;
-    --color-brand-strong: #b3eedb;
-    --color-brand-soft: #20493e;
-    --color-link: #8bdec4;
-    --color-nav-bg: #09171c;
-    --color-nav-active-bg: #20493e;
-    --color-row-hover: #1b343a;
+    --color-bg: #0b111a;
+    --color-surface: #101b29;
+    --color-surface-muted: #152334;
+    --color-border: #263244;
+    --color-heading: #f4f7fb;
+    --color-text: #e0e7f1;
+    --color-text-muted: #aab5c5;
+    --color-brand: #55c2ff;
+    --color-brand-strong: #8fd7ff;
+    --color-brand-soft: #15354c;
+    --color-link: #55c2ff;
+    --color-nav-bg: #060b12;
+    --color-nav-active-bg: #15354c;
+    --color-row-hover: #182c40;
   }
 }
 .overview-metrics .metric-caption {
@@ -901,4 +901,28 @@ a:focus-visible {
   padding: 8px 12px;
   border-radius: 7px;
   font-size: 10px;
+}
+
+
+/* Shared visual identity with palanikumar.net (September 2026). */
+:root { --radius: 8px; --radius-lg: 12px; --color-focus: #0078d4; }
+:root[data-theme='dark'] { --color-focus: #55c2ff; --color-on-brand: #060b12; }
+.portfolio-brand { display: flex; flex-direction: column; gap: 3px; }
+.parent-site-link { font-size: 12px; font-weight: 500; text-decoration: none; color: var(--color-text-muted); white-space: nowrap; }
+.parent-site-link:hover { color: var(--color-link); text-decoration: underline; }
+.account-action { position: relative; flex-shrink: 0; margin-left: auto; }
+.sign-out { border-color: var(--color-border-strong); white-space: nowrap; }
+.account-action__error { position: absolute; right: 0; top: 100%; width: min(300px, 85vw); padding: 12px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); color: var(--st-fail-text); box-shadow: var(--shadow); }
+.marketing-hero { background-image: radial-gradient(ellipse at 80% 20%, color-mix(in srgb, var(--color-brand) 9%, transparent), transparent 65%); }
+@media (max-width: 1100px) {
+  .topbar__brand { flex-direction: column; align-items: flex-start; gap: 3px; }
+  .topbar__tagline { display: flex; border: 0; padding: 0; }
+  .topbar__actions { gap: 8px; }
+}
+@media (max-width: 760px) {
+  .topbar__actions { width: 100%; justify-content: flex-end; }
+  .topbar__actions .switcher { order: 5; }
+  .account-action { margin-left: 0; }
+  .marketing-nav { flex-wrap: wrap; }
+  .marketing-nav .inline-actions { margin-left: auto; }
 }

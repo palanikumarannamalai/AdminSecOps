@@ -4,6 +4,7 @@ import { NavLink, Outlet, useLocation, useMatch, useNavigate } from 'react-route
 import { environmentName, formatDate } from '../lib/format';
 import { IS_HOSTED, IS_ONLINE, OVERVIEW_URL } from '../mode';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { SignOutButton } from '../components/SignOutButton';
 import { useAssessmentList } from './context';
 
 /** Assessment-scoped pages, in navigation order. */
@@ -105,7 +106,7 @@ export function Layout() {
             <span className="brand__name">{PRODUCT_NAME}</span>
           </NavLink>
           <span className="topbar__tagline">
-            <span className="topbar__tagline-main">Security workspace</span>
+            <a className="parent-site-link" href="https://www.palanikumar.net/">← Back to palanikumar.net</a>
             <span className="topbar__tagline-sub">Clarity for your Microsoft environment</span>
           </span>
         </div>
@@ -118,6 +119,7 @@ export function Layout() {
               Return to ConfigReview overview
             </a>
           ) : null}
+          {IS_ONLINE ? <SignOutButton /> : null}
         </div>
       </header>
       <div className="shell__body">
