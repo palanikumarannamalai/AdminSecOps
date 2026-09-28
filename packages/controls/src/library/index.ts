@@ -34,4 +34,3 @@ for (const control of CONTROL_LIBRARY) {
 export function getControl(id: string): ControlDefinition | undefined {
   return CONTROL_LIBRARY.find((c) => c.metadata.id === id);
 }
-
