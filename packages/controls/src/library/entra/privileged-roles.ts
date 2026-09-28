@@ -329,13 +329,13 @@ export const entraPrivilegedNoPermanent = defineControl({
 
 export const entraPrivilegedMfaRegistered = defineControl({
   id: 'ENTRA-PRIV-005',
-  version: '1.0.1',
+  version: '1.0.2',
   lifecycle: 'stable',
   title: 'Users in the assessed administrator roles are registered for MFA',
   technology: 'entra',
   category: 'Privileged access',
   subcategory: 'MFA registration',
-  description: 'Joins direct active user assignments in the highly privileged role catalog and Microsoft administrator MFA template with the registration report. Disabled users are excluded. Group membership and PIM-eligible users are not resolved; incomplete coverage requires review.',
+  description: 'Joins direct active user assignments in the highly privileged role catalog and Microsoft administrator MFA template with the registration report. Known disabled users are excluded. PIM-eligible users are matched through the registration report. Group membership and unmatched eligible principals require review.',
   rationale:
     'An administrator without a registered MFA method can be registered by whoever first signs in with the password. If that is an attacker using a phished or sprayed password, they bind their own authenticator to a privileged account.',
   severity: 'high',
@@ -371,13 +371,14 @@ export const entraPrivilegedMfaRegistered = defineControl({
   tags: ['mfa', 'privileged-access', 'identity'],
   evaluate: (ctx) => {
     const adminRoleIds = new Set([...HIGHLY_PRIVILEGED_ROLE_TEMPLATE_IDS, ...MFA_ADMIN_ROLE_TEMPLATE_IDS]);
-    const admins = new Map<string, ResolvedRoleAssignment[]>();
+    const admins = new Map<string, Pick<ResolvedRoleAssignment, 'userPrincipalName' | 'principalName' | 'roleName'>[]>();
     const selectedAssignments = resolved(ctx).filter((a) => adminRoleIds.has(a.roleTemplateId));
     const unresolved = selectedAssignments.filter((a) => a.principalType !== 'user' && a.principalType !== 'servicePrincipal');
     const eligible = ctx.fact('entra.roleEligibilitySchedules');
     const definitions = ctx.fact('entra.roleDefinitions');
     const templateIds = new Map(definitions.available ? definitions.data.map((d) => [d.id.toLowerCase(), (d.templateId ?? d.id).toLowerCase()]) : []);
-    const selectedEligible = eligible.available ? eligible.data.filter((a) => adminRoleIds.has(templateIds.get(a.roleDefinitionId.toLowerCase()) ?? a.roleDefinitionId.toLowerCase())) : [];
+    const disabledUsers = new Set(selectedAssignments.filter((a) => a.principalType === 'user' && a.accountEnabled === false).map((a) => a.principalId.toLowerCase()));
+    const selectedEligible = eligible.available ? eligible.data.filter((a) => !disabledUsers.has(a.principalId.toLowerCase()) && adminRoleIds.has(templateIds.get(a.roleDefinitionId.toLowerCase()) ?? a.roleDefinitionId.toLowerCase())) : [];
     for (const a of selectedAssignments) {
       if (a.principalType !== 'user' || a.accountEnabled === false || !adminRoleIds.has(a.roleTemplateId)) continue;
       const list = admins.get(a.principalId.toLowerCase()) ?? [];
@@ -385,6 +386,18 @@ export const entraPrivilegedMfaRegistered = defineControl({
       admins.set(a.principalId.toLowerCase(), list);
     }
     const registration = new Map(ctx.data('entra.userRegistrationDetails').map((r) => [r.id.toLowerCase(), r]));
+    // A registration-report match establishes that the eligible principal is a user.
+    // Unmatched principals may be groups; keep them unresolved rather than invent membership.
+    const unresolvedEligible = selectedEligible.filter((a) => !registration.has(a.principalId.toLowerCase()));
+    for (const a of selectedEligible) {
+      const id = a.principalId.toLowerCase();
+      const user = registration.get(id);
+      if (user === undefined) continue;
+      const list = admins.get(id) ?? [];
+      const roleId = templateIds.get(a.roleDefinitionId.toLowerCase()) ?? a.roleDefinitionId.toLowerCase();
+      list.push({ userPrincipalName: user.userPrincipalName, principalName: user.userPrincipalName ?? id, roleName: `${builtInRoleName(roleId)} (PIM eligible)` });
+      admins.set(id, list);
+    }
     const unregistered: string[] = [];
     const missing: string[] = [];
     for (const id of admins.keys()) {
@@ -397,13 +410,13 @@ export const entraPrivilegedMfaRegistered = defineControl({
       const first = list[0];
       return affected('user', id, first?.userPrincipalName ?? first?.principalName ?? id, list.map((a) => a.roleName).join(', '));
     };
-    const facts = [fact('Administrators checked', admins.size), fact('Not registered for MFA', unregistered.length), fact('Not found in registration report', missing.length), fact('Unresolved group or principal assignments', unresolved.length), fact('PIM eligibility evidence available', eligible.available), fact('Selected PIM-eligible assignments not assessed', selectedEligible.length)];
+    const facts = [fact('Administrators checked', admins.size), fact('Not registered for MFA', unregistered.length), fact('Not found in registration report', missing.length), fact('Unresolved group or principal assignments', unresolved.length), fact('PIM eligibility evidence available', eligible.available), fact('Selected PIM-eligible assignments not assessed', unresolvedEligible.length)];
     const notes = missing.length > 0 ? [`${plural(missing.length, 'administrator')} were not found in the registration report: ${missing.map((m) => describe(m).name).join(', ')}.`] : [];
-    notes.push('Checks direct active users in the highly privileged role catalog and Microsoft administrator MFA template; other roles and custom roles are outside this control. MFA registration is not proof of MFA enforcement.');
+    notes.push('Checks direct active and resolved PIM-eligible users in the highly privileged role catalog and Microsoft administrator MFA template; other roles and custom roles are outside this control. MFA registration is not proof of MFA enforcement.');
     if (!eligible.available) notes.push('PIM eligibility evidence was not available; eligible administrators were not assessed.');
-    if (selectedEligible.length > 0) notes.push('PIM-eligible assignments in the selected roles were found, but their users and group members were not assessed.');
+    if (unresolvedEligible.length > 0) notes.push('Some PIM-eligible principals could not be matched to users in the registration report; group membership and missing users still require review.');
     if (unresolved.length > 0) notes.push('Some selected assignments belong to groups or unidentified principals; their users could not be assessed.');
-    if (admins.size === 0) notes.push('No direct active user in the selected roles was checked.');
+    if (admins.size === 0) notes.push('No active or resolved PIM-eligible user in the selected roles was checked.');
     if (unregistered.length > 0) {
       return fail({
         reason: `${plural(unregistered.length, 'administrator')} have not registered an MFA method.`,
@@ -413,9 +426,9 @@ export const entraPrivilegedMfaRegistered = defineControl({
         notes,
       });
     }
-    if (missing.length > 0 || unresolved.length > 0 || !eligible.available || selectedEligible.length > 0 || admins.size === 0) {
+    if (missing.length > 0 || unresolved.length > 0 || !eligible.available || unresolvedEligible.length > 0 || admins.size === 0) {
       return review({ reason: 'Administrator MFA registration coverage is incomplete.', summary: 'MFA registration could not be confirmed for every administrator.', facts, affectedObjects: missing.map(describe), notes });
     }
-    return pass({ reason: 'All assessed direct active administrator users are registered for MFA.', summary: `${plural(admins.size, 'administrator')} checked; all registered for MFA.`, facts, notes });
+    return pass({ reason: 'All assessed active and resolved PIM-eligible administrator users are registered for MFA.', summary: `${plural(admins.size, 'administrator')} checked; all registered for MFA.`, facts, notes });
   },
 });

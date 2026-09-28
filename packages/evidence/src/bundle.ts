@@ -242,7 +242,7 @@ function loadManifestEntry(
 
   if (!isUsableCollectionStatus(envelope.status)) {
     check.schema = 'not-checked';
-    const firstError = envelope.errors[0]?.message;
+    const firstError = envelope.errors[0]?.message ?? envelope.warnings[0]?.message;
     const reason = `Collector reported status ${envelope.status}${firstError !== undefined ? `: ${firstError}` : '.'}`;
     return {
       check,

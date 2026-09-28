@@ -38,7 +38,7 @@ export function evaluateControl(control: ControlDefinition, inventory: Inventory
     return baseResult(control, inventory, required, {
       status: allNotApplicable ? 'NOT_APPLICABLE' : 'NOT_ASSESSED',
       reason: allNotApplicable
-        ? `The collector reported the required evidence as not applicable to this environment (${unavailable.map((u) => u.id).join(', ')}).`
+        ? `The collector reported the required evidence as not applicable. ${reasons.join(' ')}`
         : `Required evidence was not available, so this control was not assessed. ${reasons.join(' ')}`,
       observed: { summary: 'No evaluation was performed.' },
     });

@@ -149,6 +149,26 @@ describe('ENTRA-PRIV-005 administrators registered for MFA', () => {
     expect(result.status).toBe('PASS');
   });
 
+  it('assesses a PIM-only user and detects missing MFA registration', () => {
+    const evidence = {
+      'entra.roleAssignments': [],
+      'entra.userRegistrationDetails': [reg(adminId, false)],
+      'entra.roleEligibilitySchedules': [{ id: nextGuid(), roleDefinitionId: GA, principalId: adminId, directoryScopeId: '/' }],
+    };
+    expect(run(entraPrivilegedMfaRegistered, evidence).status).toBe('FAIL');
+    expect(run(entraPrivilegedMfaRegistered, { ...evidence, 'entra.userRegistrationDetails': [reg(adminId, true)] }).status).toBe('PASS');
+  });
+
+  it('deduplicates an administrator who has both active and eligible assignments', () => {
+    const result = run(entraPrivilegedMfaRegistered, {
+      'entra.roleAssignments': [roleAssignment(GA, { id: adminId })],
+      'entra.userRegistrationDetails': [reg(adminId, true)],
+      'entra.roleEligibilitySchedules': [{ id: nextGuid(), roleDefinitionId: GA, principalId: adminId.toUpperCase(), directoryScopeId: '/' }],
+    });
+    expect(result.status).toBe('PASS');
+    expect(result.observed.facts.find((f) => f.label === 'Administrators checked')?.value).toBe(1);
+  });
+
   it('fails when an administrator is not registered', () => {
     const result = run(entraPrivilegedMfaRegistered, {
       'entra.roleAssignments': [roleAssignment(GA, { id: adminId, userPrincipalName: 'admin@contoso.example' })],
@@ -156,6 +176,16 @@ describe('ENTRA-PRIV-005 administrators registered for MFA', () => {
     });
     expect(result.status).toBe('FAIL');
     expect(result.affectedObjects[0]?.name).toBe('admin@contoso.example');
+  });
+
+  it('does not reintroduce a known disabled user through PIM eligibility', () => {
+    const result = run(entraPrivilegedMfaRegistered, {
+      'entra.roleAssignments': [roleAssignment(GA, { id: adminId, accountEnabled: false })],
+      'entra.userRegistrationDetails': [reg(adminId, false)],
+      'entra.roleEligibilitySchedules': [{ id: nextGuid(), roleDefinitionId: GA, principalId: adminId, directoryScopeId: '/' }],
+    });
+    expect(result.status).toBe('REVIEW');
+    expect(result.observed.facts.find((f) => f.label === 'Administrators checked')?.value).toBe(0);
   });
 
   it('requires review when an administrator is missing from the report', () => {

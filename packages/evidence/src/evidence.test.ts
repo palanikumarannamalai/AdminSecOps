@@ -222,6 +222,17 @@ describe('loadEvidenceBundle', () => {
     expect(bundle.issues.some((i) => i.origin === 'collector' && i.code === 'Forbidden')).toBe(true);
   });
 
+  it('preserves a licence warning as the unavailable dataset reason', () => {
+    const { files } = buildEvidencePackage(manifestBase(), [{
+      path: 'evidence/entra/securityDefaults.json',
+      envelope: envelope('entra.securityDefaults', null, {
+        status: 'NotApplicable',
+        warnings: [{ code: 'LICENSE_NOT_PRESENT', message: 'Required licence is absent.', target: null }],
+      }),
+    }]);
+    expect(loadEvidenceBundle(files).datasets.get('entra.securityDefaults')?.reason).toContain('Required licence is absent.');
+  });
+
   it('marks Partial datasets as partial', () => {
     const { files } = buildEvidencePackage(manifestBase(), [
       { path: 'evidence/entra/securityDefaults.json', envelope: envelope('entra.securityDefaults', { isEnabled: true }, { status: 'Partial' }) },

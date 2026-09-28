@@ -68,6 +68,8 @@ describe('online assessment flow', () => {
     vi.stubGlobal('fetch', fetcher);
     mount();
     expect(await screen.findByText('tenant', { selector: 'code' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Before you run' })).toBeTruthy();
+    expect(screen.getByText(/You can run a partial assessment/)).toBeTruthy();
     await userEvent.setup().click(screen.getByRole('button', { name: 'Sign out / switch tenant' }));
     expect(fetcher).toHaveBeenCalledWith('/auth/logout', expect.objectContaining({ method: 'POST', credentials: 'same-origin', headers: expect.objectContaining({ 'X-AdminSecOps-Client': 'web' }) }));
     expect(await screen.findByRole('alert')).toHaveProperty('textContent', 'Sign-out unavailable');
