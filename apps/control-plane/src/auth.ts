@@ -18,6 +18,33 @@ interface Transaction { state: string; nonce: string; verifier: string; expiresA
 export const randomToken = (): string => randomBytes(32).toString('base64url');
 export const hashToken = (value: string): string => createHash('sha256').update(value).digest('hex');
 
+/** Fixed labels only; never expose provider text, credentials or account identifiers. */
+export function connectorFailureCode(error: unknown): string {
+  const labels: Record<string, string> = {
+    'Invalid connector transaction': 'TRANSACTION_INVALID',
+    'The connector sign-in does not belong to this session': 'SESSION_CHANGED',
+    'Identity provider rejected the token exchange': 'TOKEN_EXCHANGE_REJECTED',
+    'Consent is required': 'CONSENT_REQUIRED',
+    'Missing ID token': 'ID_TOKEN_MISSING',
+    'Account is not permitted': 'ID_TOKEN_IDENTITY',
+    'Sign in with the same account that started the assessment session': 'ACCOUNT_MISMATCH',
+    'A supported directory administrator or security reader role is required': 'DIRECTORY_ROLE_MISSING',
+    'The account user principal name is required for Exchange Online': 'UPN_MISSING',
+    'Invalid token response': 'TOKEN_RESPONSE_INVALID',
+    'The connector access token is not in the expected format': 'ACCESS_TOKEN_FORMAT',
+    'The connector access token has the wrong audience': 'ACCESS_TOKEN_AUDIENCE',
+    'The connector access token belongs to another tenant': 'ACCESS_TOKEN_TENANT',
+    'The connector access token belongs to another user': 'ACCESS_TOKEN_USER',
+    'The connector access token is not a delegated token for this connector': 'ACCESS_TOKEN_SCOPE',
+    'The connector access token has expired': 'ACCESS_TOKEN_EXPIRED',
+  };
+  if (!(error instanceof Error)) return 'CONNECTOR_INTERNAL';
+  if (Object.hasOwn(labels, error.message)) return labels[error.message]!;
+  const code = (error as Error & { code?: unknown }).code;
+  if (typeof code === 'string' && ['ERR_JWT_EXPIRED', 'ERR_JWT_CLAIM_VALIDATION_FAILED', 'ERR_JWS_SIGNATURE_VERIFICATION_FAILED', 'ERR_JWKS_TIMEOUT', 'ERR_JWKS_NO_MATCHING_KEY'].includes(code)) return code;
+  return 'CONNECTOR_INTERNAL';
+}
+
 /** aad binds a sealed value to its purpose (for example connector, tenant and user) so it cannot be swapped. */
 function seal(value: unknown, key: string, aad?: string): string {
   const iv = randomBytes(12);

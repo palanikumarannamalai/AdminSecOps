@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { exportJWK, generateKeyPair, SignJWT, UnsecuredJWT } from 'jose';
-import { checkConnectorAccessToken, ConsentRequiredError, createAuth, decryptConnectorTokens, decryptTokens, encryptConnectorTokens, encryptTokens, grantedScopes, hashToken, parseConnectorMap, serializeConnectorMap, type ConnectorTokens } from './auth.js';
+import { checkConnectorAccessToken, connectorFailureCode, ConsentRequiredError, createAuth, decryptConnectorTokens, decryptTokens, encryptConnectorTokens, encryptTokens, grantedScopes, hashToken, parseConnectorMap, serializeConnectorMap, type ConnectorTokens } from './auth.js';
 import { loadConfig } from './config.js';
 
 export const testConfig = (extra: NodeJS.ProcessEnv = {}) => loadConfig({ PUBLIC_URL: 'https://admin.example.com', AZURE_TENANT_ID: '11111111-1111-1111-1111-111111111111', AZURE_CLIENT_ID: '22222222-2222-2222-2222-222222222222', AZURE_CLIENT_SECRET: 'test-only-secret', ALLOWED_USER_IDS: '33333333-3333-3333-3333-333333333333', TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 1).toString('base64'), DATABASE_URL: 'postgresql://localhost/test', GRAPH_SCOPES: 'https://graph.microsoft.com/User.Read', ...extra });
@@ -283,5 +283,16 @@ describe('resource connector authentication', () => {
     expect(testConfig({ ONLINE_CONNECTORS: 'azure,exchange', EXCHANGE_PWSH_PATH: '/opt/microsoft/powershell/7/pwsh' }).exchangePwshPath).toBe('/opt/microsoft/powershell/7/pwsh');
     expect(() => testConfig({ GRAPH_SCOPES: 'OnPremDirectorySynchronization.Read.All' })).not.toThrow();
     expect(() => testConfig({ GRAPH_SCOPES: 'OnPremDirectorySynchronization.ReadWrite.All' })).toThrow('read-only');
+  });
+});
+
+describe('connector callback diagnostics', () => {
+  it('returns fixed labels without leaking unknown error text', () => {
+    expect(connectorFailureCode(new Error('The connector access token has the wrong audience'))).toBe('ACCESS_TOKEN_AUDIENCE');
+    expect(connectorFailureCode(new Error('A supported directory administrator or security reader role is required'))).toBe('DIRECTORY_ROLE_MISSING');
+    expect(connectorFailureCode(new Error('private-token-value'))).toBe('CONNECTOR_INTERNAL');
+    expect(connectorFailureCode({ message: 'private-token-value' })).toBe('CONNECTOR_INTERNAL');
+    expect(connectorFailureCode(Object.assign(new Error('private-provider-text'), { code: 'ERR_JWT_EXPIRED' }))).toBe('ERR_JWT_EXPIRED');
+    expect(connectorFailureCode(new Error('toString'))).toBe('CONNECTOR_INTERNAL');
   });
 });
