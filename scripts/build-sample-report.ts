@@ -1,0 +1,11 @@
+import { writeFileSync } from 'node:fs';
+import { sampleResult } from '../apps/web/src/test/sample-result.js';
+import { renderHtmlReport } from '@adminsecops/reporting';
+const result=structuredClone(sampleResult);
+result.collection.environment.label='Fictional sample — explore ConfigReview';
+const report=renderHtmlReport(result,{generatedAt:new Date('2026-09-28T00:00:00Z')});
+const css=/<style>([\s\S]*?)<\/style>/.exec(report)?.[1];
+if(!css)throw new Error('Sample report styles missing');
+const html=report.replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/,'').replace(/<style>[\s\S]*?<\/style>/,'<link rel="stylesheet" href="/sample-report.css">').replace('<main>','<main><p><a href="/">Back to ConfigReview</a> · Fictional sample only. No customer evidence is included.</p>');
+writeFileSync('apps/web/public/sample-assessment.html',html);
+writeFileSync('apps/web/public/sample-report.css',css);
