@@ -329,13 +329,13 @@ export const entraPrivilegedNoPermanent = defineControl({
 
 export const entraPrivilegedMfaRegistered = defineControl({
   id: 'ENTRA-PRIV-005',
-  version: '1.0.2',
+  version: '1.0.3',
   lifecycle: 'stable',
   title: 'Users in the assessed administrator roles are registered for MFA',
   technology: 'entra',
   category: 'Privileged access',
   subcategory: 'MFA registration',
-  description: 'Joins direct active user assignments in the highly privileged role catalog and Microsoft administrator MFA template with the registration report. Known disabled users are excluded. PIM-eligible users are matched through the registration report. Group membership and unmatched eligible principals require review.',
+  description: 'Joins direct active user assignments in the highly privileged role catalog and Microsoft administrator MFA template with the registration report. Known disabled users are excluded. PIM-eligible users are matched through the registration report. Complete collected role-group membership is expanded; partial membership and unmatched eligible principals require review.',
   rationale:
     'An administrator without a registered MFA method can be registered by whoever first signs in with the password. If that is an attacker using a phished or sprayed password, they bind their own authenticator to a privileged account.',
   severity: 'high',
@@ -372,13 +372,19 @@ export const entraPrivilegedMfaRegistered = defineControl({
   evaluate: (ctx) => {
     const adminRoleIds = new Set([...HIGHLY_PRIVILEGED_ROLE_TEMPLATE_IDS, ...MFA_ADMIN_ROLE_TEMPLATE_IDS]);
     const admins = new Map<string, Pick<ResolvedRoleAssignment, 'userPrincipalName' | 'principalName' | 'roleName'>[]>();
-    const selectedAssignments = resolved(ctx).filter((a) => adminRoleIds.has(a.roleTemplateId));
+    const rawAssignments = new Map(ctx.data('entra.roleAssignments').map((a) => [a.id, a]));
+    const selectedAssignments = resolved(ctx).filter((a) => adminRoleIds.has(a.roleTemplateId)).flatMap((a) => {
+      const raw = rawAssignments.get(a.assignmentId);
+      if (a.principalType !== 'group' || raw?.groupMembersComplete !== true || raw.groupMembers === null) return [a];
+      return raw.groupMembers.map((member) => ({ ...a, principalId: member.id, principalType: member.principalType, principalName: member.displayName ?? member.id, userPrincipalName: member.userPrincipalName, accountEnabled: member.accountEnabled, roleName: `${a.roleName} via group ${a.principalName}` }));
+    });
     const unresolved = selectedAssignments.filter((a) => a.principalType !== 'user' && a.principalType !== 'servicePrincipal');
     const eligible = ctx.fact('entra.roleEligibilitySchedules');
     const definitions = ctx.fact('entra.roleDefinitions');
     const templateIds = new Map(definitions.available ? definitions.data.map((d) => [d.id.toLowerCase(), (d.templateId ?? d.id).toLowerCase()]) : []);
     const disabledUsers = new Set(selectedAssignments.filter((a) => a.principalType === 'user' && a.accountEnabled === false).map((a) => a.principalId.toLowerCase()));
-    const selectedEligible = eligible.available ? eligible.data.filter((a) => !disabledUsers.has(a.principalId.toLowerCase()) && adminRoleIds.has(templateIds.get(a.roleDefinitionId.toLowerCase()) ?? a.roleDefinitionId.toLowerCase())) : [];
+    const eligiblePrincipals = eligible.available ? eligible.data.flatMap((a) => a.groupMembersComplete && a.groupMembers !== null ? a.groupMembers.filter((m) => m.accountEnabled !== false).map((m) => ({ ...a, principalId: m.id })) : [a]) : [];
+    const selectedEligible = eligible.available ? eligiblePrincipals.filter((a) => !disabledUsers.has(a.principalId.toLowerCase()) && adminRoleIds.has(templateIds.get(a.roleDefinitionId.toLowerCase()) ?? a.roleDefinitionId.toLowerCase())) : [];
     for (const a of selectedAssignments) {
       if (a.principalType !== 'user' || a.accountEnabled === false || !adminRoleIds.has(a.roleTemplateId)) continue;
       const list = admins.get(a.principalId.toLowerCase()) ?? [];

@@ -218,10 +218,9 @@ export function SignInPage() {
               Reading SharePoint settings needs Global Reader or SharePoint Administrator. Intune
               needs a licence and a role with Intune read access. Connect Azure subscriptions
               separately after sign-in. Its delegated permission may carry your account's write
-              authority; ConfigReview executes only fixed read operations. Exchange Online assessment
-              is not enabled in the hosted service. The only Exchange connection Microsoft offers
-              for this data requires a management-scoped permission, so it stays off until there is
-              a read-only path or an explicit opt-in.
+              authority; ConfigReview executes only fixed read operations. Exchange Online also requires
+              a separate optional connection and management-scoped consent. Review the permission
+              before connecting; live Exchange validation is still in progress.
             </p>
             <p>
               Raw evidence is processed in memory by the hosted service. Results are retained in the live database for 30

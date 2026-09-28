@@ -1,3 +1,4 @@
+import { remediationCsv } from '../lib/remediation-csv';
 import { useAssessment } from '../app/AssessmentLayout';
 import { useApi } from '../app/context';
 import { PageHeader, Panel } from '../components/PageHeader';
@@ -9,6 +10,15 @@ export function ReportsPage() {
   const result = useAssessment();
   const api = useApi();
   const name = environmentName(result.collection.environment);
+  const downloadTracker = () => {
+    const url = URL.createObjectURL(new Blob([remediationCsv(result)], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `configreview-remediation-${result.assessedAt.slice(0, 10)}.csv`;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
 
   return (
     <div className="page">
@@ -41,6 +51,10 @@ export function ReportsPage() {
           <a className="button" href={api.reportUrl(result.assessmentId, 'json')} download={reportFileName(result, 'json')}>
             Download JSON report
           </a>
+        </Panel>
+        <Panel title="Remediation tracker" id="report-tracker">
+          <p>Download failures, review decisions and evidence gaps with columns for owner, target date, status, exception expiry and verification evidence. Edit it in your spreadsheet app; changes are not saved back to ConfigReview and do not change assessment verdicts.</p>
+          <button className="button" onClick={downloadTracker}>Download remediation tracker (CSV)</button>
         </Panel>
       </div>
     </div>

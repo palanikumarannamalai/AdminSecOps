@@ -1,5 +1,5 @@
 import { m365SharePointSettings, m365TeamsAppSettings, m365TeamsTeamSettings } from '@adminsecops/schemas';
-import { GRAPH_BASE } from './graph-client.js';
+import { GRAPH_BASE, GraphRequestError } from './graph-client.js';
 import type { PlannedDataset } from './package.js';
 import {
   arr,
@@ -27,6 +27,16 @@ const sharePointSettings: DatasetCollector = async (state, context) => {
   const body = await getOne(state, context, `${GRAPH_BASE}/admin/sharepoint/settings`);
   // The documented response example wraps the settings in "value"; accept both forms.
   const s = rec(body['value']) ?? body;
+  if (typeof s['isRequireAcceptingUserToMatchInvitedUserEnabled'] !== 'boolean') {
+    try {
+      const selected = await getOne(state, context, `${GRAPH_BASE}/admin/sharepoint/settings?$select=isRequireAcceptingUserToMatchInvitedUserEnabled`);
+      const value = (rec(selected['value']) ?? selected)['isRequireAcceptingUserToMatchInvitedUserEnabled'];
+      if (typeof value === 'boolean') s['isRequireAcceptingUserToMatchInvitedUserEnabled'] = value;
+    } catch (error) {
+      if (!(error instanceof GraphRequestError) || error.kind === 'budget-exhausted') throw error;
+      // Preserve other tenant settings when this optional property cannot be retrieved.
+    }
+  }
   if (typeof s['isRequireAcceptingUserToMatchInvitedUserEnabled'] !== 'boolean') {
     state.warnings.push(message('SETTING_NOT_RETURNED', 'Microsoft Graph omitted the SharePoint invitation account-matching setting. Verify RequireAcceptingAccountMatchInvitedAccount with an authorised SharePoint administrator; the related control remains not assessed.'));
   }

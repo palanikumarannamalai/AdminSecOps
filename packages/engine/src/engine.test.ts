@@ -46,6 +46,16 @@ const sdControl = defineControl({
       : fail({ reason: 'off', summary: 'Security defaults off', affectedObjects: [{ type: 'tenant', id: 't', name: 'Tenant' }] }),
 });
 
+it('exports explicit licensing and connection gap categories', () => {
+  const { files } = buildEvidencePackage(manifestBase(), [
+    { path: 'evidence/entra/securityDefaults.json', envelope: envelope('entra.securityDefaults', null, { status: 'NotApplicable', warnings: [{ code: 'LICENSE_NOT_PRESENT', message: 'Not licensed.', target: null }] }) },
+    { path: 'evidence/entra/authorizationPolicy.json', envelope: envelope('entra.authorizationPolicy', null, { status: 'NotCollected', errors: [{ code: 'CONNECTOR_NOT_CONNECTED', message: 'Connect first.', target: null }] }) },
+  ]);
+  const result = runAssessment(loadEvidenceBundle(files), []);
+  expect(result.evidence.datasets.find((d) => d.datasetId === 'entra.securityDefaults')?.gapCategory).toBe('licence');
+  expect(result.evidence.datasets.find((d) => d.datasetId === 'entra.authorizationPolicy')?.gapCategory).toBe('not-connected');
+});
+
 describe('evaluateControl semantics', () => {
   it('evaluates PASS and FAIL', () => {
     expect(evaluateControl(sdControl, createInventoryFromData({ 'entra.securityDefaults': { isEnabled: true } })).status).toBe('PASS');

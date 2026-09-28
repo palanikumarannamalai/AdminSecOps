@@ -16,6 +16,7 @@ import type {
   AssessmentResult,
   AssessmentSummary,
   ControlResult,
+  DatasetAvailability,
   Finding,
   StatusCounts,
 } from '@adminsecops/schemas';
@@ -25,6 +26,19 @@ import { prioritize } from './prioritize.js';
 export interface AssessmentOptions {
   /** Processing timestamp; injectable for reproducible tests. */
   processedAt?: Date;
+}
+
+function gapCategory(dataset: DatasetAvailability, bundle: EvidenceBundle): DatasetAvailability['gapCategory'] {
+  if (dataset.state === 'available') return null;
+  if (dataset.state === 'partial') return 'partial';
+  const codes = new Set(bundle.issues.filter((i) => i.datasetId === dataset.datasetId).map((i) => i.code));
+  if (codes.has('CONNECTOR_CONSENT_REQUIRED') || dataset.collectionStatus === 'Unauthorized') return 'permission';
+  if (codes.has('CONNECTOR_NOT_CONNECTED') || codes.has('CONNECTOR_EXPIRED')) return 'not-connected';
+  if (codes.has('CONNECTOR_UNAVAILABLE')) return 'unsupported';
+  if (dataset.collectionStatus === 'NotApplicable') return 'licence';
+  if (dataset.collectionStatus === 'Failed' || codes.has('DATA_INVALID') || codes.has('ENVELOPE_MISMATCH')) return 'failed';
+  if (dataset.collectionStatus === null && bundle.manifest.collector.name === 'AdminSecOps.HostedGraphCollector' && ['ad', 'adcs', 'gpo', 'windows'].includes(dataset.technology)) return 'unsupported';
+  return 'not-collected';
 }
 
 /**
@@ -65,7 +79,7 @@ export function runAssessment(
     evidence: {
       integrityVerified: bundle.integrityVerified,
       files: [...bundle.files],
-      datasets: datasetAvailability(inventory),
+      datasets: datasetAvailability(inventory).map((dataset) => ({ ...dataset, gapCategory: gapCategory(dataset, bundle) })),
       issues: [...bundle.issues],
     },
     inventory: summarizeInventory(inventory),

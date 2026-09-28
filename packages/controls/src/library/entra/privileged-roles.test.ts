@@ -215,6 +215,23 @@ describe('ENTRA-PRIV-005 administrators registered for MFA', () => {
     expect(result.notes.join(' ')).toContain('PIM eligibility evidence was not available');
   });
 
+  it('checks complete role group membership and keeps partial groups unresolved', () => {
+    const member = (roleAssignment(GA, { id: adminId }) as { principal: Record<string, unknown> }).principal;
+    const assignment = { ...roleAssignment(GA, { principalType: 'group' }), groupMembers: [member], groupMembersComplete: true };
+    const evidence = { 'entra.roleAssignments': [assignment], 'entra.roleEligibilitySchedules': [], 'entra.userRegistrationDetails': [reg(adminId, true)] };
+    expect(run(entraPrivilegedMfaRegistered, evidence).status).toBe('PASS');
+    expect(run(entraPrivilegedMfaRegistered, { ...evidence, 'entra.userRegistrationDetails': [reg(adminId, false)] }).status).toBe('FAIL');
+    expect(run(entraPrivilegedMfaRegistered, { ...evidence, 'entra.roleAssignments': [{ ...assignment, groupMembersComplete: false }] }).status).toBe('REVIEW');
+  });
+
+  it('checks eligible group members and ignores known disabled members', () => {
+    const member = (roleAssignment(GA, { id: adminId }) as { principal: Record<string, unknown> }).principal;
+    const eligible = { id: nextGuid(), roleDefinitionId: GA, principalId: nextGuid(), directoryScopeId: '/', groupMembers: [member], groupMembersComplete: true };
+    const evidence = { 'entra.roleAssignments': [], 'entra.roleEligibilitySchedules': [eligible], 'entra.userRegistrationDetails': [reg(adminId, false)] };
+    expect(run(entraPrivilegedMfaRegistered, evidence).status).toBe('FAIL');
+    expect(run(entraPrivilegedMfaRegistered, { ...evidence, 'entra.roleEligibilitySchedules': [{ ...eligible, groupMembers: [{ ...member, accountEnabled: false }] }] }).status).toBe('REVIEW');
+  });
+
   it('requires review for unexpanded group assignments even with a registered direct user', () => {
     const result = run(entraPrivilegedMfaRegistered, {
       'entra.roleAssignments': [roleAssignment(GA, { id: adminId }), roleAssignment(GA, { principalType: 'group' })],

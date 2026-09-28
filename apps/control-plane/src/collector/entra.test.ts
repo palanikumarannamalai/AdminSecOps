@@ -295,6 +295,21 @@ async function rejectsWith(promise: Promise<unknown>, code: string): Promise<voi
   );
 }
 
+it('collects paged role group membership and marks denied membership partial', async () => {
+  const group = 'aaaaaaaa-0000-4000-8000-000000000099';
+  const assignment = { id: 'assignment-group', roleDefinitionId: GLOBAL_ADMIN, principalId: group, directoryScopeId: '/', principal: { id: group, '@odata.type': '#microsoft.graph.group', displayName: 'Role group' } };
+  const member = { id: 'u1', '@odata.type': '#microsoft.graph.user', displayName: 'Admin', userPrincipalName: 'admin@contoso.example', accountEnabled: true };
+  const graph = mockGraph({
+    '/roleManagement/directory/roleAssignments': () => json({ value: [assignment] }),
+    [`/groups/${group}/members`]: (url) => url.searchParams.has('$skiptoken') ? json({ value: [member] }) : json({ value: [], '@odata.nextLink': `https://graph.microsoft.com/v1.0/groups/${group}/members?$skiptoken=next` }),
+  });
+  const result = dataset(await collectEntra(options(graph.fetch)), 'entra.roleAssignments');
+  expect(result.state).toBe('available');
+  expect(result.data).toMatchObject([{ groupMembersComplete: true, groupMembers: [{ id: 'u1' }] }]);
+  const denied = mockGraph({ '/roleManagement/directory/roleAssignments': () => json({ value: [assignment] }), [`/groups/${group}/members`]: () => new Response('', { status: 403 }) });
+  expect(dataset(await collectEntra(options(denied.fetch)), 'entra.roleAssignments').state).toBe('partial');
+});
+
 describe('collectEntra happy path', () => {
   it('preserves device filters and MFA strength requirements from Graph', async () => {
     const routes = defaultRoutes();

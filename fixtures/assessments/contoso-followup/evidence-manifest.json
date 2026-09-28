@@ -279,8 +279,8 @@
       "path": "evidence/entra/roleAssignments.json",
       "datasetId": "entra.roleAssignments",
       "module": "Entra",
-      "sha256": "fc77ad29c1ba76837f548cdd312a29feaef97ac651aa2c7d157a44cc6622dd1e",
-      "sizeBytes": 9435,
+      "sha256": "5697812d4d3abaf770ef5945ac3df921bdd19adb6b4a327d1a4900db64b72c0c",
+      "sizeBytes": 9501,
       "schemaVersion": "1.0",
       "status": "Success",
       "collectedAt": "2026-09-09T09:09:43.0000000Z"
@@ -299,8 +299,8 @@
       "path": "evidence/entra/roleEligibilitySchedules.json",
       "datasetId": "entra.roleEligibilitySchedules",
       "module": "Entra",
-      "sha256": "6fa01ac538f4834260a64e5d5e248ace8fb3924fd07000c539ee42dd67843df2",
-      "sizeBytes": 2292,
+      "sha256": "17fc24a5381242d25f3568e49b2e0dcd5e0181d4c8e7525c88a2a9dadb06be4e",
+      "sizeBytes": 2376,
       "schemaVersion": "1.0",
       "status": "Success",
       "collectedAt": "2026-09-09T09:09:57.0000000Z"

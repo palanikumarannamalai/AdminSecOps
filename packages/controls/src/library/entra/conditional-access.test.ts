@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ENTRA_ROLE_TEMPLATES, MFA_ADMIN_ROLE_TEMPLATE_IDS } from '@adminsecops/inventory';
-import { caPolicy } from '../../../test/builders/entra.js';
+import { caPolicy, roleAssignment } from '../../../test/builders/entra.js';
 import { run } from '../../../test/run.js';
 import { entraCaBlockLegacyAuth, entraCaMfaAdmins, entraCaMfaAllUsers } from './conditional-access.js';
 
@@ -196,6 +196,25 @@ describe('ENTRA-CA-003 legacy authentication blocked', () => {
   });
 });
 
+
+describe('combined MFA policy exclusions', () => {
+  const a = 'aaaaaaaa-0000-4000-8000-000000000001';
+  const b = 'bbbbbbbb-0000-4000-8000-000000000002';
+  it('uses complete collected role-group exclusions, but does not trust incomplete membership', () => {
+    const group = 'cccccccc-0000-4000-8000-000000000003';
+    const assignment = { ...roleAssignment(ENTRA_ROLE_TEMPLATES.globalAdministrator, { id: group, principalType: 'group' }), groupMembersComplete: true, groupMembers: [{ id: a, principalType: 'user', accountEnabled: true }] };
+    const evidence = { 'entra.securityDefaults': sdOff, 'entra.conditionalAccessPolicies': [caPolicy({ excludeGroups: [group] }), caPolicy({ excludeUsers: [b] })], 'entra.roleAssignments': [assignment] };
+    expect(run(entraCaMfaAdmins, evidence).status).toBe('PASS');
+    expect(run(entraCaMfaAdmins, { ...evidence, 'entra.roleAssignments': [{ ...assignment, groupMembersComplete: false }] }).status).toBe('REVIEW');
+  });
+  it.each([entraCaMfaAllUsers, entraCaMfaAdmins])('recognises complementary policies but not a common exclusion: $id', (control) => {
+    const assessPolicies = (policies: ReturnType<typeof caPolicy>[]) => run(control, { 'entra.securityDefaults': sdOff, 'entra.conditionalAccessPolicies': policies });
+    expect(assessPolicies([caPolicy({ excludeUsers: [a] }), caPolicy({ excludeUsers: [b] })]).status).toBe('PASS');
+    expect(assessPolicies([caPolicy({ excludeUsers: [a] }), caPolicy({ excludeUsers: [a, b] })]).status).toBe('REVIEW');
+    expect(assessPolicies([caPolicy({ excludeUsers: [a] }), caPolicy({ excludeUsers: [b], state: 'enabledForReportingButNotEnforced' })]).status).toBe('REVIEW');
+    expect(assessPolicies([caPolicy({ excludeGroups: [a] }), caPolicy({ excludeGroups: [b] })]).status).toBe('REVIEW');
+  });
+});
 
 describe('Conditional Access coverage regressions', () => {
   it.each([entraCaMfaAllUsers, entraCaMfaAdmins])('reviews exclusions without rejecting emergency access outright: $id', (control) => {

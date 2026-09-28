@@ -1,3 +1,4 @@
+import { intuneWindowsSecureBoot, intuneWindowsCodeIntegrity } from './device-health.js';
 import type { ControlDefinition } from '../../define.js';
 import {
   intuneNoPolicyNoncompliant,
@@ -10,5 +11,7 @@ export const INTUNE_CONTROLS: readonly ControlDefinition[] = [
   intuneNoPolicyNoncompliant,
   intunePlatformCoverage,
   intuneWindowsBitLocker,
+  intuneWindowsSecureBoot,
+  intuneWindowsCodeIntegrity,
   intuneCaRequireCompliantDevice,
 ];

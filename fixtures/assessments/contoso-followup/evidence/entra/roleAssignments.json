@@ -12,7 +12,8 @@
   "source": {
     "system": "MicrosoftGraph",
     "operations": [
-      "GET https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?$expand=principal"
+      "GET https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?$expand=principal",
+      "GET https://graph.microsoft.com/v1.0/groups/{id}/members"
     ],
     "apiVersion": "v1.0"
   },

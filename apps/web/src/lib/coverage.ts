@@ -139,7 +139,7 @@ export function computeCoverage(result: AssessmentResult): WorkloadCoverage[] {
       entry.gaps.push({
         datasetId: dataset.datasetId,
         title: dataset.title,
-        reason: gapReason(dataset.collectionStatus, skipped !== undefined || unreachable, codes.get(dataset.datasetId) ?? []),
+        reason: dataset.gapCategory !== undefined && dataset.gapCategory !== null && dataset.gapCategory !== 'partial' ? dataset.gapCategory : gapReason(dataset.collectionStatus, skipped !== undefined || unreachable, codes.get(dataset.datasetId) ?? []),
         detail: dataset.reason,
       });
     }
