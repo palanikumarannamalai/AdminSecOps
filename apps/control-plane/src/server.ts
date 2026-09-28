@@ -4,7 +4,7 @@ import { compareAssessments } from '@adminsecops/engine';
 import { listDatasetDefinitions } from '@adminsecops/schemas';
 import { buildJsonReport, renderHtmlReport, serializeJsonReport } from '@adminsecops/reporting';
 import { isApprovedUser, isTenantId, type Config } from './config.js';
-import { CONNECTOR_IDS, createAuth, decryptTokens, encryptConnectorTokens, encryptTokens, hasFreshAuthorization, hashToken, parseConnectorMap, randomToken, serializeConnectorMap, type ConnectorId } from './auth.js';
+import { CONNECTOR_IDS, connectorFailureCode, createAuth, decryptTokens, encryptConnectorTokens, encryptTokens, hasFreshAuthorization, hashToken, parseConnectorMap, randomToken, serializeConnectorMap, type ConnectorId } from './auth.js';
 import { ONLINE_REQUIRED_GRAPH_PERMISSIONS, type ExchangeRunner } from './collector/index.js';
 import { connectorLabel, describeConnectors, prepareJobConnectors } from './connectors.js';
 import type { Store, StoredSession } from './store.js';
@@ -119,8 +119,8 @@ export async function buildServer({ config, store, exchangeRunner }: { config: C
         map[tokens.connector] = encryptConnectorTokens(tokens, config.tokenEncryptionKey);
         await store.putSession({ ...current, encryptedConnectors: serializeConnectorMap(map) });
         return reply.header('Set-Cookie', cookie(transactionName, '', 0)).redirect(`/?connected=${tokens.connector}`);
-      } catch {
-        throw failure(401, 'Connecting failed. Use the same account as your ConfigReview session, make sure a tenant administrator has granted consent for this connector, then try Connect again from the home page.');
+      } catch (error) {
+        throw failure(401, 'Connecting failed (' + connectorFailureCode(error) + '). Return to the home page and reconnect. Share this diagnostic identifier with the ConfigReview maintainer.');
       }
     }
     try {
