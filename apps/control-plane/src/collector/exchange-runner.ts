@@ -36,6 +36,8 @@ export const EXCHANGE_OPERATIONS = {
   mailboxForwarding: { cmdlet: 'Get-EXOMailbox', single: false },
   smtpAuthMailboxes: { cmdlet: 'Get-EXOCASMailbox', single: false },
   atpPolicy: { cmdlet: 'Get-AtpPolicyForO365', single: true },
+  inboxRules: { cmdlet: 'Get-InboxRule', single: false },
+  transportRules: { cmdlet: 'Get-TransportRule', single: false },
 } as const;
 export type ExchangeOperationId = keyof typeof EXCHANGE_OPERATIONS;
 const OPERATION_IDS = Object.keys(EXCHANGE_OPERATIONS) as [ExchangeOperationId, ...ExchangeOperationId[]];

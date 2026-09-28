@@ -322,7 +322,7 @@ function nonEmpty(value: string | null): string | null {
 
 export const m365MailboxExternalForwarding = defineControl({
   id: 'M365-EXO-005',
-  version: '1.0.0',
+  version: '1.1.0',
   lifecycle: 'stable',
   title: 'No mailboxes forward to external recipients',
   technology: 'm365',
@@ -339,7 +339,7 @@ export const m365MailboxExternalForwarding = defineControl({
   optionalEvidence: ['exchange.outboundSpamPolicies'],
   evaluation: {
     logic:
-      'For each mailbox with forwarding: when ForwardingAddress (a recipient object) is set it takes precedence and the mailbox is flagged for REVIEW, because the recipient may be a mail contact or mail user with an external address, which the evidence does not show. Otherwise ForwardingSmtpAddress is parsed (an "smtp:" prefix is removed, case-insensitive); forwarding is external when its domain is not an accepted domain (exact match, or a subdomain of a "*.domain" accepted domain entry). FAIL when any mailbox forwards externally; REVIEW when there are only recipient-object forwards or addresses that cannot be parsed; PASS when no mailbox forwards or all forward to accepted domains. NOT_ASSESSED when SMTP forwarding exists but no accepted domains were collected. Inbox rules are not collected.',
+      'For each mailbox with forwarding: ForwardingAddress takes precedence. A resolved mail contact or mail user uses its external address; a resolved mailbox uses its primary SMTP address. Groups, unsupported types and unresolved recipients require REVIEW. Otherwise ForwardingSmtpAddress is parsed (an "smtp:" prefix is removed, case-insensitive); forwarding is external when its domain is not an accepted domain (exact match, or a subdomain of a "*.domain" accepted domain entry). FAIL when any mailbox forwards externally; REVIEW when there are only recipient-object forwards or addresses that cannot be parsed; PASS when no mailbox forwards or all forward to accepted domains. NOT_ASSESSED when SMTP forwarding exists but no accepted domains were collected. Inbox rules are assessed separately by M365-EXO-007.',
     parameters: {},
   },
   expectedState:
@@ -389,10 +389,15 @@ export const m365MailboxExternalForwarding = defineControl({
     const classified: Classified[] = [];
     for (const entry of entries) {
       const recipient = nonEmpty(entry.forwardingAddress);
-      const smtp = nonEmpty(entry.forwardingSmtpAddress);
+      let smtp = nonEmpty(entry.forwardingSmtpAddress);
       if (recipient !== null) {
-        classified.push({ kind: 'recipient', entry, recipient, ignoredSmtp: smtp });
-        continue;
+        const resolved = nonEmpty(entry.resolvedForwardingSmtpAddress ?? null);
+        const supported = ['MailContact', 'MailUser', 'UserMailbox', 'SharedMailbox', 'RoomMailbox', 'EquipmentMailbox'].includes(entry.resolvedForwardingRecipientType ?? '');
+        if (resolved !== null && supported) smtp = resolved;
+        else {
+          classified.push({ kind: 'recipient', entry, recipient, ignoredSmtp: smtp });
+          continue;
+        }
       }
       if (smtp === null) continue;
       const parsed = parseSmtpAddress(smtp);
@@ -422,9 +427,7 @@ export const m365MailboxExternalForwarding = defineControl({
     ];
     if (
       accepted.length === 0 &&
-      entries.some(
-        (e) => nonEmpty(e.forwardingSmtpAddress) !== null && nonEmpty(e.forwardingAddress) === null,
-      )
+      (external.length > 0 || internal.length > 0)
     ) {
       return notAssessed({
         reason:
@@ -465,6 +468,7 @@ export const m365MailboxExternalForwarding = defineControl({
     const sortByUpn = (a: Classified, b: Classified) =>
       a.entry.userPrincipalName.localeCompare(b.entry.userPrincipalName);
     const notes: string[] = [];
+    notes.push('Recipient lookups cover the immediate destination only. Group membership, chained forwarding and final delivery are not inferred from an accepted-domain address.');
     const allOff = outboundPoliciesAllOff(ctx);
     if (allOff === true && external.length > 0) {
       notes.push(
@@ -476,7 +480,7 @@ export const m365MailboxExternalForwarding = defineControl({
       );
     }
     notes.push(
-      'Forwarding configured through Inbox rules is not included in this evidence; review the Auto forwarded messages report as well.',
+      'Inbox-rule forwarding is assessed separately by M365-EXO-007 and mail-flow recipient actions by M365-EXO-008; their collection coverage must also be reviewed.',
     );
     if (external.length > 0) {
       return fail({
@@ -507,3 +511,5 @@ export const m365MailboxExternalForwarding = defineControl({
     });
   },
 });
+
+

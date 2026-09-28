@@ -383,6 +383,8 @@ function exchangeResult(overrides: Partial<ExchangeRunResult> = {}, operations: 
       mailboxForwarding: { status: 'ok', truncated: false, items: [] },
       smtpAuthMailboxes: { status: 'ok', truncated: false, items: [{ PrimarySmtpAddress: 'scanner@contoso.example', SmtpClientAuthenticationDisabled: false }] },
       atpPolicy: { status: 'ok', truncated: false, items: [{ EnableATPForSPOTeamsODB: true, EnableSafeDocs: true, AllowSafeDocsOpen: false }] },
+      inboxRules: { status: 'ok', truncated: false, items: [{ RecordKind: 'coverage', ScannedMailboxes: 1, UnscannedMailboxes: 0, Complete: true }] },
+      transportRules: { status: 'ok', truncated: false, items: [] },
       ...operations,
     },
     ...overrides,

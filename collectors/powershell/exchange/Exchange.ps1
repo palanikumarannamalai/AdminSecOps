@@ -181,3 +181,11 @@ function Get-AsoExchangeMailDnsRecord {
     }
     $State.Data = [object[]]$out.ToArray()
 }
+
+function Get-AsoExchangeHostedRule {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)] $State)
+    $State.Status = 'NotCollected'
+    $State.Data = $null
+    Add-AsoDatasetWarning -State $State -Code 'HOSTED_RULE_COLLECTION' -Message 'Rule collection is available through the hosted Exchange connector; this local collector does not collect it.'
+}

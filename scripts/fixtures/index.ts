@@ -7,8 +7,8 @@
  */
 import { findSensitiveContent, isUsableCollectionStatus } from '@adminsecops/core';
 import { buildEvidencePackage, summarizeZodIssues, type PackageFiles } from '@adminsecops/evidence';
-import { EvidenceEnvelopeSchema, EvidenceManifestSchema, listDatasetDefinitions } from '@adminsecops/schemas';
-import { type EnvironmentFixture, envelopeFor, evidencePath, manifestBase } from './common.js';
+import { EvidenceEnvelopeSchema, EvidenceManifestSchema, listDatasetDefinitions, exchangeInboxRules, exchangeTransportRules } from '@adminsecops/schemas';
+import { type EnvironmentFixture, envelopeFor, evidencePath, manifestBase, uncollected, message } from './common.js';
 import { contosoFollowupEnvironment } from './contoso-followup.js';
 import { contosoInitialEnvironment } from './contoso-initial.js';
 import { fabrikamEnvironment } from './fabrikam.js';
@@ -21,7 +21,13 @@ export { FABRIKAM_ASSESSMENT_ID } from './fabrikam.js';
 export const FIXTURES_ROOT = 'fixtures/assessments';
 
 export function fixtureEnvironments(): EnvironmentFixture[] {
-  return [contosoInitialEnvironment(), contosoFollowupEnvironment(), fabrikamEnvironment()];
+  return [contosoInitialEnvironment(), contosoFollowupEnvironment(), fabrikamEnvironment()].map((env) =>
+    env.modules.some((module) => module.module === 'Exchange') ? {
+      ...env,
+      datasets: [...env.datasets, ...[exchangeInboxRules, exchangeTransportRules].map((definition) =>
+        uncollected(definition, 'NotCollected', { warnings: [message('HOSTED_RULE_COLLECTION', 'This local sample does not collect rules; use the hosted Exchange connector.')] }))],
+    } : env);
+
 }
 
 export interface FixturePackage {

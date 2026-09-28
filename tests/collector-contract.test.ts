@@ -48,6 +48,8 @@ const EXPECTED_NON_SUCCESS: Record<string, string> = {
   'entra.roleEligibilitySchedules': 'NotApplicable',
   'entra.onPremisesSynchronization': 'Unauthorized',
   'exchange.atpPolicy': 'NotApplicable',
+  'exchange.inboxRules': 'NotCollected',
+  'exchange.transportRules': 'NotCollected',
   'azure.keyVaults': 'Partial',
   'ad.domainControllerSettings': 'NotCollected',
 };

@@ -6,7 +6,7 @@ only partially. Placeholder or planned capabilities are not presented as impleme
 ## Validation status
 
 - **Validation is incomplete.** Selected hosted Entra, collaboration and Azure paths have
-  been exercised in authorised labs. Exchange live validation and broader roles, licences,
+  been exercised in authorised labs. New Exchange rule coverage and broader roles, licences,
   throttling, larger tenants and on-premises environments still need validation. Synthetic
   replay and contract tests complement these checks; they do not establish production readiness.
 - Collector specifics:
@@ -37,7 +37,7 @@ only partially. Placeholder or planned capabilities are not presented as impleme
 
 ## Controls
 
-- 107 controls are implemented across Entra ID, hybrid identity, Microsoft 365, Intune,
+- 109 controls are implemented across Entra ID, hybrid identity, Microsoft 365, Intune,
   Azure, Active Directory, AD CS, Group Policy and Windows hosts. Coverage within each area
   is intentionally selective (high-value checks with reliable evidence).
 - **Not yet implemented modules/areas:** Teams tenant-wide policies beyond the two existing app/per-team checks, Defender for Office 365 policy

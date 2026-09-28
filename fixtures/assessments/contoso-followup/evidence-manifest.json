@@ -389,111 +389,111 @@
       "path": "evidence/exchange/organizationConfig.json",
       "datasetId": "exchange.organizationConfig",
       "module": "Exchange",
-      "sha256": "2bb7301222c33db878628361158d6f9ff3a73ca03955f04d4e96a5917e72256e",
+      "sha256": "4ced828542481618f9856c56d36ba798271b524fc2d4f2e2ee458926dc74e1a7",
       "sizeBytes": 682,
       "schemaVersion": "1.0",
       "status": "Success",
-      "collectedAt": "2026-09-09T09:14:43.0000000Z"
+      "collectedAt": "2026-09-09T09:14:29.0000000Z"
     },
     {
       "path": "evidence/exchange/transportConfig.json",
       "datasetId": "exchange.transportConfig",
       "module": "Exchange",
-      "sha256": "43ac592711c829aa974c0a3b3ab5de89c61c1024eb0ea33319c7912168ea89d6",
+      "sha256": "f88d85566a95e6b00e952396f264b763b5de6d62117c4abb549d20aa6398af9a",
       "sizeBytes": 565,
       "schemaVersion": "1.0",
       "status": "Success",
-      "collectedAt": "2026-09-09T09:14:50.0000000Z"
+      "collectedAt": "2026-09-09T09:14:36.0000000Z"
     },
     {
       "path": "evidence/exchange/adminAuditLogConfig.json",
       "datasetId": "exchange.adminAuditLogConfig",
       "module": "Exchange",
-      "sha256": "2101400f25af3cafe6ffe6254b4634a6d672cad7496126be1af51db5072ce37b",
+      "sha256": "f63531cf88fe2a1dc113e0c0c05d94a8ef601be557788617e7b94812f1f93297",
       "sizeBytes": 572,
       "schemaVersion": "1.0",
       "status": "Success",
-      "collectedAt": "2026-09-09T09:14:57.0000000Z"
+      "collectedAt": "2026-09-09T09:14:43.0000000Z"
     },
     {
       "path": "evidence/exchange/acceptedDomains.json",
       "datasetId": "exchange.acceptedDomains",
       "module": "Exchange",
-      "sha256": "6213432e25294d8ee2028a164bc91dcc2c1c8a509953509fcbe8e6cb1cceac6e",
+      "sha256": "1b0c161b9e0b7ee35bafe38c5d9aefeb60d64671f64bc98f13d6011426bc9278",
       "sizeBytes": 1134,
       "schemaVersion": "1.0",
       "status": "Success",
-      "collectedAt": "2026-09-09T09:15:04.0000000Z"
+      "collectedAt": "2026-09-09T09:14:50.0000000Z"
     },
     {
       "path": "evidence/exchange/dkimSigningConfigs.json",
       "datasetId": "exchange.dkimSigningConfigs",
       "module": "Exchange",
-      "sha256": "40807606f30ada59622b8c23031b949cd0286c389d485d30d15a9a9b1284b7e8",
+      "sha256": "02f285c9f423496d5b1a9ac565239d1f02222cc96fb8b5dbb2077add653818b0",
       "sizeBytes": 830,
       "schemaVersion": "1.0",
       "status": "Success",
-      "collectedAt": "2026-09-09T09:15:11.0000000Z"
+      "collectedAt": "2026-09-09T09:14:57.0000000Z"
     },
     {
       "path": "evidence/exchange/outboundSpamPolicies.json",
       "datasetId": "exchange.outboundSpamPolicies",
       "module": "Exchange",
-      "sha256": "2235a41e63ea686ea4c396d8215912755caee3ae418bafd70b30a17fa9f7880b",
+      "sha256": "fcaf72c63c27ec8050411b2d2ded42c664802884b3736d79cbc6b191bdb56c3b",
       "sizeBytes": 771,
       "schemaVersion": "1.0",
       "status": "Success",
-      "collectedAt": "2026-09-09T09:15:18.0000000Z"
+      "collectedAt": "2026-09-09T09:15:04.0000000Z"
     },
     {
       "path": "evidence/exchange/remoteDomains.json",
       "datasetId": "exchange.remoteDomains",
       "module": "Exchange",
-      "sha256": "40df523619a8c29d2f82c95bba0756480b04ef6c3487846da51d1af0d688c735",
+      "sha256": "7fb140c370a5c63e58e15026ddc34abb91bbe07945a5a4d4893823fe20fcc0ab",
       "sizeBytes": 726,
       "schemaVersion": "1.0",
       "status": "Success",
-      "collectedAt": "2026-09-09T09:15:25.0000000Z"
+      "collectedAt": "2026-09-09T09:15:11.0000000Z"
     },
     {
       "path": "evidence/exchange/mailboxForwarding.json",
       "datasetId": "exchange.mailboxForwarding",
       "module": "Exchange",
-      "sha256": "70d89b94b0806f3fc73d771fa507ac234c6c0ae04c6d869bb6a95248d7ccce80",
+      "sha256": "ecc4d94201cd1b909c1138db9908320c0ac7cdec29129339089fa6085d496a36",
       "sizeBytes": 911,
       "schemaVersion": "1.0",
       "status": "Success",
-      "collectedAt": "2026-09-09T09:15:32.0000000Z"
+      "collectedAt": "2026-09-09T09:15:18.0000000Z"
     },
     {
       "path": "evidence/exchange/smtpAuthMailboxes.json",
       "datasetId": "exchange.smtpAuthMailboxes",
       "module": "Exchange",
-      "sha256": "4047c299448098cb32bcb8b6f6d438f25cf94dccedc8e61ed6674fc55b8ef257",
+      "sha256": "1e64af9dcc4c579904475394fe6b9f8e074c0da3babacdf9d92027adb984f85e",
       "sizeBytes": 799,
       "schemaVersion": "1.0",
       "status": "Success",
-      "collectedAt": "2026-09-09T09:15:39.0000000Z"
+      "collectedAt": "2026-09-09T09:15:25.0000000Z"
     },
     {
       "path": "evidence/exchange/atpPolicy.json",
       "datasetId": "exchange.atpPolicy",
       "module": "Exchange",
-      "sha256": "1b91243090340027f40fa70864505558dcb8769f0dc93a8bde736688786b02af",
+      "sha256": "abe6a08aab2c7a4b4748dc65a005619cbfdb6a5607fd9ec0302012c5ba4f7ec3",
       "sizeBytes": 764,
       "schemaVersion": "1.0",
       "status": "NotApplicable",
-      "collectedAt": "2026-09-09T09:15:46.0000000Z"
+      "collectedAt": "2026-09-09T09:15:32.0000000Z"
     },
     {
       "path": "evidence/exchange/mailDnsRecords.json",
       "datasetId": "exchange.mailDnsRecords",
       "module": "Exchange",
-      "sha256": "f1d46d07da949601148b3a50ccd86e786a364979d4c126166cadccc2b9f1aa29",
+      "sha256": "4edee94bd77577bfa7b1ce4d03ae34d6e5eb7621d4ced7c560656d96b64b8b7e",
       "sizeBytes": 1505,
       "schemaVersion": "1.0",
       "status": "Success",
-      "collectedAt": "2026-09-09T09:15:53.0000000Z"
+      "collectedAt": "2026-09-09T09:15:39.0000000Z"
     },
     {
       "path": "evidence/m365/sharePointSettings.json",
@@ -784,6 +784,26 @@
       "schemaVersion": "1.0",
       "status": "Success",
       "collectedAt": "2026-09-09T09:38:53.0000000Z"
+    },
+    {
+      "path": "evidence/exchange/inboxRules.json",
+      "datasetId": "exchange.inboxRules",
+      "module": "Exchange",
+      "sha256": "8b9fe4e79528b52378c6f2865d02e37ceda9b29c1bb0ef267a69d937c368dee1",
+      "sizeBytes": 725,
+      "schemaVersion": "1.0",
+      "status": "NotCollected",
+      "collectedAt": "2026-09-09T09:15:46.0000000Z"
+    },
+    {
+      "path": "evidence/exchange/transportRules.json",
+      "datasetId": "exchange.transportRules",
+      "module": "Exchange",
+      "sha256": "b3b645f19ed1343a97b165cb35fdfc43502876299de8f730a73aa4a266f3bc3d",
+      "sizeBytes": 732,
+      "schemaVersion": "1.0",
+      "status": "NotCollected",
+      "collectedAt": "2026-09-09T09:15:53.0000000Z"
     }
   ]
 }

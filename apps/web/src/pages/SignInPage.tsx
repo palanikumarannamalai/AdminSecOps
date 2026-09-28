@@ -84,8 +84,8 @@ export function SignInPage() {
               clear next step.
             </p>
             <p className="notice" role="note">
-              <strong>Test release.</strong> No live tenant has been validated in this release —
-              connect an authorised test tenant, not production.
+              <strong>Preview release.</strong> Cloud collection has been exercised in authorised tenants.
+              Coverage varies by workload; on-premises collection still needs live lab validation.
             </p>
             <a className="button button--primary button--large" href="/auth/login">
               Sign in with Microsoft <span aria-hidden="true">→</span>
@@ -130,8 +130,9 @@ export function SignInPage() {
             ))}
           </ul>
           <p className="muted small">
-            Coverage depends on connected workloads, permissions and licensing. Exchange Online
-            assessment and on-premises collection are available only in the local edition.
+            Coverage depends on connected workloads, permissions and licensing. Connect Exchange Online
+            in your workspace. For on-premises systems, run the local collector and upload its evidence,
+            or configure scheduled uploads. Cloud and on-premises results remain separate.
           </p>
         </section>
         <section className="marketing-features" id="how-it-works" aria-labelledby="workflow-title">
