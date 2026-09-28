@@ -120,6 +120,7 @@ export async function buildServer({ config, store, exchangeRunner }: { config: C
         await store.putSession({ ...current, encryptedConnectors: serializeConnectorMap(map) });
         return reply.header('Set-Cookie', cookie(transactionName, '', 0)).redirect(`/?connected=${tokens.connector}`);
       } catch (error) {
+        if (connectorFailureCode(error) === 'ACCESS_TOKEN_SCOPE') throw failure(401, 'Connecting failed (ACCESS_TOKEN_SCOPE). Microsoft returned a token without the required connector permission. Return to the home page and connect again to review consent. For Exchange Online, a tenant administrator must approve the registered delegated Exchange.Manage permission. If it is still missing after consent, contact the maintainer; do not disable MFA or send access tokens.');
         throw failure(401, 'Connecting failed (' + connectorFailureCode(error) + '). Return to the home page and reconnect. Share this diagnostic identifier with the ConfigReview maintainer.');
       }
     }
