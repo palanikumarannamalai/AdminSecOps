@@ -185,7 +185,7 @@ describe('resource connector authentication', () => {
       expect(url.pathname).toBe(`/${tenant}/oauth2/v2.0/authorize`);
       expect(url.searchParams.get('scope')).toBe('https://management.azure.com/user_impersonation openid profile offline_access');
       expect(url.searchParams.get('prompt')).toBeNull();
-      expect(new URL(auth.beginConnect('exchange', { tenantId: tenant, userId: user, sessionHash: 'h' }).url).searchParams.get('scope')).toBe('https://outlook.office.com/Exchange.Manage openid profile offline_access');
+      expect(new URL(auth.beginConnect('exchange', { tenantId: tenant, userId: user, sessionHash: 'h' }).url).searchParams.get('scope')).toBe('https://outlook.office365.com/.default openid profile offline_access');
       expect(url.searchParams.get('code_challenge_method')).toBe('S256');
       expect(auth.purposeOf(begin.cookie)).toBe('connect');
       expect(new URL(auth.beginConnect('exchange', { tenantId: tenant, userId: user, sessionHash: 'h' }, { consent: true }).url).searchParams.get('prompt')).toBe('consent');
@@ -252,6 +252,24 @@ describe('resource connector authentication', () => {
 
     vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(jsonResponse({ error: 'invalid_grant', suberror: 'consent_required', error_description: 'PRIVATE-DETAIL', error_codes: [65001] }, 400))));
     try { await expect(auth.refreshConnector(tokens({ expiresAt: 0 }), { tenantId: tenant, userId: user })).rejects.toBeInstanceOf(ConsentRequiredError); }
+    finally { vi.unstubAllGlobals(); }
+  });
+
+  it('refreshes Exchange using its registered resource and rejects Graph tokens', async () => {
+    const auth = createAuth(testConfig());
+    const expired = { ...tokens(), connector: 'exchange' as const, accessToken: exoToken(), expiresAt: 0 };
+    const calls: URLSearchParams[] = [];
+    vi.stubGlobal('fetch', vi.fn((_input: unknown, init?: RequestInit) => {
+      calls.push(new URLSearchParams(init?.body instanceof URLSearchParams ? init.body.toString() : ''));
+      return Promise.resolve(jsonResponse({ access_token: exoToken(), expires_in: 3600 }));
+    }));
+    try {
+      const next = await auth.refreshConnector(expired, { tenantId: tenant, userId: user });
+      expect(next.connector).toBe('exchange');
+      expect(calls[0]?.get('scope')).toBe('https://outlook.office365.com/.default offline_access');
+    } finally { vi.unstubAllGlobals(); }
+    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(jsonResponse({ access_token: armToken({ aud: 'https://graph.microsoft.com', scp: 'Exchange.Manage' }), expires_in: 3600 }))));
+    try { await expect(auth.refreshConnector(expired, { tenantId: tenant, userId: user })).rejects.toThrow('audience'); }
     finally { vi.unstubAllGlobals(); }
   });
 

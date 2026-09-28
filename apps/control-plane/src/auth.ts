@@ -56,7 +56,10 @@ export const CONNECTOR_RESOURCES: Readonly<Record<ConnectorId, { label: string; 
   },
   exchange: {
     label: 'Exchange Online',
-    scope: 'https://outlook.office.com/Exchange.Manage',
+    // Resolve the token resource explicitly from the registered Exchange permissions.
+    // Dynamic Exchange.Manage consent was rejected as a Graph scope (AADSTS650053).
+    // Keep Exchange.Manage as the required claim; .default is a request, not a grant.
+    scope: 'https://outlook.office365.com/.default',
     scopeClaim: 'Exchange.Manage',
     audiences: ['https://outlook.office.com', 'https://outlook.office.com/', 'https://outlook.office365.com', 'https://outlook.office365.com/', '00000002-0000-0ff1-ce00-000000000000'],
   },
