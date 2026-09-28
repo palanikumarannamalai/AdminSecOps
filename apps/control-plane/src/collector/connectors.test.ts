@@ -232,12 +232,12 @@ describe('Azure Resource Manager connector', () => {
     }
   });
 
-  it('reports an account without Reader rights (no visible subscriptions) as not assessed', async () => {
+  it('reports empty subscription visibility as unknown rather than proving denied access', async () => {
     const bundle = await collectOnline(options(mockServices({}, { '/subscriptions': () => json({ value: [] }) })));
     expect(dataset(bundle, 'azure.subscriptions').collectionStatus).toBe('Success');
     expect(issue(bundle, 'azure.subscriptions', 'NO_VISIBLE_SUBSCRIPTIONS')).toBeDefined();
     for (const id of AZURE_DATASETS.slice(1)) {
-      expect(dataset(bundle, id).collectionStatus, id).toBe('Unauthorized');
+      expect(dataset(bundle, id).collectionStatus, id).toBe('NotCollected');
       expect(issue(bundle, id, 'NO_ACCESSIBLE_SUBSCRIPTIONS'), id).toBeDefined();
     }
     const result = assess(bundle);

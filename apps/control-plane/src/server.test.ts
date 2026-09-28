@@ -6,6 +6,7 @@ import { encryptConnectorTokens, encryptTokens, hashToken, type ConnectorTokens 
 import type { ExchangeRunner } from './collector/index.js';
 import { loadConfig } from './config.js';
 import type { Store, StoredSession } from './store.js';
+import type { OnPremStore } from './onprem-store.js';
 
 const config = loadConfig({ PUBLIC_URL: 'https://admin.example.com', AZURE_TENANT_ID: '11111111-1111-1111-1111-111111111111', AZURE_CLIENT_ID: '22222222-2222-2222-2222-222222222222', AZURE_CLIENT_SECRET: 'test-only-secret', ALLOWED_USER_IDS: '33333333-3333-3333-3333-333333333333', TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 1).toString('base64'), DATABASE_URL: 'postgresql://localhost/test', GRAPH_SCOPES: 'https://graph.microsoft.com/User.Read' });
 const token = 'a'.repeat(43);
@@ -17,6 +18,23 @@ function fixture(overrides: Partial<StoredSession> = {}) {
 const headers = { cookie: `__Host-adminsecops=${token}`, origin: config.publicUrl, 'x-adminsecops-client': 'web' };
 
 describe('hosted HTTP boundary', () => {
+  it('keeps upload credentials out of session-only APIs and protects browser enrollment from CSRF', async () => {
+    const onPremStore: OnPremStore = {
+      enroll: vi.fn(), agents: vi.fn(() => Promise.resolve([])), revoke: vi.fn(),
+      authenticate: vi.fn(() => Promise.resolve(null)), save: vi.fn(),
+    };
+    const app = await buildServer({ config, store: fixture(), onPremStore });
+    const bearer = { authorization: `Bearer ${token}` };
+    for (const url of ['/api/onprem/agents', '/api/assessments']) {
+      expect((await app.inject({ url, headers: bearer })).statusCode).toBe(401);
+    }
+    expect((await app.inject({ method: 'POST', url: '/api/onprem/agents', headers: { ...headers, origin: 'https://attacker.example' }, payload: { name: 'test' } })).statusCode).toBe(403);
+    expect(onPremStore.enroll).not.toHaveBeenCalled();
+    expect((await app.inject({ method: 'POST', url: '/api/onprem/ingest', headers: { ...bearer, 'content-type': 'application/zip' }, payload: Buffer.from('invalid') })).statusCode).toBe(401);
+    expect(onPremStore.authenticate).toHaveBeenCalled();
+    expect((await app.inject({ url: '/api/me', headers })).json()).toMatchObject({ onPremEnabled: true });
+    await app.close();
+  });
   it('handles declined Microsoft consent without reflecting provider errors', async () => {
     const app = await buildServer({ config, store: fixture() });
     const response = await app.inject({ url: '/auth/callback?error=access_denied&error_description=PRIVATE-DETAIL' });

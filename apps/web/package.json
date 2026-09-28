@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "build:hosted": "tsc -p tsconfig.json --noEmit && vite build --mode hosted",
     "preview:hosted": "vite preview --mode hosted --outDir dist-hosted",
-    "build:online": "tsc -p tsconfig.json --noEmit && vite build --mode online"
+    "build:online": "tsc -p tsconfig.json --noEmit && vite build --mode online",
+    "prebuild:online": "cd ../.. && tsx scripts/build-onprem.ts"
   },
   "dependencies": {
     "react": "^19.3.0",
