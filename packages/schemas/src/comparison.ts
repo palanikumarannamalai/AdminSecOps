@@ -39,6 +39,8 @@ export const AssessmentComparisonSchema = z.object({
   baseline: z.object({ assessmentId: GuidSchema, assessedAt: TimestampSchema }),
   current: z.object({ assessmentId: GuidSchema, assessedAt: TimestampSchema }),
   sameEnvironment: z.boolean(),
+  factChanges: z.array(z.object({controlId:z.string(),label:z.string(),from:z.string(),to:z.string()})).optional(),
+  lostCoverage: z.array(z.object({controlId:z.string(),title:z.string(),from:ControlStatusSchema,to:ControlStatusSchema})).optional(),
   newFindings: z.array(ComparisonFindingRefSchema),
   resolvedFindings: z.array(ComparisonFindingRefSchema),
   changedFindings: z.array(FindingChangeSchema),

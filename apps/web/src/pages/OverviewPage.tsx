@@ -104,7 +104,7 @@ function FixFirstPanel({ findings }: { findings: Finding[] }) {
   const groups = groupByTier(findings);
   return (
     <Panel
-      title="What should I fix first?"
+      title="Your next actions"
       id="fix-first"
       actions={
         <Link to="findings" className="button button--small">
@@ -187,10 +187,12 @@ export function OverviewPage() {
 
       <dl className="overview-metrics" aria-label="Assessment summary">
         <div><dt>Assessed</dt><dd>{summary.assessmentCoverage.assessed}</dd><dd className="metric-caption">Controls with evidence</dd></div>
-        <div><dt>Findings</dt><dd>{result.findings.length}</dd><dd className="metric-caption">Prioritized for review</dd></div>
+        <div><dt>Confirmed gaps</dt><dd>{summary.byStatus.FAIL}</dd><dd className="metric-caption">Evidence of a failed check</dd></div>
         <div><dt>Needs review</dt><dd>{summary.byStatus.REVIEW}</dd><dd className="metric-caption">Require your judgment</dd></div>
         <div><dt>Not assessed</dt><dd>{summary.byStatus.NOT_ASSESSED + summary.byStatus.ERROR}</dd><dd className="metric-caption">Unknown, never passing</dd></div>
       </dl>
+      <p className="evidence-age">Evidence collected {formatDateTime(result.assessedAt)} · Library {result.controlLibraryVersion} · <Link to="coverage">Review scope and gaps</Link></p>
+      <FixFirstPanel findings={result.findings} />
       <details className="environment-details"><summary>Environment and collection details</summary><EnvironmentPanel /></details>
 
       <section aria-labelledby="modules-heading" className="section">
@@ -244,7 +246,7 @@ export function OverviewPage() {
         </Panel>
       </div>
 
-      <FixFirstPanel findings={result.findings} />
+
 
       <div className="grid grid--2">
         <Panel

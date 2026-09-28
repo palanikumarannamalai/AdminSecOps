@@ -9,7 +9,7 @@ import { isApprovedUser, isTenantId, type Config } from './config.js';
 import { CONNECTOR_IDS, connectorFailureCode, createAuth, decryptTokens, encryptConnectorTokens, encryptTokens, hasFreshAuthorization, hashToken, parseConnectorMap, randomToken, serializeConnectorMap, type ConnectorId } from './auth.js';
 import { ONLINE_REQUIRED_GRAPH_PERMISSIONS, type ExchangeRunner } from './collector/index.js';
 import { connectorLabel, describeConnectors, prepareJobConnectors } from './connectors.js';
-import type { Store, StoredSession } from './store.js';
+import type { Store, StoredSession, Remediation } from './store.js';
 
 const sessionName = '__Host-adminsecops';
 const transactionName = '__Host-adminsecops-login';
@@ -166,7 +166,10 @@ export async function buildServer({ config, store, exchangeRunner, onPremStore }
   });
   app.get('/api/jobs', async request => ({ jobs: await store.listJobs(session(request).tenantId) }));
   app.post('/api/jobs', async (request, reply) => {
-    if (request.body !== undefined && (request.body === null || typeof request.body !== 'object' || Array.isArray(request.body) || Object.keys(request.body).length > 0)) throw failure(400, 'Assessment requests must have an empty body');
+    const body = request.body as {modules?:unknown}|undefined;
+    if (body !== undefined && (body === null || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).some(k=>k!=='modules'))) throw failure(400,'Invalid assessment request');
+    const modules=body?.modules;
+    if(modules !== undefined && (!Array.isArray(modules) || modules.length<1 || modules.length>5 || modules.some(m=>typeof m!=='string'||!['Entra','M365','Intune','Exchange','Azure'].includes(m)) || new Set(modules).size!==modules.length)) throw failure(400,'Select valid workloads');
     const current = session(request);
     throttle(`job:${current.tenantId}:${current.userId}`, 3);
     let tokens;
@@ -176,7 +179,7 @@ export async function buildServer({ config, store, exchangeRunner, onPremStore }
     // Each connector is refreshed separately; an unusable one is recorded for the job instead of failing it.
     const connectors = await prepareJobConnectors(auth, config, current);
     await store.putSession({ ...current, encryptedTokens, encryptedConnectors: connectors.session });
-    try { return reply.code(202).send(await store.createJob(current.tenantId, current.userId, encryptedTokens, connectors.job)); }
+    try { return reply.code(202).send(await store.createJob(current.tenantId, current.userId, encryptedTokens, connectors.job, ...(modules === undefined ? [] : [modules as string[]]))); }
     catch (error) {
       if ((error as { code?: string }).code === '23505') throw failure(409, 'An assessment is already queued or running for this tenant.');
       throw error;
@@ -195,6 +198,28 @@ export async function buildServer({ config, store, exchangeRunner, onPremStore }
   app.get<{ Querystring: { baseline?: string; current?: string } }>('/api/compare', async request => {
     if (!request.query.baseline || !request.query.current) throw failure(400, 'Provide baseline and current assessment IDs');
     return compareAssessments(await assessment(request, request.query.baseline), await assessment(request, request.query.current));
+  });
+  app.get<{Params:{control:string}}>('/api/remediation/:control',async request=>{
+    if(!CONTROL_LIBRARY.some(c=>c.metadata.id===request.params.control))throw failure(404,'Control not found');
+    if(!store.getRemediation)throw failure(503,'Tracking unavailable');
+    return {item:await store.getRemediation(session(request).tenantId,request.params.control)};
+  });
+  app.post<{Params:{control:string}}>('/api/remediation/:control',async request=>{
+    const current=session(request);const control=request.params.control;
+    if(!CONTROL_LIBRARY.some(c=>c.metadata.id===control))throw failure(404,'Control not found');
+    const value=request.body as Remediation;
+    const keys=['owner','dueDate','notes','exceptionExpiry','status','verificationAssessmentId'];
+    if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).some(k=>!keys.includes(k))||keys.some(k=>typeof (value as unknown as Record<string,unknown>)[k]!=='string'))throw failure(400,'Invalid tracking fields');
+    if(value.owner.length>200||value.notes.length>2000||!['open','in-progress','exception','resolved'].includes(value.status)||[value.dueDate,value.exceptionExpiry].some(d=>d!==''&&(!/^\d{4}-\d{2}-\d{2}$/.test(d)||!Number.isFinite(Date.parse(d)))))throw failure(400,'Invalid tracking values');
+    if(value.status==='exception'&&(!value.exceptionExpiry||value.exceptionExpiry<new Date().toISOString().slice(0,10)||!value.notes.trim()))throw failure(400,'An exception needs a reason and a future expiry date');
+    if(value.status==='resolved'){
+      if(!/^[0-9a-f-]{36}$/i.test(value.verificationAssessmentId))throw failure(400,'Choose a verification assessment');
+      const verified=await store.getAssessment(current.tenantId,value.verificationAssessmentId);
+      const latest=(await store.listAssessments(current.tenantId))[0];
+      if(!verified||latest?.assessmentId!==verified.assessmentId||verified.results.find(r=>r.controlId===control)?.status!=='PASS')throw failure(400,'Resolution requires a passing result in the latest assessment for this tenant');
+    } else value.verificationAssessmentId='';
+    if(!store.saveRemediation)throw failure(503,'Tracking unavailable');
+    await store.saveRemediation(current.tenantId,current.userId,control,value);return {saved:true};
   });
   app.get('/api/controls', () => ({ libraryVersion: CONTROL_LIBRARY_VERSION, controls: CONTROL_LIBRARY.map(control => control.metadata) }));
   app.get('/api/datasets', () => ({ datasets: listDatasetDefinitions().map(dataset => ({ id: dataset.id, module: dataset.module, technology: dataset.technology, title: dataset.title, description: dataset.description, source: dataset.source, operations: dataset.operations, permissions: dataset.permissions, prerequisites: dataset.prerequisites ?? [], personalData: dataset.personalData })) }));

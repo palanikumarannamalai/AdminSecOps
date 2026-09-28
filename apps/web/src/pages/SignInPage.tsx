@@ -73,11 +73,11 @@ export function SignInPage() {
           <div className="hero-copy">
             <p className="eyebrow">Microsoft security. Clearer.</p>
             <h1 id="hero-title">
-              Less noise.
+              Your Microsoft environment.
               <br />
-              More security
+              Evidence you can
               <br />
-              <span>clarity.</span>
+              <span>act on.</span>
             </h1>
             <p className="hero-description">
               Understand your Microsoft environment, prioritize findings, and turn evidence into a
@@ -90,6 +90,7 @@ export function SignInPage() {
             <a className="button button--primary button--large" href="/auth/login">
               Sign in with Microsoft <span aria-hidden="true">→</span>
             </a>
+            <a className="button" href="https://www.palanikumar.net/tools/configreview/app/">Try sample assessment →</a>
             <p className="hero-assurance">
               Read-only assessments <span>·</span> Browser-based <span>·</span> Test release
             </p>
@@ -120,6 +121,7 @@ export function SignInPage() {
             <p className="preview-caption">Illustrative data · coverage is not a security score</p>
           </div>
         </section>
+        <section className="marketing-screenshot" aria-label="Product screenshot"><div><p className="eyebrow">Inside the workspace</p><h2>From evidence to your next action.</h2><p>A real ConfigReview screen using fictional sample data.</p></div><img src="/workspace-preview.png" alt="ConfigReview assessment overview showing separate confirmed findings, review items, coverage gaps and recommended next actions for a fictional environment" loading="lazy" width="1440" height="1000" /></section>
         <section className="workload-strip" id="platform" aria-labelledby="platform-title">
           <h2 className="eyebrow" id="platform-title">
             One workspace for your Microsoft environment

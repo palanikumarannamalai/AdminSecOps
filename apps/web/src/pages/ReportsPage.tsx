@@ -2,7 +2,7 @@ import { remediationCsv } from '../lib/remediation-csv';
 import { useAssessment } from '../app/AssessmentLayout';
 import { useApi } from '../app/context';
 import { PageHeader, Panel } from '../components/PageHeader';
-import { reportFileName } from '@adminsecops/reporting';
+import { renderHtmlReport, reportFileName } from '@adminsecops/reporting';
 import { environmentName, formatDateTime } from '../lib/format';
 import { IS_HOSTED, IS_ONLINE } from '../mode';
 
@@ -34,6 +34,7 @@ export function ReportsPage() {
         }
       />
       <div className="grid grid--2">
+        <Panel title="Executive summary" id="report-executive"><p>A concise management report with coverage, priorities, evidence dates and library version. The full HTML report includes the technical appendix.</p><button className="button button--primary" onClick={()=>{const url=URL.createObjectURL(new Blob([renderHtmlReport(result,{executiveOnly:true})],{type:'text/html'}));const a=document.createElement('a');a.href=url;a.download='configreview-executive-summary.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}}>Download executive summary</button></Panel>
         <Panel title="HTML report" id="report-html">
           <p>
             A self-contained report for administrators and management: summary, prioritized findings with remediation,

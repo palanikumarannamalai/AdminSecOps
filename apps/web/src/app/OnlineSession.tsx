@@ -36,11 +36,11 @@ type Session = z.infer<typeof sessionSchema>;
 const SessionContext = createContext<Session | null>(null);
 
 
-export async function onlineRequest(path: string, signal?: AbortSignal, method = 'GET'): Promise<unknown> {
+export async function onlineRequest(path: string, signal?: AbortSignal, method = 'GET', payload: unknown = {}): Promise<unknown> {
   const response = await fetch(path, {
     method, credentials: 'same-origin', signal,
     headers: { [CLIENT_HEADER]: 'web', Accept: 'application/json', ...(method === 'POST' ? { 'Content-Type': 'application/json' } : {}) },
-    ...(method === 'POST' ? { body: '{}' } : {}),
+    ...(method === 'POST' ? { body: JSON.stringify(payload) } : {}),
   });
   const body = await response.text();
   if (!response.ok) {

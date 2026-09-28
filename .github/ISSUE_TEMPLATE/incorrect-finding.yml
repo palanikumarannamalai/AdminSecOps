@@ -1,0 +1,24 @@
+name: Incorrect finding
+description: Report a control logic or guidance problem without customer evidence.
+title: "Review control "
+body:
+  - type: markdown
+    attributes:
+      value: "Do not attach tenant reports, tokens, customer names, identifiers or private configuration. Use a fictional example."
+  - type: input
+    id: control
+    attributes:
+      label: Control ID and version
+    validations:
+      required: true
+  - type: textarea
+    id: scenario
+    attributes:
+      label: Synthetic reproduction and expected result
+      description: Explain the configuration using fictional data only.
+    validations:
+      required: true
+  - type: input
+    id: reference
+    attributes:
+      label: Supporting Microsoft or baseline reference

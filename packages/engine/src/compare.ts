@@ -95,6 +95,9 @@ export function compareAssessments(baseline: AssessmentResult, current: Assessme
     baseline: { assessmentId: baseline.assessmentId, assessedAt: baseline.assessedAt },
     current: { assessmentId: current.assessmentId, assessedAt: current.assessedAt },
     sameEnvironment,
+    factChanges: sameEnvironment ? current.results.flatMap(r=>{const prior=baseline.results.find(p=>p.controlId===r.controlId);if(!prior||prior.controlVersion!==r.controlVersion||['NOT_ASSESSED','ERROR'].includes(prior.status)||['NOT_ASSESSED','ERROR'].includes(r.status))return [];
+      return r.observed.facts.flatMap(f=>{const old=prior.observed.facts.filter(o=>o.label===f.label);if(old.length!==1||r.observed.facts.filter(o=>o.label===f.label).length!==1||Object.is(old[0]!.value,f.value))return [];return [{controlId:r.controlId,label:f.label,from:JSON.stringify(old[0]!.value),to:JSON.stringify(f.value)}];});}) : [],
+    lostCoverage: controlStatusChanges.filter(c=>c.from!==null&&c.to!==null&&!['NOT_ASSESSED','ERROR'].includes(c.from)&&['NOT_ASSESSED','ERROR'].includes(c.to)).map(c=>({controlId:c.controlId,title:c.title,from:c.from!,to:c.to!})),
     newFindings,
     resolvedFindings,
     changedFindings,

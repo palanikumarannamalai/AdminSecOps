@@ -82,6 +82,8 @@ export function ComparisonView({
   const c = comparison;
   return (
     <div className="compare">
+      {(c.lostCoverage?.length??0)>0?<Panel title="Lost coverage" id="lost-coverage"><p>These checks became untested. This is not evidence of improvement.</p><ul>{c.lostCoverage?.map(f=><li key={f.controlId}>{f.title}: {f.from} → {f.to}</li>)}</ul></Panel>:null}
+      {(c.factChanges?.length??0)>0?<Panel title="Observed value changes" id="value-changes"><p className="muted">Comparable facts from the same control version. These are reported observations, not a complete configuration diff.</p><div className="table-wrap"><table className="table"><thead><tr><th>Control</th><th>Observation</th><th>Before</th><th>After</th></tr></thead><tbody>{c.factChanges?.map((f,i)=><tr key={i}><td>{f.controlId}</td><td>{f.label}</td><td>{f.from}</td><td>{f.to}</td></tr>)}</tbody></table></div></Panel>:null}
       {!c.sameEnvironment ? (
         <div className="banner banner--warn" role="alert">
           <strong>These assessments are from different environments.</strong> The baseline ({baselineName}) and the

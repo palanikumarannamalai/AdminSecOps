@@ -151,3 +151,11 @@ describe('fixture environments', () => {
     expect(comparison.controlStatusChanges.length).toBeGreaterThan(0);
   });
 });
+
+it('compares observed values separately from lost coverage and ignores changed rule versions',()=>{
+ const original=get(results,'contoso');const current=structuredClone(original);const target=current.results.find(r=>r.observed.facts.length>0&&r.status==='FAIL')!;
+ const old=target.observed.facts[0]!;old.value='Synthetic changed value';
+ expect(compareAssessments(original,current).factChanges?.some(c=>c.controlId===target.controlId&&c.to==='"Synthetic changed value"')).toBe(true);
+ target.controlVersion='99.0.0';expect(compareAssessments(original,current).factChanges?.some(c=>c.controlId===target.controlId)).toBe(false);
+ target.status='NOT_ASSESSED';expect(compareAssessments(original,current).lostCoverage?.some(c=>c.controlId===target.controlId)).toBe(true);
+});

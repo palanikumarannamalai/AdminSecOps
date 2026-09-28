@@ -9,24 +9,29 @@ export interface StoredSession {
   encryptedConnectors?: string | null;
 }
 export interface Job {
+  modules?: string[]; progress?: Record<string,string>;
   id: string; tenantId: string; userId: string;
   status: 'queued'|'running'|'completed'|'failed';
   createdAt: string; completedAt: string|null; assessmentId: string|null; error: string|null;
 }
+export interface Remediation { owner:string; dueDate:string; notes:string; exceptionExpiry:string; status:'open'|'in-progress'|'exception'|'resolved'; verificationAssessmentId:string; updatedAt?:string }
 export interface Store {
+  getRemediation?(tenantId:string,controlId:string):Promise<Remediation|null>;
+  saveRemediation?(tenantId:string,userId:string,controlId:string,value:Remediation):Promise<void>;
   putSession(session: StoredSession): Promise<void>;
   getSession(idHash: string): Promise<StoredSession|null>;
   deleteSession(idHash: string): Promise<void>;
-  createJob(tenantId: string,userId: string,encryptedTokens: string,encryptedConnectors?: string|null): Promise<{id:string;status:string}>;
+  createJob(tenantId: string,userId: string,encryptedTokens: string,encryptedConnectors?: string|null,modules?:string[]): Promise<{id:string;status:string}>;
   listJobs(tenantId:string): Promise<Job[]>;
   listAssessments(tenantId:string): Promise<AssessmentResult[]>;
   getAssessment(tenantId:string,id:string): Promise<AssessmentResult|null>;
 }
-export interface ClaimedJob { id:string; tenantId:string; userId:string; encryptedTokens:string; encryptedConnectors?:string|null }
+export interface ClaimedJob { id:string; tenantId:string; userId:string; encryptedTokens:string; encryptedConnectors?:string|null; modules?:string[] }
 export class PostgresStore implements Store {
   constructor(readonly pool:Pool) {}
   async initialize():Promise<void> {
     await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS aso_remediations (tenant_id uuid NOT NULL,control_id text NOT NULL,value jsonb NOT NULL,updated_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(tenant_id,control_id));
       CREATE TABLE IF NOT EXISTS aso_sessions (
         id_hash text PRIMARY KEY, tenant_id uuid NOT NULL, user_id uuid NOT NULL,
         display_name text NOT NULL, expires_at timestamptz NOT NULL, encrypted_tokens text NOT NULL);
@@ -44,11 +49,24 @@ export class PostgresStore implements Store {
         id bigserial PRIMARY KEY, tenant_id uuid NOT NULL, user_id uuid,
         action text NOT NULL, target_id text, created_at timestamptz NOT NULL DEFAULT now());
     `);
+    const columns=await this.pool.query<{column_name:string}>("SELECT column_name FROM information_schema.columns WHERE table_schema=current_schema() AND table_name='aso_jobs' AND column_name IN ('modules','progress')");
+    const names=new Set(columns.rows.map(r=>r.column_name));
+    if(!names.has('modules')) await this.pool.query('ALTER TABLE aso_jobs ADD COLUMN IF NOT EXISTS modules jsonb');
+    if(!names.has('progress')) await this.pool.query("ALTER TABLE aso_jobs ADD COLUMN IF NOT EXISTS progress jsonb NOT NULL DEFAULT '{}'::jsonb");
     // Connector column (0.3.0). ALTER needs table ownership, so it runs only when the column is missing;
     // a restricted runtime role starts normally once the owner has applied it (docs/ONLINE-CONNECTORS.md).
     const existing=await this.pool.query<{table_name:string}>("SELECT table_name FROM information_schema.columns WHERE table_schema=current_schema() AND table_name IN ('aso_sessions','aso_jobs') AND column_name='encrypted_connectors'");
     const present=new Set(existing.rows.map(r=>r.table_name));
     for(const table of ['aso_sessions','aso_jobs'] as const) if(!present.has(table)) await this.pool.query(`ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS encrypted_connectors text`);
+  }
+  async getRemediation(tenantId:string,controlId:string):Promise<Remediation|null> {
+    const r=await this.pool.query<{value:Remediation}>("SELECT value FROM aso_remediations WHERE tenant_id=$1 AND control_id=$2",[tenantId,controlId]);return r.rows[0]?.value??null;
+  }
+  async saveRemediation(tenantId:string,userId:string,controlId:string,value:Remediation):Promise<void> {
+    const c=await this.pool.connect();try{await c.query('BEGIN');
+      await c.query('INSERT INTO aso_remediations(tenant_id,control_id,value) VALUES($1,$2,$3) ON CONFLICT(tenant_id,control_id) DO UPDATE SET value=$3,updated_at=now()',[tenantId,controlId,JSON.stringify({...value,updatedAt:new Date().toISOString()})]);
+      await c.query("INSERT INTO aso_audit(tenant_id,user_id,action,target_id) VALUES($1,$2,'remediation.updated',$3)",[tenantId,userId,controlId]);await c.query('COMMIT');
+    }catch(e){await c.query('ROLLBACK');throw e;}finally{c.release();}
   }
   async putSession(s:StoredSession):Promise<void> {
     await this.pool.query('INSERT INTO aso_sessions(id_hash,tenant_id,user_id,display_name,expires_at,encrypted_tokens,encrypted_connectors) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(id_hash) DO UPDATE SET expires_at=$5,encrypted_tokens=$6,encrypted_connectors=$7',
@@ -59,19 +77,19 @@ export class PostgresStore implements Store {
     return r.rows[0] as StoredSession|undefined ?? null;
   }
   async deleteSession(idHash:string):Promise<void> {await this.pool.query('DELETE FROM aso_sessions WHERE id_hash=$1',[idHash]);}
-  async createJob(tenantId:string,userId:string,encryptedTokens:string,encryptedConnectors:string|null=null):Promise<{id:string;status:string}> {
+  async createJob(tenantId:string,userId:string,encryptedTokens:string,encryptedConnectors:string|null=null,modules?:string[]):Promise<{id:string;status:string}> {
     const id=randomUUID();
     const c=await this.pool.connect();
     try {
       await c.query('BEGIN');
-      await c.query("INSERT INTO aso_jobs(id,tenant_id,user_id,status,encrypted_tokens,encrypted_connectors) VALUES($1,$2,$3,'queued',$4,$5)",[id,tenantId,userId,encryptedTokens,encryptedConnectors]);
+      await c.query("INSERT INTO aso_jobs(id,tenant_id,user_id,status,encrypted_tokens,encrypted_connectors,modules) VALUES($1,$2,$3,'queued',$4,$5,$6)",[id,tenantId,userId,encryptedTokens,encryptedConnectors,modules?JSON.stringify(modules):null]);
       await c.query("INSERT INTO aso_audit(tenant_id,user_id,action,target_id) VALUES($1,$2,'assessment.queued',$3)",[tenantId,userId,id]);
       await c.query('COMMIT');
     } catch(e){await c.query('ROLLBACK');throw e;} finally {c.release();}
     return {id,status:'queued'};
   }
   async listJobs(tenantId:string):Promise<Job[]> {
-    const r=await this.pool.query<Omit<Job,'createdAt'|'completedAt'> & {createdAt:Date;completedAt:Date|null}>('SELECT id,tenant_id AS "tenantId",user_id AS "userId",status,created_at AS "createdAt",completed_at AS "completedAt",assessment_id AS "assessmentId",error FROM aso_jobs WHERE tenant_id=$1 ORDER BY created_at DESC LIMIT 100',[tenantId]);
+    const r=await this.pool.query<Omit<Job,'createdAt'|'completedAt'> & {createdAt:Date;completedAt:Date|null}>('SELECT id,tenant_id AS "tenantId",user_id AS "userId",status,created_at AS "createdAt",completed_at AS "completedAt",assessment_id AS "assessmentId",error,modules,progress FROM aso_jobs WHERE tenant_id=$1 ORDER BY created_at DESC LIMIT 100',[tenantId]);
     return r.rows.map((r)=>({...r,createdAt:r.createdAt.toISOString(),completedAt:r.completedAt?r.completedAt.toISOString():null}));
   }
   async listAssessments(tenantId:string):Promise<AssessmentResult[]> {
@@ -86,8 +104,11 @@ export class PostgresStore implements Store {
     // One atomic statement claims a durable job. Multiple processes cannot claim the same row.
     const r=await this.pool.query(`UPDATE aso_jobs SET status='running',started_at=now()
       WHERE id=(SELECT id FROM aso_jobs WHERE status='queued' AND created_at>=now()-interval '1 hour' ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1)
-      RETURNING id,tenant_id AS "tenantId",user_id AS "userId",encrypted_tokens AS "encryptedTokens",encrypted_connectors AS "encryptedConnectors"`);
+      RETURNING id,tenant_id AS "tenantId",user_id AS "userId",encrypted_tokens AS "encryptedTokens",encrypted_connectors AS "encryptedConnectors",modules`);
     return r.rows[0] as ClaimedJob|undefined ?? null;
+  }
+  async progress(job:ClaimedJob,dataset:string,status:string):Promise<void> {
+    await this.pool.query("UPDATE aso_jobs SET progress=progress || jsonb_build_object($3::text,$4::text) WHERE id=$1 AND tenant_id=$2 AND status='running'",[job.id,job.tenantId,dataset,status]);
   }
   async complete(job:ClaimedJob,result:AssessmentResult):Promise<void> {
     if(result.collection.environment.tenantId!==job.tenantId) throw new Error('Assessment tenant mismatch');
@@ -106,6 +127,7 @@ export class PostgresStore implements Store {
     await this.pool.query("UPDATE aso_jobs SET status='failed',completed_at=now(),error=$3,encrypted_tokens=NULL,encrypted_connectors=NULL WHERE id=$1 AND tenant_id=$2 AND status='running'",[job.id,job.tenantId,message]);
   }
   async cleanup():Promise<void> {
+    await this.pool.query("DELETE FROM aso_remediations WHERE updated_at<now()-interval '90 days'");
     await this.pool.query('DELETE FROM aso_sessions WHERE expires_at<now()');
     await this.pool.query("UPDATE aso_jobs SET status='failed',error='The worker stopped or exceeded the time limit. Please start another assessment.',completed_at=now(),encrypted_tokens=NULL,encrypted_connectors=NULL WHERE status='running' AND started_at<now()-interval '15 minutes'");
     await this.pool.query("UPDATE aso_jobs SET status='failed',error='The queued job expired. Sign in and start another assessment.',completed_at=now(),encrypted_tokens=NULL,encrypted_connectors=NULL WHERE status='queued' AND created_at<now()-interval '1 hour'");

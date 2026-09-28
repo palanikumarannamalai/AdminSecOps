@@ -1,5 +1,5 @@
 import { CONFIDENCES, SEVERITIES } from '@adminsecops/core/vocabulary';
-import type { ChangeEvent } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useAssessment } from '../app/AssessmentLayout';
 import { ConfidenceBadge, SeverityBadge, StatusBadge, TierBadge } from '../components/Badges';
@@ -65,6 +65,8 @@ function SortHeader({
 
 export function FindingsPage() {
   const result = useAssessment();
+  const [preview,setPreview]=useState<string|null>(null);
+  useEffect(()=>{if(!preview)return;const previous=document.activeElement;document.getElementById('finding-quick-view')?.focus();const escape=(e:KeyboardEvent)=>{if(e.key==='Escape')setPreview(null);};document.addEventListener('keydown',escape);return()=>{document.removeEventListener('keydown',escape);if(previous instanceof HTMLElement)previous.focus();};},[preview]);
   const [params, setParams] = useSearchParams();
   const filters = filtersFromParams(params);
   const sort = sortFromParams(params);
@@ -86,6 +88,7 @@ export function FindingsPage() {
 
   return (
     <div className="page">
+      {preview?(()=>{const f=result.findings.find(x=>x.findingId===preview);return f?<aside id="finding-quick-view" tabIndex={-1} className="finding-drawer" aria-label="Finding quick view"><button className="button" onClick={()=>setPreview(null)}>Close quick view</button><h2>{f.title}</h2><StatusBadge status={f.status}/><p>{f.observedState.summary}</p><h3>Next step</h3><p>{f.remediation.summary}</p><Link to={findingPath(result.assessmentId,f.findingId)}>Open full finding</Link></aside>:null;})():null}
       <PageHeader
         eyebrow="Findings"
         title="Findings"
@@ -194,7 +197,7 @@ export function FindingsPage() {
                   <tr key={f.findingId}>
                     <td className="num">{f.priority.rank}</td>
                     <th scope="row" className="table__primary">
-                      <Link to={findingPath(result.assessmentId, f.findingId)}>{f.title}</Link>
+                      <Link to={findingPath(result.assessmentId, f.findingId)}>{f.title}</Link><button className="preview-button" onClick={()=>setPreview(f.findingId)}>Quick view</button>
                       <div className="muted small">
                         {f.controlId} - {f.category}
                       </div>

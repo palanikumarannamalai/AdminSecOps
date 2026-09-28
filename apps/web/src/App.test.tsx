@@ -28,7 +28,7 @@ describe('application routes', () => {
 
   it('renders the overview with modules, coverage and fix-first tiers but no score', async () => {
     renderApp(base);
-    await screen.findByRole('heading', { name: 'What should I fix first?' });
+    await screen.findByRole('heading', { name: 'Your next actions' });
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Contoso production');
     for (const label of ['Microsoft 365', 'Entra ID', 'Azure', 'Intune', 'Active Directory', 'Windows']) {
       expect(screen.getByRole('heading', { level: 3, name: label })).toBeTruthy();

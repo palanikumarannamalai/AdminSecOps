@@ -1,5 +1,7 @@
 import { TECHNOLOGY_LABELS } from '@adminsecops/core/vocabulary';
 import type { Finding } from '@adminsecops/schemas';
+import { RemediationPanel } from '../components/RemediationPanel';
+import { IS_ONLINE } from '../mode';
 import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
 import { useAssessment } from '../app/AssessmentLayout';
@@ -38,6 +40,7 @@ export const FINDING_SECTIONS = [
 type SectionId = (typeof FINDING_SECTIONS)[number]['id'] | 'frameworks' | 'priority' | 'notes';
 
 function Section({ id, title, children }: { id: SectionId; title: string; children: ReactNode }) {
+  if(['evidence','before','rollback','references','frameworks','priority','notes'].includes(id)) return <details className="qa qa--disclosure" id={`section-${id}`}><summary><h2 className="qa__title" id={`heading-${id}`}>{title}</h2></summary><div className="qa__body">{children}</div></details>;
   return (
     <section className="qa" id={`section-${id}`} aria-labelledby={`heading-${id}`}>
       <h2 className="qa__title" id={`heading-${id}`}>
@@ -153,11 +156,14 @@ export function FindingDetail({ finding, assessmentId }: { finding: Finding; ass
         <EffortBadge effort={finding.effort} />
       </div>
 
+      <div className="finding-action-summary"><p className="eyebrow">Recommended next step</p><p>{finding.remediation.summary}</p><span>{finding.affectedObjectCount} affected objects</span></div>
+      {IS_ONLINE?<RemediationPanel key={finding.controlId} controlId={finding.controlId}/>:null}
+      <a className="plain-link" target="_blank" rel="noreferrer" href={`https://github.com/palanikumarannamalai/configreview/issues/new?template=incorrect-finding.yml&title=${encodeURIComponent('Review control '+finding.controlId)}`}>Report an incorrect finding</a><p className="muted small">Only the control ID is included in the link. Review your issue before submitting; do not include customer evidence.</p>
       <nav className="toc" aria-label="Sections of this finding">
         <ul>
           {FINDING_SECTIONS.map((s) => (
             <li key={s.id}>
-              <a href={`#section-${s.id}`} onClick={event => { event.preventDefault(); const section = document.getElementById(`section-${s.id}`); if (section) { section.tabIndex = -1; section.focus({ preventScroll: true }); section.scrollIntoView({ block: 'start' }); } }}>{s.title}</a>
+              <a href={`#section-${s.id}`} onClick={event => { event.preventDefault(); const section = document.getElementById(`section-${s.id}`); if (section) { if(section instanceof HTMLDetailsElement)section.open=true; section.tabIndex = -1; section.focus({ preventScroll: true }); section.scrollIntoView({ block: 'start' }); } }}>{s.title}</a>
             </li>
           ))}
         </ul>

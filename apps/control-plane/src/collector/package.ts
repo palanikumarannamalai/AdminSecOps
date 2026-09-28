@@ -34,6 +34,7 @@ export const HOSTED_COLLECTOR_VERSION = '0.3.0';
 export type ConnectorInput<T> = ({ readonly state: 'connected' } & T) | ConnectorGap;
 
 export interface HostedCollectionOptions {
+  onProgress?: (dataset: string, status: string) => Promise<void>;
   tenantId: string;
   assessmentId: string;
   /** Microsoft Graph access token. Used only in the Authorization header; never stored or logged. */
@@ -136,8 +137,10 @@ export async function collectHostedEvidence(
   const outcomes: DatasetOutcome[] = [];
   for (const { definition, collector } of plan.datasets) {
     client.throwIfCancelled();
+    await options.onProgress?.(definition.id, 'collecting');
     const outcome = await runDataset(definition, collector, context);
     outcomes.push(outcome);
+    await options.onProgress?.(definition.id, outcome.status);
     if (definition.id === 'entra.organization' && outcome.status !== 'Success') {
       throw new AdminSecOpsError(
         'TENANT_NOT_VERIFIED',

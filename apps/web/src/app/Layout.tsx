@@ -107,7 +107,7 @@ export function Layout() {
           </NavLink>
           <span className="topbar__tagline">
             <a className="parent-site-link" href="https://www.palanikumar.net/">← Back to palanikumar.net</a>
-            <span className="topbar__tagline-sub">Clarity for your Microsoft environment</span>
+            <span className="topbar__tagline-sub">by Palani Kumar</span>
           </span>
         </div>
         <div className="topbar__actions">
@@ -127,7 +127,7 @@ export function Layout() {
           <ul className="nav__list">
             <li>
               <NavLink to="/" end className={navClass}>
-                {IS_HOSTED ? 'Start' : 'Assessments'}
+                {IS_HOSTED ? 'Start' : 'Workspace'}
               </NavLink>
             </li>
           </ul>
@@ -150,7 +150,7 @@ export function Layout() {
             ))}
           </ul>
           <p className="nav__heading" id="nav-tools-heading">
-            Tools
+            Controls & settings
           </p>
           <ul className="nav__list" aria-labelledby="nav-tools-heading">
             <li>

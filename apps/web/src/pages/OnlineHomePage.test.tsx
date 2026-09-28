@@ -36,6 +36,7 @@ describe('online assessment flow', () => {
     vi.stubGlobal('fetch', fetcher);
     const { unmount } = mount();
     expect(await screen.findByText('Graph permission denied')).toBeTruthy();
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Review readiness' }));
     await userEvent.setup().click(screen.getByRole('button', { name: 'Run assessment' }));
     expect(await screen.findByRole('alert')).toHaveProperty('textContent', 'Consent is missing');
     const post = fetcher.mock.calls.find(([, init]) => init?.method === 'POST');
