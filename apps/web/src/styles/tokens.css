@@ -55,9 +55,9 @@
   --st-na-text: #454f5e;
   --st-na-bg: #eceff3;
   --st-na-solid: #b9c2cf;
-  --st-notassessed-text: #4c2a8f;
-  --st-notassessed-bg: #ece6fb;
-  --st-notassessed-solid: #7c5ad6;
+  --st-notassessed-text: #454f5e;
+  --st-notassessed-bg: #eceff3;
+  --st-notassessed-solid: #8995a6;
   --st-error-text: #8a1245;
   --st-error-bg: #fbe2ee;
   --st-error-solid: #c8286e;
@@ -166,9 +166,9 @@
   --st-na-text: #c6ced9;
   --st-na-bg: #252c36;
   --st-na-solid: #6b7686;
-  --st-notassessed-text: #cdbaff;
-  --st-notassessed-bg: #2a1f4a;
-  --st-notassessed-solid: #9d80ee;
+  --st-notassessed-text: #cbd5e1;
+  --st-notassessed-bg: #293548;
+  --st-notassessed-solid: #94a3b8;
   --st-error-text: #ffb3d4;
   --st-error-bg: #3d1428;
   --st-error-solid: #e0508e;
@@ -243,9 +243,9 @@
     --st-na-text: #c6ced9;
     --st-na-bg: #252c36;
     --st-na-solid: #6b7686;
-    --st-notassessed-text: #cdbaff;
-    --st-notassessed-bg: #2a1f4a;
-    --st-notassessed-solid: #9d80ee;
+    --st-notassessed-text: #cbd5e1;
+    --st-notassessed-bg: #293548;
+    --st-notassessed-solid: #94a3b8;
     --st-error-text: #ffb3d4;
     --st-error-bg: #3d1428;
     --st-error-solid: #e0508e;

@@ -115,3 +115,7 @@ describe('JSON report', () => {
     expect(reportFileName(sampleResult(), 'html')).toMatch(/^adminsecops-report-Contoso-[A-Za-z0-9.-]+-2026-09-01\.html$/);
   });
 });
+
+it('creates an escaped executive summary without the technical appendix',()=>{
+ const report=renderHtmlReport(sampleResult(),{executiveOnly:true});expect(report).toContain('Executive summary');expect(report).toContain('Scope:');expect(report).not.toContain('<section id="findings">');expect(report).not.toContain('<script>');
+});

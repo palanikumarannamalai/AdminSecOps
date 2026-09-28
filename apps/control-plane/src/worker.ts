@@ -16,7 +16,7 @@ export async function processNext(store:PostgresStore, config:Config, exchangeRu
     // The Graph authorization (and its one-hour role verification) gates every connector.
     const tokens=await auth.refresh(decryptTokens(job.encryptedTokens,config.tokenEncryptionKey),job.tenantId);
     const connectors=await resolveJobConnectors(auth,config,job,exchangeRunner);
-    const bundle=await collectOnline({tenantId:job.tenantId,assessmentId:randomUUID(),accessToken:tokens.accessToken,...(tokens.scopes?{grantedScopes:tokens.scopes}:{}),azure:connectors.azure,exchange:connectors.exchange,signal:AbortSignal.timeout(600_000)});
+    const bundle=await collectOnline({...(job.modules ? {modules:job.modules}:{}),onProgress:(dataset,status)=>store.progress(job,dataset,status),tenantId:job.tenantId,assessmentId:randomUUID(),accessToken:tokens.accessToken,...(tokens.scopes?{grantedScopes:tokens.scopes}:{}),azure:connectors.azure,exchange:connectors.exchange,signal:AbortSignal.timeout(600_000)});
     const result=runAssessment(bundle,CONTROL_LIBRARY);
     await store.complete(job,result);
   } catch {

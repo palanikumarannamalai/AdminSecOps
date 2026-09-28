@@ -91,7 +91,7 @@ export const ONLINE_REQUIRED_GRAPH_PERMISSIONS: readonly string[] = ONLINE_GRAPH
   (p) => p.permission,
 );
 
-export type CollectOnlineOptions = HostedCollectionOptions;
+export type CollectOnlineOptions = HostedCollectionOptions & { modules?: readonly string[] };
 export type OnlineCollectionResult = HostedCollectionResult;
 
 export async function collectOnline(options: CollectOnlineOptions): Promise<EvidenceBundle> {
@@ -102,7 +102,7 @@ export async function collectOnlineEvidence(
   options: CollectOnlineOptions,
 ): Promise<OnlineCollectionResult> {
   const plan: CollectionPlan = {
-    datasets: ONLINE_DATASETS,
+    datasets: options.modules ? ONLINE_DATASETS.filter(d => d.definition.id === 'entra.organization' || options.modules!.includes(d.definition.module)) : ONLINE_DATASETS,
     notCollected: ONLINE_NOT_COLLECTED,
     skippedModules: ONLINE_SKIPPED_MODULES,
   };

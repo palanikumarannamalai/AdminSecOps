@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method -- Store methods are Vitest spies, never detached calls. */
+import type { AssessmentResult } from '@adminsecops/schemas';
 import { describe, expect, it, vi } from 'vitest';
 import { UnsecuredJWT } from 'jose';
 import { buildServer } from './server.js';
@@ -255,4 +256,34 @@ describe('hosted HTTP boundary', () => {
     expect(store.createJob).not.toHaveBeenCalled();
     await app.close();
   });
+});
+
+describe('guided workflow boundaries',()=>{
+ it('rejects arbitrary workloads and accepts a scoped assessment',async()=>{
+  const store=fixture();const app=await buildServer({config,store});
+  for(const modules of [[],['Shell'],['Azure','Azure'],['Entra',42]])expect((await app.inject({method:'POST',url:'/api/jobs',headers,payload:{modules}})).statusCode).toBe(400);
+  expect((await app.inject({method:'POST',url:'/api/jobs',headers,payload:{modules:['Entra']}})).statusCode).toBe(202);
+  expect(store.createJob).toHaveBeenLastCalledWith(config.tenantId,config.allowedUserIds[0],expect.any(String),null,['Entra']);await app.close();
+ });
+ it('protects tenant tracking and refuses unverified resolution',async()=>{
+  const store=fixture();store.getRemediation=vi.fn(()=>Promise.resolve(null));store.saveRemediation=vi.fn(()=>Promise.resolve());
+  const app=await buildServer({config,store});const url='/api/remediation/ENTRA-CA-002';
+  expect((await app.inject({url,headers})).statusCode).toBe(200);expect(store.getRemediation).toHaveBeenCalledWith(config.tenantId,'ENTRA-CA-002');
+  const payload={owner:'Admin',dueDate:'',notes:'Synthetic test',exceptionExpiry:'',status:'open',verificationAssessmentId:''};
+  expect((await app.inject({method:'POST',url,headers:{...headers,origin:'https://evil.example'},payload})).statusCode).toBe(403);
+  expect((await app.inject({method:'POST',url,headers,payload:{...payload,status:'resolved',verificationAssessmentId:'44444444-4444-4444-4444-444444444444'}})).statusCode).toBe(400);
+  expect(store.saveRemediation).not.toHaveBeenCalled();
+  expect((await app.inject({method:'POST',url,headers,payload})).statusCode).toBe(200);expect(store.saveRemediation).toHaveBeenCalledWith(config.tenantId,config.allowedUserIds[0],'ENTRA-CA-002',payload);
+  expect((await app.inject({method:'POST',url,headers,payload:{...payload,status:'exception',exceptionExpiry:'2020-01-01'}})).statusCode).toBe(400);await app.close();
+ });
+});
+
+it('allows resolution only with the latest passing assessment',async()=>{
+ const store=fixture();store.saveRemediation=vi.fn(()=>Promise.resolve());const id='44444444-4444-4444-4444-444444444444';
+ const result={assessmentId:id,results:[{controlId:'ENTRA-CA-002',status:'PASS'}]} as unknown as AssessmentResult;
+ vi.mocked(store.getAssessment).mockResolvedValue(result);vi.mocked(store.listAssessments).mockResolvedValue([result]);const app=await buildServer({config,store});
+ const payload={owner:'Admin',dueDate:'',notes:'Verified',exceptionExpiry:'',status:'resolved',verificationAssessmentId:id};
+ expect((await app.inject({method:'POST',url:'/api/remediation/ENTRA-CA-002',headers,payload})).statusCode).toBe(200);
+ vi.mocked(store.listAssessments).mockResolvedValue([{...result,assessmentId:'55555555-5555-4555-8555-555555555555'}]);
+ expect((await app.inject({method:'POST',url:'/api/remediation/ENTRA-CA-002',headers,payload})).statusCode).toBe(400);await app.close();
 });

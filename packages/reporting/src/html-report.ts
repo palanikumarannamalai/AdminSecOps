@@ -12,6 +12,7 @@ import { anchorId, html, link, SafeHtml } from './html-builder.js';
 import { REPORT_CSS } from './report-style.js';
 
 export interface HtmlReportOptions {
+  executiveOnly?: boolean;
   /** Override the generation timestamp (for reproducible output). */
   generatedAt?: Date;
   /** Maximum affected objects rendered per finding (the full count is always shown). */
@@ -299,7 +300,7 @@ export function renderHtmlReport(result: AssessmentResult, options: HtmlReportOp
 </header>
 <main>
 <section id="overview">
-  <h1>Security assessment report: ${environmentName(result)}</h1>
+  <h1>${options.executiveOnly ? "Executive summary" : "Security assessment report"}: ${environmentName(result)}</h1>
   <p class="confidential">Confidential: this report describes the security configuration of your environment. Share it only with people who need it.</p>
   <table class="facts"><tbody>
     <tr><th scope="row">Tenant</th><td>${env.tenantDisplayName ?? '-'} ${env.tenantId !== null ? html`<span class="mono small">(${env.tenantId})</span>` : ''}</td></tr>
@@ -313,14 +314,15 @@ export function renderHtmlReport(result: AssessmentResult, options: HtmlReportOp
     <tr><th scope="row">Engine / control library</th><td>${result.engineVersion} / ${result.controlLibraryVersion}</td></tr>
     <tr><th scope="row">Modules collected</th><td>${result.collection.modules.map((m) => `${m.name} (${m.status})`).join(', ') || '-'}</td></tr>
   </tbody></table>
-  <nav class="toc"><strong>Contents:</strong>
+  <nav class="toc"><strong>Contents:</strong>${options.executiveOnly ? html`<a href="#summary">Summary</a><a href="#method">Method</a>` : html`
     <a href="#summary">Summary</a> <a href="#fix-first">What to fix first</a> <a href="#findings">Findings</a>
     <a href="#not-assessed">Not assessed</a> <a href="#all-results">All results</a> <a href="#evidence">Evidence</a>
-    <a href="#inventory">Inventory</a> <a href="#frameworks">Frameworks</a> <a href="#method">Method</a></nav>
+    <a href="#inventory">Inventory</a> <a href="#frameworks">Frameworks</a> <a href="#method">Method</a>`}</nav>
 </section>
+<section id="executive-summary"><h2>Executive summary</h2><p>${result.summary.byStatus.FAIL} checks failed, ${result.summary.byStatus.REVIEW} need administrator review, and ${result.summary.byStatus.NOT_ASSESSED + result.summary.byStatus.ERROR} remain untested. Results describe the evidence collected on ${result.assessedAt}; they are not a security certification.</p><p>Scope: ${result.collection.modules.map(m=>m.name).join(', ')}. Control library ${result.controlLibraryVersion}. Framework mappings indicate alignment, not complete baseline compliance. Review excluded and unreadable evidence before planning changes.</p></section>
 ${summarySection(result)}
-${fixFirstSection(findings)}
-<section id="findings">
+${options.executiveOnly ? html`<section><h2>Recommended priorities</h2><ol>${findings.slice(0,5).map(f=>html`<li><strong>${f.title}</strong> (${f.status}): ${f.remediation.summary}</li>`)}</ol><p>Use the full technical report for affected objects, exclusions, rollback and verification.</p></section>` : fixFirstSection(findings)}
+${options.executiveOnly ? html`` : html`<section id="findings">
   <h2>Findings (${findings.length})</h2>
   ${findings.map((f) => findingSection(f, maxObjects))}
 </section>
@@ -328,7 +330,7 @@ ${resultsTable(notAssessed, 'Controls not assessed', 'not-assessed', 'Every cont
 ${resultsTable(result.results, 'All control results', 'all-results', 'No controls were evaluated.')}
 ${evidenceSection(result)}
 ${inventorySection(result)}
-${frameworkSection(findings)}
+${frameworkSection(findings)}`}
 <section id="method">
   <h2>How this assessment was produced</h2>
   <ul>

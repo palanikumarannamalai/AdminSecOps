@@ -532,3 +532,10 @@ describe('deployment review regressions', () => {
     expect(status(assess(bundle), 'INTUNE-CMP-002')).not.toBe('PASS');
   });
 });
+
+it('honours selected workloads while always verifying tenant identity and reporting real progress',async()=>{
+ const graph=mockGraph();const progress=vi.fn(()=>Promise.resolve());const bundle=await collectOnline(options(graph.fetch,{modules:['Intune'],onProgress:progress}));
+ expect(graph.calls[0]).toContain('/organization');expect(graph.calls.some(url=>url.includes('conditionalAccess'))).toBe(false);
+ expect(bundle.datasets.has('intune.settings')).toBe(true);expect(bundle.datasets.has('exchange.transportRules')).toBe(false);
+ expect(progress).toHaveBeenCalledWith('entra.organization','collecting');expect(progress).toHaveBeenCalledWith('entra.organization','Success');
+});
