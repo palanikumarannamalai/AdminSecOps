@@ -27,6 +27,10 @@ const sharePointSettings: DatasetCollector = async (state, context) => {
   const body = await getOne(state, context, `${GRAPH_BASE}/admin/sharepoint/settings`);
   // The documented response example wraps the settings in "value"; accept both forms.
   const s = rec(body['value']) ?? body;
+  if (typeof s['isRequireAcceptingUserToMatchInvitedUserEnabled'] !== 'boolean') {
+    state.warnings.push(message('SETTING_NOT_RETURNED', 'Microsoft Graph omitted the SharePoint invitation account-matching setting. Verify RequireAcceptingAccountMatchInvitedAccount with an authorised SharePoint administrator; the related control remains not assessed.'));
+  }
+
   return {
     ...pick(s, [
       'sharingCapability',

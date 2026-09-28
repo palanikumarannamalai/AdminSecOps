@@ -26,6 +26,7 @@ function ConnectorList({ connectors, onError }: { connectors: readonly OnlineCon
   return <ul className="sample-list connector-grid" aria-label="Data sources">{connectors.map((c) => <li key={c.id} className="sample-list__item"><div>
     <p><strong>{c.label}</strong> <ToneBadge tone={CONNECTOR_STATE[c.state].tone}>{CONNECTOR_STATE[c.state].label}</ToneBadge></p>
     <p>{c.reason}</p>
+    {c.id === 'exchange' ? <p className="muted small">Exchange consent uses a management-scoped permission and can carry your account's write authority. ConfigReview runs fixed read operations only. Use an account with the least Exchange access needed.</p> : null}
     {c.id !== 'onPremises' ? <details className="connector-permissions"><summary>Permissions and required role</summary><p className="muted small">Permission: {c.permission}. Role: {c.role}.</p></details> : null}
     {c.connectedAt !== null ? <p className="muted small">Connected {formatDateTime(c.connectedAt)}</p> : null}
     <div className="inline-actions">
@@ -96,6 +97,13 @@ export function OnlineHomePage() {
       <p>Signed in as <strong>{session.user.displayName}</strong></p>
       <p><strong>Current directory (tenant) ID:</strong> <code>{session.user.tenantId}</code></p>
       <p>{session.connection.connected ? 'Connected for read-only collection.' : 'The tenant connection is unavailable. Contact the test administrator to configure consent.'}</p>
+      <section aria-labelledby="readiness-heading" className="notice">
+        <h3 id="readiness-heading">Before you run</h3>
+        <p>Microsoft Graph checks cover Entra, SharePoint, limited Teams settings and Intune compliance. Licences and readable evidence are checked during collection; a connection does not guarantee full coverage.</p>
+        <ul className="bullets">{connectors.map((c) => <li key={c.id}><strong>{c.label}:</strong> {CONNECTOR_STATE[c.state].label}. {c.state === 'connected' ? 'Collection will be attempted.' : c.reason}</li>)}</ul>
+        <p>AD, AD CS, Group Policy and Windows host checks cannot run online. These remain separate coverage gaps, not passing checks.</p>
+        <p>{missingScopes.length > 0 ? `${missingScopes.length} required permissions are missing. ` : ''}You can run a partial assessment. Review Coverage afterwards for the exact checks, licence decisions and collection failures.</p>
+      </section>
       <div className="inline-actions"><button className="button button--primary" disabled={starting || active || !session.connection.connected} onClick={() => void run()}>
         {starting ? 'Submitting…' : active ? 'Assessment in progress' : 'Run assessment'}</button>
         <button className="button" onClick={() => void logout()}>Sign out / switch tenant</button></div>
