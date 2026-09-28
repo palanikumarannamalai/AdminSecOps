@@ -90,7 +90,7 @@ export function SignInPage() {
             <a className="button button--primary button--large" href="/auth/login">
               Sign in with Microsoft <span aria-hidden="true">→</span>
             </a>
-            <a className="button" href="https://www.palanikumar.net/tools/configreview/app/">Try sample assessment →</a>
+            <a className="button" href="/sample-assessment.html">Try sample assessment →</a>
             <p className="hero-assurance">
               Read-only assessments <span>·</span> Browser-based <span>·</span> Test release
             </p>

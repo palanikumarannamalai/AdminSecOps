@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ConfigReview assessment report - Fictional sample — explore ConfigReview</title>
+<link rel="stylesheet" href="/sample-report.css">
+</head>
+<body>
+<header class="report-header">
+  <div class="brand">ConfigReview</div>
+  <div class="tagline">Evidence-based security configuration review for Microsoft environments.</div>
+  <div class="muted">Security assessment and remediation guidance for Microsoft administrators.</div>
+</header>
+<main><p><a href="/">Back to ConfigReview</a> · Fictional sample only. No customer evidence is included.</p>
+<section id="overview">
+  <h1>Security assessment report: Fictional sample — explore ConfigReview</h1>
+  <p class="confidential">Confidential: this report describes the security configuration of your environment. Share it only with people who need it.</p>
+  <table class="facts"><tbody>
+    <tr><th scope="row">Tenant</th><td>Contoso (Example) <span class="mono small">(00000000-0000-4000-8000-00000000c0de)</span></td></tr>
+    <tr><th scope="row">Primary domain</th><td>contoso.example</td></tr>
+    <tr><th scope="row">Active Directory forest</th><td>contoso.example</td></tr>
+    <tr><th scope="row">Evidence collected</th><td>2026-09-01T09:30:00.0000000+00:00</td></tr>
+    <tr><th scope="row">Processed</th><td>2026-09-01T10:02:11.512Z</td></tr>
+    <tr><th scope="row">Report generated</th><td>2026-09-28T00:00:00.000Z</td></tr>
+    <tr><th scope="row">Assessment ID</th><td class="mono">3f2a9c1e-7b4d-4e8a-9c21-5d6e7f8a9b0c</td></tr>
+    <tr><th scope="row">Collector</th><td>AdminSecOps.Collector 0.1.0</td></tr>
+    <tr><th scope="row">Engine / control library</th><td>0.1.0 / 0.1.0</td></tr>
+    <tr><th scope="row">Modules collected</th><td>Entra (CompletedWithErrors), AD (Completed)</td></tr>
+  </tbody></table>
+  <nav class="toc"><strong>Contents:</strong>
+    <a href="#summary">Summary</a> <a href="#fix-first">What to fix first</a> <a href="#findings">Findings</a>
+    <a href="#not-assessed">Not assessed</a> <a href="#all-results">All results</a> <a href="#evidence">Evidence</a>
+    <a href="#inventory">Inventory</a> <a href="#frameworks">Frameworks</a> <a href="#method">Method</a></nav>
+</section>
+<section id="executive-summary"><h2>Executive summary</h2><p>4 checks failed, 1 need administrator review, and 2 remain untested. Results describe the evidence collected on 2026-09-01T09:30:00.0000000+00:00; they are not a security certification.</p><p>Scope: Entra, AD. Control library 0.1.0. Framework mappings indicate alignment, not complete baseline compliance. Review excluded and unreadable evidence before planning changes.</p></section>
+<section id="summary">
+    <h2>Assessment summary</h2>
+    <div class="cards">
+      <div class="card"><div class="card-value">4</div><div class="card-label">Fail</div></div><div class="card"><div class="card-value">1</div><div class="card-label">Review</div></div><div class="card"><div class="card-value">2</div><div class="card-label">Pass</div></div><div class="card"><div class="card-value">1</div><div class="card-label">Not applicable</div></div><div class="card"><div class="card-value">1</div><div class="card-label">Not assessed</div></div><div class="card"><div class="card-value">1</div><div class="card-label">Error</div></div>
+    </div>
+    <p>
+      <strong>Assessment coverage:</strong> 7 of 9 applicable controls could be assessed
+      from the collected evidence. This is a coverage measure, not a security score: controls that were not assessed are
+      unknown, not compliant.
+    </p>
+    <table>
+      <caption>Findings by severity</caption>
+      <thead><tr><th>critical</th><th>high</th><th>medium</th><th>low</th><th>informational</th></tr></thead>
+      <tbody><tr><td>1</td><td>2</td><td>2</td><td>0</td><td>0</td></tr></tbody>
+    </table>
+    <table>
+      <caption>Results by technology</caption>
+      <thead><tr><th>Technology</th><th>Fail</th><th>Review</th><th>Pass</th><th>Not applicable</th><th>Not assessed</th><th>Error</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Entra ID</th><td>1</td><td>1</td><td>1</td><td>0</td><td>0</td><td>0</td></tr><tr><th scope="row">Microsoft 365</th><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><th scope="row">Azure</th><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr><tr><th scope="row">Intune</th><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr><tr><th scope="row">Active Directory</th><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><th scope="row">AD CS / PKI</th><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><th scope="row">Group Policy</th><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td></tr><tr><th scope="row">Hybrid identity</th><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr>
+      </tbody>
+    </table>
+  </section>
+<section id="fix-first">
+    <h2>What should I fix first?</h2>
+    <p class="muted">Findings are ordered deterministically by severity, then confirmed failures before items needing review, then confidence,
+    exposure and effort. The order is a recommendation, not a score.</p>
+    <h3>Fix now (2)</h3>
+        <table>
+          <thead><tr><th>#</th><th>Finding</th><th>Severity</th><th>Status</th><th>Confidence</th><th>Affected</th><th>Effort</th></tr></thead>
+          <tbody>
+            <tr>
+                <td>1</td>
+                <td><a href="#finding-adcs-tpl-001">Certificate templates allow requesters to supply the subject (ESC1)</a><div class="muted small">ADCS-TPL-001 - AD CS / PKI</div></td>
+                <td><span class="badge sev-critical">critical</span></td>
+                <td><span class="badge status-fail">Fail</span></td>
+                <td>high</td>
+                <td>1</td>
+                <td>low</td>
+              </tr><tr>
+                <td>2</td>
+                <td><a href="#finding-entra-ca-001">Legacy authentication is not blocked by Conditional Access</a><div class="muted small">ENTRA-CA-001 - Entra ID</div></td>
+                <td><span class="badge sev-high">high</span></td>
+                <td><span class="badge status-fail">Fail</span></td>
+                <td>high</td>
+                <td>1</td>
+                <td>low</td>
+              </tr>
+          </tbody>
+        </table><h3>Fix next (2)</h3>
+        <table>
+          <thead><tr><th>#</th><th>Finding</th><th>Severity</th><th>Status</th><th>Confidence</th><th>Affected</th><th>Effort</th></tr></thead>
+          <tbody>
+            <tr>
+                <td>3</td>
+                <td><a href="#finding-m365-exo-004">Mailboxes forward mail to external domains</a><div class="muted small">M365-EXO-004 - Microsoft 365</div></td>
+                <td><span class="badge sev-medium">medium</span></td>
+                <td><span class="badge status-fail">Fail</span></td>
+                <td>high</td>
+                <td>3</td>
+                <td>medium</td>
+              </tr><tr>
+                <td>4</td>
+                <td><a href="#finding-ad-krb-001">KRBTGT account password has not been changed in over 180 days</a><div class="muted small">AD-KRB-001 - Active Directory</div></td>
+                <td><span class="badge sev-medium">medium</span></td>
+                <td><span class="badge status-fail">Fail</span></td>
+                <td>high</td>
+                <td>1</td>
+                <td>high</td>
+              </tr>
+          </tbody>
+        </table><h3>Review (1)</h3>
+        <table>
+          <thead><tr><th>#</th><th>Finding</th><th>Severity</th><th>Status</th><th>Confidence</th><th>Affected</th><th>Effort</th></tr></thead>
+          <tbody>
+            <tr>
+                <td>5</td>
+                <td><a href="#finding-entra-app-002">Applications hold high-privilege Microsoft Graph application permissions</a><div class="muted small">ENTRA-APP-002 - Entra ID</div></td>
+                <td><span class="badge sev-high">high</span></td>
+                <td><span class="badge status-review">Review</span></td>
+                <td>medium</td>
+                <td>2</td>
+                <td>medium</td>
+              </tr>
+          </tbody>
+        </table>
+    
+  </section>
+<section id="findings">
+  <h2>Findings (5)</h2>
+  <article class="finding" id="finding-adcs-tpl-001">
+    <header>
+      <h3>1. Certificate templates allow requesters to supply the subject (ESC1)</h3>
+      <div><span class="badge status-fail">Fail</span> <span class="badge sev-critical">critical</span> <span class="badge">confidence: high</span>
+      <span class="badge">Fix now</span></div>
+      <div class="muted small">ADCS-TPL-001 v1.0.0 - AD CS / PKI - Certificate services - finding F-ADCS-TPL-001</div>
+    </header>
+    <h4>What did you find?</h4>
+    
+    <p>1 enabled template allows enrollee-supplied subject and client authentication for broad groups.</p>
+    <p><strong>Template &quot;ContosoUser-Legacy&quot; is published, allows enrollee-supplied subject and grants enroll to Domain Users.</strong></p>
+    <h4>Why does it matter?</h4>
+    <p>Any domain user can request a certificate for any identity, including domain administrators, and authenticate as them.</p>
+    <h4>What did you observe?</h4>
+    <table class="facts"><tbody><tr><th scope="row">Vulnerable templates</th><td>1</td></tr><tr><th scope="row">Manager approval required</th><td>false</td></tr></tbody></table>
+    
+    <h4>What should it be?</h4>
+    <p>No published template combines enrollee-supplied subject, client authentication EKU and low-privileged enrollment.</p>
+    <h4>What is affected?</h4>
+    <table><thead><tr><th>Type</th><th>Name</th><th>Identifier</th><th>Detail</th></tr></thead><tbody>
+            <tr><td>certificateTemplate</td><td>ContosoUser-Legacy</td><td class="mono">CN=ContosoUser-Legacy,CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=example</td><td>Enroll: CONTOSO\Domain Users; EKU: Client Authentication</td></tr>
+          </tbody></table>
+          
+    <h4>What evidence supports this?</h4>
+    <table><thead><tr><th>Dataset</th><th>File</th><th>SHA-256</th><th>Collected</th><th>Status</th><th>Source</th></tr></thead><tbody>
+      <tr><td>adcs.certificateTemplates</td><td class="mono">adcs/certificateTemplates.json</td><td class="mono small">e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5</td>
+          <td>2026-09-01T09:28:02Z</td><td>Success</td>
+          <td>ActiveDirectory<div class="small mono">Get-ADObject -SearchBase &quot;CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration&quot;</div></td></tr>
+    </tbody></table>
+    <h4>What should I check before changing it?</h4>
+    <ul><li>Confirm which applications or users depend on the current configuration.</li></ul>
+    <p><strong>Impact:</strong> Users or applications that rely on the current configuration may stop working until they are updated.</p>
+    <h4>How do I fix it?</h4>
+    <p>Remove the enrollee-supplied subject flag or restrict enrollment to a dedicated group, then require manager approval.</p>
+    <ol><li>Open the Certificate Templates console (certtmpl.msc) on a management server.</li><li>Open the properties of the ContosoUser-Legacy template.</li><li>On Subject Name, select &quot;Build from this Active Directory information&quot;.</li><li>On Security, remove Enroll from Domain Users and grant it to the group that needs the template.</li></ol>
+    <p class="muted small">Example for an administrator to review and run. AdminSecOps never makes changes to your environment.</p><pre><code># Review before running. Lists templates that allow enrollee-supplied subject.
+Get-ADObject -SearchBase &quot;CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=contoso,DC=example&quot; -Filter * -Properties msPKI-Certificate-Name-Flag |
+  Where-Object { $_.&quot;msPKI-Certificate-Name-Flag&quot; -band 1 }</code></pre>
+    <h4>How do I roll it back?</h4>
+    <ol><li>Revert the setting to its previous value recorded before the change.</li></ol>
+    <h4>How do I verify the fix?</h4>
+    <ol><li>Collect new evidence and confirm the control returns PASS.</li></ol>
+    <h4>Authoritative references</h4>
+    <ul><li><a href="https://learn.microsoft.com/en-us/windows-server/identity/ad-cs/" rel="noopener noreferrer">Securing PKI: Certificate template security</a> <span class="muted small">(Microsoft)</span></li><li><a href="https://attack.mitre.org/techniques/T1649/" rel="noopener noreferrer">MITRE ATT&amp;CK T1649 Steal or Forge Authentication Certificates</a> <span class="muted small">(MITRE)</span></li></ul>
+    <p class="small"><strong>Framework mappings:</strong> MITRE ATT&amp;CK (Enterprise) T1649, NIST SP 800-53 Rev. 5 AC-6</p>
+    <p class="small muted">Priority factors: Severity: critical; Confidence: high</p>
+  </article><article class="finding" id="finding-entra-ca-001">
+    <header>
+      <h3>2. Legacy authentication is not blocked by Conditional Access</h3>
+      <div><span class="badge status-fail">Fail</span> <span class="badge sev-high">high</span> <span class="badge">confidence: high</span>
+      <span class="badge">Fix now</span></div>
+      <div class="muted small">ENTRA-CA-001 v1.0.0 - Entra ID - Conditional Access - finding F-ENTRA-CA-001</div>
+    </header>
+    <h4>What did you find?</h4>
+    
+    <p>No enabled policy blocks legacy authentication client apps for all users.</p>
+    <p><strong>3 Conditional Access policies are enabled; none blocks Exchange ActiveSync and other legacy clients.</strong></p>
+    <h4>Why does it matter?</h4>
+    <p>An attacker who obtains a low-privileged foothold can use this configuration to escalate privileges.</p>
+    <h4>What did you observe?</h4>
+    <table class="facts"><tbody><tr><th scope="row">Enabled policies</th><td>3</td></tr><tr><th scope="row">Policies blocking legacy authentication</th><td>0</td></tr><tr><th scope="row">Report-only policy present</th><td>true</td></tr></tbody></table>
+    
+    <h4>What should it be?</h4>
+    <p>An enabled policy blocks legacy authentication for all users, with documented exclusions only.</p>
+    <h4>What is affected?</h4>
+    <table><thead><tr><th>Type</th><th>Name</th><th>Identifier</th><th>Detail</th></tr></thead><tbody>
+            <tr><td>tenant</td><td>Contoso (Example)</td><td class="mono">00000000-0000-4000-8000-00000000c0de</td><td></td></tr>
+          </tbody></table>
+          
+    <h4>What evidence supports this?</h4>
+    <table><thead><tr><th>Dataset</th><th>File</th><th>SHA-256</th><th>Collected</th><th>Status</th><th>Source</th></tr></thead><tbody>
+      <tr><td>entra.conditionalAccessPolicies</td><td class="mono">entra/conditionalAccessPolicies.json</td><td class="mono small">a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1</td>
+          <td>2026-09-01T09:21:04Z</td><td>Success</td>
+          <td>MicrosoftGraph<div class="small mono">GET https://graph.microsoft.com/v1.0/identity/conditionalAccess/policies</div></td></tr>
+    </tbody></table>
+    <h4>What should I check before changing it?</h4>
+    <ul><li>Confirm which applications or users depend on the current configuration.</li></ul>
+    <p><strong>Impact:</strong> Users or applications that rely on the current configuration may stop working until they are updated.</p>
+    <h4>How do I fix it?</h4>
+    <p>Change the configuration to the expected state after confirming dependencies.</p>
+    <ol><li>Identify owners of the affected objects.</li><li>Apply the change in a pilot group.</li><li>Apply the change broadly.</li></ol>
+    
+    <h4>How do I roll it back?</h4>
+    <ol><li>Revert the setting to its previous value recorded before the change.</li></ol>
+    <h4>How do I verify the fix?</h4>
+    <ol><li>Collect new evidence and confirm the control returns PASS.</li></ol>
+    <h4>Authoritative references</h4>
+    <ul><li><a href="https://learn.microsoft.com/en-us/security/" rel="noopener noreferrer">Microsoft Learn: security guidance</a> <span class="muted small">(Microsoft)</span></li></ul>
+    <p class="small"><strong>Framework mappings:</strong> CISA Secure Cloud Business Applications (SCuBA) baselines MS.AAD.1.1v1, Microsoft cloud security benchmark IM-7</p>
+    <p class="small muted">Priority factors: Severity: high; Confidence: high</p>
+  </article><article class="finding" id="finding-m365-exo-004">
+    <header>
+      <h3>3. Mailboxes forward mail to external domains</h3>
+      <div><span class="badge status-fail">Fail</span> <span class="badge sev-medium">medium</span> <span class="badge">confidence: high</span>
+      <span class="badge">Fix next</span></div>
+      <div class="muted small">M365-EXO-004 v1.0.0 - Microsoft 365 - Exchange Online - finding F-M365-EXO-004</div>
+    </header>
+    <h4>What did you find?</h4>
+    
+    <p>3 mailboxes forward to external recipients.</p>
+    <p><strong>3 mailboxes forward to external recipients.</strong></p>
+    <h4>Why does it matter?</h4>
+    <p>An attacker who obtains a low-privileged foothold can use this configuration to escalate privileges.</p>
+    <h4>What did you observe?</h4>
+    <p class="muted">No additional facts.</p>
+    
+    <h4>What should it be?</h4>
+    <p>The control expected state.</p>
+    <h4>What is affected?</h4>
+    <table><thead><tr><th>Type</th><th>Name</th><th>Identifier</th><th>Detail</th></tr></thead><tbody>
+            <tr><td>mailbox</td><td>Adele Vance</td><td class="mono">adele.vance@contoso.example</td><td>Forwards to an external address</td></tr><tr><td>mailbox</td><td>Finance</td><td class="mono">finance@contoso.example</td><td>Forwards to an external address</td></tr>
+          </tbody></table>
+          <p class="muted">Showing 2 of 3 affected objects; see the JSON report for the stored list.</p>
+    <h4>What evidence supports this?</h4>
+    <table><thead><tr><th>Dataset</th><th>File</th><th>SHA-256</th><th>Collected</th><th>Status</th><th>Source</th></tr></thead><tbody>
+      <tr><td>exchange.mailboxForwarding</td><td class="mono">exchange/mailboxForwarding.json</td><td class="mono small">c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3</td>
+          <td>2026-09-01T09:25:12Z</td><td>Success</td>
+          <td>ExchangeOnline<div class="small mono">Get-EXOMailbox -Properties ForwardingSmtpAddress</div></td></tr>
+    </tbody></table>
+    <h4>What should I check before changing it?</h4>
+    <ul><li>Confirm which applications or users depend on the current configuration.</li></ul>
+    <p><strong>Impact:</strong> Users or applications that rely on the current configuration may stop working until they are updated.</p>
+    <h4>How do I fix it?</h4>
+    <p>Change the configuration to the expected state after confirming dependencies.</p>
+    <ol><li>Identify owners of the affected objects.</li><li>Apply the change in a pilot group.</li><li>Apply the change broadly.</li></ol>
+    
+    <h4>How do I roll it back?</h4>
+    <ol><li>Revert the setting to its previous value recorded before the change.</li></ol>
+    <h4>How do I verify the fix?</h4>
+    <ol><li>Collect new evidence and confirm the control returns PASS.</li></ol>
+    <h4>Authoritative references</h4>
+    <ul><li><a href="https://learn.microsoft.com/en-us/security/" rel="noopener noreferrer">Microsoft Learn: security guidance</a> <span class="muted small">(Microsoft)</span></li></ul>
+    <p class="small"><strong>Framework mappings:</strong> CISA Secure Cloud Business Applications (SCuBA) baselines MS.EXO.1.1v1</p>
+    <p class="small muted">Priority factors: Severity: medium; Confidence: high</p>
+  </article><article class="finding" id="finding-ad-krb-001">
+    <header>
+      <h3>4. KRBTGT account password has not been changed in over 180 days</h3>
+      <div><span class="badge status-fail">Fail</span> <span class="badge sev-medium">medium</span> <span class="badge">confidence: high</span>
+      <span class="badge">Fix next</span></div>
+      <div class="muted small">AD-KRB-001 v1.0.0 - Active Directory - Kerberos - finding F-AD-KRB-001</div>
+    </header>
+    <h4>What did you find?</h4>
+    
+    <p>The KRBTGT password was last set 1,204 days before the assessment.</p>
+    <p><strong>pwdLastSet is 2023-05-16.</strong></p>
+    <h4>Why does it matter?</h4>
+    <p>An attacker who obtains a low-privileged foothold can use this configuration to escalate privileges.</p>
+    <h4>What did you observe?</h4>
+    <table class="facts"><tbody><tr><th scope="row">Days since password change</th><td>1204</td></tr></tbody></table>
+    
+    <h4>What should it be?</h4>
+    <p>The control expected state.</p>
+    <h4>What is affected?</h4>
+    <table><thead><tr><th>Type</th><th>Name</th><th>Identifier</th><th>Detail</th></tr></thead><tbody>
+            <tr><td>user</td><td>krbtgt</td><td class="mono">S-1-5-21-1004336348-1177238915-682003330-502</td><td></td></tr>
+          </tbody></table>
+          
+    <h4>What evidence supports this?</h4>
+    <table><thead><tr><th>Dataset</th><th>File</th><th>SHA-256</th><th>Collected</th><th>Status</th><th>Source</th></tr></thead><tbody>
+      <tr><td>ad.krbtgt</td><td class="mono">ad/krbtgt.json</td><td class="mono small">d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4</td>
+          <td>2026-09-01T09:27:30Z</td><td>Success</td>
+          <td>ActiveDirectory<div class="small mono">Get-ADUser -Identity krbtgt -Properties pwdLastSet</div></td></tr>
+    </tbody></table>
+    <h4>What should I check before changing it?</h4>
+    <ul><li>Confirm which applications or users depend on the current configuration.</li></ul>
+    <p><strong>Impact:</strong> Users or applications that rely on the current configuration may stop working until they are updated.</p>
+    <h4>How do I fix it?</h4>
+    <p>Change the configuration to the expected state after confirming dependencies.</p>
+    <ol><li>Identify owners of the affected objects.</li><li>Apply the change in a pilot group.</li><li>Apply the change broadly.</li></ol>
+    
+    <h4>How do I roll it back?</h4>
+    <ol><li>Revert the setting to its previous value recorded before the change.</li></ol>
+    <h4>How do I verify the fix?</h4>
+    <ol><li>Collect new evidence and confirm the control returns PASS.</li></ol>
+    <h4>Authoritative references</h4>
+    <ul><li><a href="https://learn.microsoft.com/en-us/security/" rel="noopener noreferrer">Microsoft Learn: security guidance</a> <span class="muted small">(Microsoft)</span></li></ul>
+    <p class="small"><strong>Framework mappings:</strong> NIST SP 800-53 Rev. 5 AC-6</p>
+    <p class="small muted">Priority factors: Severity: medium; Confidence: high</p>
+  </article><article class="finding" id="finding-entra-app-002">
+    <header>
+      <h3>5. Applications hold high-privilege Microsoft Graph application permissions</h3>
+      <div><span class="badge status-review">Review</span> Potential impact if confirmed: <span class="badge sev-high">high</span> <span class="badge">confirmation pending</span>
+      <span class="badge">Review</span></div>
+      <div class="muted small">ENTRA-APP-002 v1.0.0 - Entra ID - Applications - finding F-ENTRA-APP-002</div>
+    </header>
+    <h4>What did you find?</h4>
+    <p><strong>Verification required.</strong> This does not establish a confirmed security gap. Validate evidence, exclusions and alternative controls before making changes.</p>
+    <p>2 service principals hold Directory.ReadWrite.All or equivalent application permissions.</p>
+    <p><strong>2 service principals hold Directory.ReadWrite.All or equivalent application permissions.</strong></p>
+    <h4>Why does it matter?</h4>
+    <p>An attacker who obtains a low-privileged foothold can use this configuration to escalate privileges.</p>
+    <h4>What did you observe?</h4>
+    <p class="muted">No additional facts.</p>
+    <div class="notes"><strong>Notes</strong><ul><li>The service principal dataset was collected partially; results may be incomplete.</li></ul></div>
+    <h4>What should it be?</h4>
+    <p>The control expected state.</p>
+    <h4>What is affected?</h4>
+    <table><thead><tr><th>Type</th><th>Name</th><th>Identifier</th><th>Detail</th></tr></thead><tbody>
+            <tr><td>servicePrincipal</td><td>Contoso HR Sync</td><td class="mono">11111111-2222-4333-8444-555555555555</td><td></td></tr><tr><td>servicePrincipal</td><td>Legacy Reporting Tool</td><td class="mono">66666666-7777-4888-8999-000000000000</td><td></td></tr>
+          </tbody></table>
+          
+    <h4>What evidence supports this?</h4>
+    <table><thead><tr><th>Dataset</th><th>File</th><th>SHA-256</th><th>Collected</th><th>Status</th><th>Source</th></tr></thead><tbody>
+      <tr><td>entra.servicePrincipals</td><td class="mono">entra/servicePrincipals.json</td><td class="mono small">b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2</td>
+          <td>2026-09-01T09:22:40Z</td><td>Partial</td>
+          <td>MicrosoftGraph<div class="small mono">GET https://graph.microsoft.com/v1.0/servicePrincipals</div></td></tr>
+    </tbody></table>
+    <h4>What should I check before changing it?</h4>
+    <ul><li>Confirm which applications or users depend on the current configuration.</li></ul>
+    <p><strong>Impact:</strong> Users or applications that rely on the current configuration may stop working until they are updated.</p>
+    <h4>How do I fix it?</h4>
+    <p>Change the configuration to the expected state after confirming dependencies.</p>
+    <ol><li>Identify owners of the affected objects.</li><li>Apply the change in a pilot group.</li><li>Apply the change broadly.</li></ol>
+    
+    <h4>How do I roll it back?</h4>
+    <ol><li>Revert the setting to its previous value recorded before the change.</li></ol>
+    <h4>How do I verify the fix?</h4>
+    <ol><li>Collect new evidence and confirm the control returns PASS.</li></ol>
+    <h4>Authoritative references</h4>
+    <ul><li><a href="https://learn.microsoft.com/en-us/security/" rel="noopener noreferrer">Microsoft Learn: security guidance</a> <span class="muted small">(Microsoft)</span></li></ul>
+    <p class="small"><strong>Framework mappings:</strong> NIST SP 800-53 Rev. 5 AC-6</p>
+    <p class="small muted">Priority factors: Severity: high; Confidence: medium</p>
+  </article>
+</section>
+<section id="not-assessed">
+    <h2>Controls not assessed</h2>
+    <table><thead><tr><th>Control</th><th>Title</th><th>Technology</th><th>Severity</th><th>Status</th><th>Reason</th></tr></thead><tbody>
+          <tr><td class="mono">AZ-DEF-001</td><td>Microsoft Defender for Cloud plans are enabled for servers</td><td>Azure</td><td><span class="badge sev-medium">medium</span></td><td><span class="badge status-not_assessed">Not assessed</span></td><td class="small">Dataset azure.defenderPlans was not collected (module Azure was not selected).</td></tr><tr><td class="mono">GPO-PWD-001</td><td>Group Policy Preferences do not contain stored passwords</td><td>Group Policy</td><td><span class="badge sev-critical">critical</span></td><td><span class="badge status-error">Error</span></td><td class="small">The SYSVOL scan dataset failed schema validation.</td></tr>
+        </tbody></table>
+  </section>
+<section id="all-results">
+    <h2>All control results</h2>
+    <table><thead><tr><th>Control</th><th>Title</th><th>Technology</th><th>Severity</th><th>Status</th><th>Reason</th></tr></thead><tbody>
+          <tr><td class="mono">ADCS-TPL-001</td><td>Certificate templates allow requesters to supply the subject (ESC1)</td><td>AD CS / PKI</td><td><span class="badge sev-critical">critical</span></td><td><span class="badge status-fail">Fail</span></td><td class="small">1 enabled template allows enrollee-supplied subject and client authentication for broad groups.</td></tr><tr><td class="mono">ENTRA-CA-001</td><td>Legacy authentication is not blocked by Conditional Access</td><td>Entra ID</td><td><span class="badge sev-high">high</span></td><td><span class="badge status-fail">Fail</span></td><td class="small">No enabled policy blocks legacy authentication client apps for all users.</td></tr><tr><td class="mono">M365-EXO-004</td><td>Mailboxes forward mail to external domains</td><td>Microsoft 365</td><td><span class="badge sev-medium">medium</span></td><td><span class="badge status-fail">Fail</span></td><td class="small">3 mailboxes forward to external recipients.</td></tr><tr><td class="mono">AD-KRB-001</td><td>KRBTGT account password has not been changed in over 180 days</td><td>Active Directory</td><td><span class="badge sev-medium">medium</span></td><td><span class="badge status-fail">Fail</span></td><td class="small">The KRBTGT password was last set 1,204 days before the assessment.</td></tr><tr><td class="mono">ENTRA-APP-002</td><td>Applications hold high-privilege Microsoft Graph application permissions</td><td>Entra ID</td><td><span class="badge sev-high">high</span></td><td><span class="badge status-review">Review</span></td><td class="small">2 service principals hold Directory.ReadWrite.All or equivalent application permissions.</td></tr><tr><td class="mono">ENTRA-SD-001</td><td>Security defaults or Conditional Access protect sign-ins</td><td>Entra ID</td><td><span class="badge sev-high">high</span></td><td><span class="badge status-pass">Pass</span></td><td class="small">Conditional Access is in use, so security defaults are not required.</td></tr><tr><td class="mono">HYB-SYNC-001</td><td>Directory synchronization is healthy</td><td>Hybrid identity</td><td><span class="badge sev-medium">medium</span></td><td><span class="badge status-pass">Pass</span></td><td class="small">Last synchronization completed 18 minutes before collection.</td></tr><tr><td class="mono">AZ-DEF-001</td><td>Microsoft Defender for Cloud plans are enabled for servers</td><td>Azure</td><td><span class="badge sev-medium">medium</span></td><td><span class="badge status-not_assessed">Not assessed</span></td><td class="small">Dataset azure.defenderPlans was not collected (module Azure was not selected).</td></tr><tr><td class="mono">INT-CMP-001</td><td>Devices without a compliance policy are marked not compliant</td><td>Intune</td><td><span class="badge sev-medium">medium</span></td><td><span class="badge status-not_applicable">Not applicable</span></td><td class="small">The tenant has no Intune licence.</td></tr><tr><td class="mono">GPO-PWD-001</td><td>Group Policy Preferences do not contain stored passwords</td><td>Group Policy</td><td><span class="badge sev-critical">critical</span></td><td><span class="badge status-error">Error</span></td><td class="small">The SYSVOL scan dataset failed schema validation.</td></tr>
+        </tbody></table>
+  </section>
+<section id="evidence">
+    <h2>Evidence integrity</h2>
+    <p class="ok"><strong>All evidence files listed in the manifest were present and matched their SHA-256 hashes.</strong></p>
+    <p class="small">Manifest SHA-256: <span class="mono">f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6</span>. SHA-256 verification detects accidental corruption and
+    modification after collection; the package is not digitally signed.</p>
+    <table><thead><tr><th>File</th><th>Dataset</th><th>Integrity</th><th>Schema</th><th>Collection status</th><th>SHA-256</th></tr></thead><tbody>
+      <tr><td class="mono">entra/conditionalAccessPolicies.json</td><td>entra.conditionalAccessPolicies</td><td>verified</td>
+          <td>valid</td><td>Success</td><td class="mono small">a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1</td></tr><tr><td class="mono">entra/servicePrincipals.json</td><td>entra.servicePrincipals</td><td>verified</td>
+          <td>valid</td><td>Partial</td><td class="mono small">b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2</td></tr><tr><td class="mono">gpo/sysvolPasswordArtifacts.json</td><td>gpo.sysvolPasswordArtifacts</td><td>verified</td>
+          <td>invalid</td><td>Success</td><td class="mono small">0909090909090909090909090909090909090909090909090909090909090909</td></tr>
+    </tbody></table>
+    <h3>Collection errors and warnings</h3>
+    <table><thead><tr><th>Level</th><th>Module</th><th>Dataset</th><th>Origin</th><th>Code</th><th>Message</th></tr></thead><tbody>
+          <tr><td>warning</td><td>Entra</td><td>entra.servicePrincipals</td><td>collector</td><td class="mono">GraphThrottled</td><td>Microsoft Graph throttled the request; collection of servicePrincipals is partial.</td></tr><tr><td>error</td><td>GPO</td><td>gpo.sysvolPasswordArtifacts</td><td>ingestion</td><td class="mono">SchemaValidationFailed</td><td>gpo.sysvolPasswordArtifacts did not match the dataset schema.</td></tr>
+        </tbody></table>
+    <h3>Dataset availability</h3>
+    <table><thead><tr><th>Dataset</th><th>Module</th><th>State</th><th>Reason</th></tr></thead><tbody>
+      <tr><td>Conditional Access policies <span class="muted small mono">entra.conditionalAccessPolicies</span></td><td>Entra</td><td>available</td><td class="small">Collected successfully.</td></tr><tr><td>Service principals <span class="muted small mono">entra.servicePrincipals</span></td><td>Entra</td><td>partial</td><td class="small">Some pages could not be collected.</td></tr><tr><td>Defender for Cloud plans <span class="muted small mono">azure.defenderPlans</span></td><td>Azure</td><td>unavailable</td><td class="small">Module Azure was not collected.</td></tr>
+    </tbody></table>
+  </section>
+<section id="inventory">
+    <h2>Environment inventory</h2>
+    <table><thead><tr><th>Technology</th><th>Item</th><th>Count</th></tr></thead><tbody>
+      <tr><td>Entra ID</td><td>Users</td><td>1342</td></tr><tr><td>Entra ID</td><td>Guest users</td><td>87</td></tr><tr><td>Entra ID</td><td>Conditional Access policies</td><td>3</td></tr><tr><td>Azure</td><td>Subscriptions</td><td>not collected</td></tr><tr><td>Active Directory</td><td>Computers</td><td>412</td></tr>
+    </tbody></table>
+  </section>
+<section id="frameworks">
+    <h2>Framework mapping of findings</h2>
+    <p class="muted small">Mappings reference framework identifiers only. They indicate related requirements, not certification or compliance status.</p>
+    <table><thead><tr><th>Framework</th><th>Identifier</th><th>Findings</th></tr></thead><tbody>
+          <tr><td>CISA Secure Cloud Business Applications (SCuBA) baselines</td><td class="mono">MS.AAD.1.1v1</td><td>ENTRA-CA-001</td></tr><tr><td>CISA Secure Cloud Business Applications (SCuBA) baselines</td><td class="mono">MS.EXO.1.1v1</td><td>M365-EXO-004</td></tr><tr><td>Microsoft cloud security benchmark</td><td class="mono">IM-7</td><td>ENTRA-CA-001</td></tr><tr><td>MITRE ATT&amp;CK (Enterprise)</td><td class="mono">T1649</td><td>ADCS-TPL-001</td></tr><tr><td>NIST SP 800-53 Rev. 5</td><td class="mono">AC-6</td><td>ADCS-TPL-001, AD-KRB-001, ENTRA-APP-002</td></tr>
+        </tbody></table>
+  </section>
+<section id="method">
+  <h2>How this assessment was produced</h2>
+  <ul>
+    <li>Evidence was collected by read-only collectors and verified against the SHA-256 hashes in the evidence manifest.</li>
+    <li>Every result was produced by deterministic, version-controlled rules. No AI or heuristic scoring determined any result.</li>
+    <li>Missing, failed or unauthorized evidence results in "Not assessed", never in "Pass".</li>
+    <li>"Review" means the evidence shows a configuration that needs an administrator's judgement.</li>
+    <li>Remediation guidance must be tested before production changes. AdminSecOps never changes your environment.</li>
+  </ul>
+</section>
+</main>
+<footer class="muted small">Generated by ConfigReview engine 0.1.0.</footer>
+</body>
+</html>
