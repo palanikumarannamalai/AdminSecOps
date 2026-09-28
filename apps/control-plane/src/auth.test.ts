@@ -185,6 +185,7 @@ describe('resource connector authentication', () => {
       expect(url.pathname).toBe(`/${tenant}/oauth2/v2.0/authorize`);
       expect(url.searchParams.get('scope')).toBe('https://management.azure.com/user_impersonation openid profile offline_access');
       expect(url.searchParams.get('prompt')).toBeNull();
+      expect(new URL(auth.beginConnect('exchange', { tenantId: tenant, userId: user, sessionHash: 'h' }).url).searchParams.get('prompt')).toBe('consent');
       expect(new URL(auth.beginConnect('exchange', { tenantId: tenant, userId: user, sessionHash: 'h' }).url).searchParams.get('scope')).toBe('https://outlook.office365.com/.default openid profile offline_access');
       expect(url.searchParams.get('code_challenge_method')).toBe('S256');
       expect(auth.purposeOf(begin.cookie)).toBe('connect');

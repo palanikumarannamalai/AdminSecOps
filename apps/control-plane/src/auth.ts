@@ -295,7 +295,7 @@ export function createAuth(config: Config) {
       const authority = authorityFor(session.tenantId);
       const transaction: ConnectTransaction = { state: randomToken(), nonce: randomToken(), verifier: randomToken(), expiresAt: Date.now() + 600_000, tenantId: session.tenantId, purpose: 'connect', connector, userId: session.userId, sessionHash: session.sessionHash };
       const url = new URL(`${authority}/oauth2/v2.0/authorize`);
-      url.search = new URLSearchParams({ client_id: config.clientId, response_type: 'code', response_mode: 'query', redirect_uri: redirectUri, scope: connectorScopes(connector), state: transaction.state, nonce: transaction.nonce, code_challenge: createHash('sha256').update(transaction.verifier).digest('base64url'), code_challenge_method: 'S256', ...(options.consent === true ? { prompt: 'consent' } : {}) }).toString();
+      url.search = new URLSearchParams({ client_id: config.clientId, response_type: 'code', response_mode: 'query', redirect_uri: redirectUri, scope: connectorScopes(connector), state: transaction.state, nonce: transaction.nonce, code_challenge: createHash('sha256').update(transaction.verifier).digest('base64url'), code_challenge_method: 'S256', ...(connector === 'exchange' || options.consent === true ? { prompt: 'consent' } : {}) }).toString();
       return { url: url.toString(), cookie: seal(transaction, config.tokenEncryptionKey), connector };
     },
     /**
