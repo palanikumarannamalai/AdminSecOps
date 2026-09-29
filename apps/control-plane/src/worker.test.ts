@@ -4,6 +4,7 @@ import { loadConfig } from './config.js';
 import { encryptConnectorTokens, encryptTokens } from './auth.js';
 import { processNext } from './worker.js';
 import { collectOnline } from './collector/index.js';
+import { runAssessment } from '@adminsecops/engine';
 import type { PostgresStore } from './store.js';
 
 vi.mock('./collector/index.js', () => ({ collectOnline: vi.fn(() => Promise.resolve({})) }));
@@ -11,6 +12,7 @@ vi.mock('@adminsecops/engine', () => ({ runAssessment: vi.fn(() => ({ assessment
 const tenant = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 const user = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 const config = loadConfig({ PUBLIC_URL: 'https://test.example', AZURE_TENANT_ID: tenant, AZURE_CLIENT_ID: tenant, AZURE_CLIENT_SECRET: 'test-only', TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 1).toString('base64'), DATABASE_URL: 'postgresql://localhost/test', GRAPH_SCOPES: 'User.Read', OPEN_TENANT_ONBOARDING: 'true' });
+const usageConfig = { ...config, usage: { ...config.usage, counting: true, hashSalt: 'usage-salt-for-tests-only-0123456789abc' } };
 
 describe('worker authorization', () => {
   it('refuses legacy/expired role authorization before accessing Graph', async () => {
@@ -54,5 +56,43 @@ describe('worker authorization', () => {
     expect(collectOnline).toHaveBeenCalledWith(expect.objectContaining({ tenantId: tenant, grantedScopes: ['Policy.Read.All'] }));
     expect(complete).toHaveBeenCalled();
     expect(fail).not.toHaveBeenCalled();
+  });
+
+  const fresh = () => encryptTokens({ accessToken: 'secret', expiresAt: Date.now() + 600_000, authorizationExpiresAt: Date.now() + 60_000 }, config.tokenEncryptionKey);
+  it('completes the assessment when the usage write fails', async () => {
+    vi.mocked(runAssessment).mockReturnValueOnce({ assessmentId: 'result', summary: { controlsEvaluated: 3 }, evidence: { datasets: [{ datasetId: 'entra.users', module: 'Entra', state: 'available' }] } } as never);
+    const recordUsage = vi.fn(() => Promise.reject(new Error('database down')));
+    const complete = vi.fn(() => Promise.resolve());
+    const fail = vi.fn(() => Promise.resolve(true));
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const store = { claim: () => Promise.resolve({ id: 'job', tenantId: tenant, userId: user, encryptedTokens: fresh() }), complete, fail, hasUsageConsent: () => Promise.resolve(true), recordUsage } as unknown as PostgresStore;
+    expect(await processNext(store, usageConfig)).toBe(true);
+    await vi.waitFor(() => expect(error).toHaveBeenCalledWith('Usage counter update failed.'));
+    expect(recordUsage).toHaveBeenCalledWith({ assessments_completed: 1, controls_evaluated: 3, collector_entra: 1 }, expect.stringMatching(/^[0-9a-f]{64}$/));
+    expect(complete).toHaveBeenCalled();
+    expect(fail).not.toHaveBeenCalled();
+    expect(error.mock.calls.flat().join(' ')).not.toContain(tenant);
+    error.mockRestore();
+  });
+
+  it('counts failures by a fixed code and never the error text', async () => {
+    const cases: [typeof config, string, () => void, string][] = [
+      [{ ...config, openTenantOnboarding: false, allowedTenantUsers: {} }, fresh(), () => undefined, 'failed_NOT_APPROVED'],
+      [config, encryptTokens({ accessToken: 'secret', expiresAt: Date.now() + 600_000, authorizationExpiresAt: 0 }, config.tokenEncryptionKey), () => undefined, 'failed_CONSENT_OR_TOKEN'],
+      [config, fresh(), () => { vi.mocked(collectOnline).mockRejectedValueOnce(new Error('Graph returned PRIVATE-DETAIL')); }, 'failed_COLLECTION_FAILED'],
+      [config, fresh(), () => { vi.mocked(collectOnline).mockRejectedValueOnce(Object.assign(new Error('cancelled'), { name: 'CollectionCancelledError' })); }, 'failed_TIMEOUT'],
+    ];
+    for (const [cfg, encryptedTokens, arrange, counter] of cases) {
+      arrange();
+      const recordUsage = vi.fn(() => Promise.resolve());
+      const store = { claim: () => Promise.resolve({ id: 'job', tenantId: tenant, userId: user, encryptedTokens }), complete: vi.fn(() => Promise.resolve()), fail: vi.fn(() => Promise.resolve(true)), hasUsageConsent: () => Promise.resolve(true), recordUsage } as unknown as PostgresStore;
+      await processNext(store, { ...cfg, usage: usageConfig.usage });
+      await vi.waitFor(() => expect(recordUsage).toHaveBeenCalledWith({ assessments_failed: 1, [counter]: 1 }, expect.stringMatching(/^[0-9a-f]{64}$/)));
+      expect(JSON.stringify(recordUsage.mock.calls)).not.toContain('PRIVATE-DETAIL');
+    }
+    // A job that cleanup already failed is not counted twice.
+    const recordUsage = vi.fn(() => Promise.resolve());
+    await processNext({ claim: () => Promise.resolve({ id: 'job', tenantId: tenant, userId: user, encryptedTokens: 'x' }), fail: vi.fn(() => Promise.resolve(false)), recordUsage } as unknown as PostgresStore, config);
+    expect(recordUsage).not.toHaveBeenCalled();
   });
 });

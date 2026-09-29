@@ -15,6 +15,11 @@ export interface Config {
   connectors: { azure: boolean; exchange: boolean };
   /** Absolute path of PowerShell 7 for the Exchange Online runner (EXCHANGE_PWSH_PATH). */
   exchangePwshPath: string | null;
+  /**
+   * Opt-in anonymous aggregate usage counters (usage.ts). Disabled unless USAGE_COUNTING=true;
+   * the distinct-organisation counter needs USAGE_HASH_SALT; GET /api/usage needs USAGE_API_SECRET.
+   */
+  usage: { counting: boolean; hashSalt: string | null; apiSecret: string | null; retentionDays: number };
 }
 
 /**
@@ -84,11 +89,21 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   // An absolute path only: the runner never resolves PowerShell through PATH.
   if (pwsh !== null && !/^(\/[\w.@+-]+)+$|^[A-Za-z]:\\[\w .@+\\-]+$/.test(pwsh)) throw new Error('EXCHANGE_PWSH_PATH must be an absolute path');
   if (connectors.exchange && pwsh === null) throw new Error('EXCHANGE_PWSH_PATH is required when the exchange connector is enabled');
+  if (env.USAGE_COUNTING !== undefined && !['true', 'false'].includes(env.USAGE_COUNTING)) throw new Error('USAGE_COUNTING must be true or false');
+  const optionalSecret = (name: string): string | null => {
+    const value = env[name]?.trim() || null;
+    if (value !== null && value.length < 32) throw new Error(`${name} must be at least 32 characters`);
+    return value;
+  };
+  const retentionDays = Number(env.USAGE_RETENTION_DAYS?.trim() || '400');
+  if (!Number.isInteger(retentionDays) || retentionDays < 1 || retentionDays > 3650) throw new Error('USAGE_RETENTION_DAYS must be a whole number of days from 1 to 3650');
+  const usage = { counting: env.USAGE_COUNTING === 'true', hashSalt: optionalSecret('USAGE_HASH_SALT'), apiSecret: optionalSecret('USAGE_API_SECRET'), retentionDays };
+  if (usage.counting && usage.hashSalt === null) throw new Error('USAGE_HASH_SALT is required when USAGE_COUNTING=true');
   return {
     port, publicUrl: publicUrl.origin, tenantId, clientId,
     clientSecret: required('AZURE_CLIENT_SECRET'), allowedUserIds: allowedTenantUsers[tenantId] ?? [], allowedTenantUsers, openTenantOnboarding,
     tokenEncryptionKey, databaseUrl: required('DATABASE_URL'), sessionTtlSeconds: 3600,
-    graphScopes, connectors, exchangePwshPath: pwsh,
+    graphScopes, connectors, exchangePwshPath: pwsh, usage,
   };
 }
 
