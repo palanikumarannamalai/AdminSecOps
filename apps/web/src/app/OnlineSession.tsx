@@ -8,6 +8,7 @@ import { useAsync } from '../hooks/useAsync';
 const sessionSchema = z.object({
   authenticated: z.literal(true),
   onPremEnabled: z.boolean().optional(),
+  usageAnalytics: z.object({ available: z.boolean(), consented: z.boolean() }).optional(),
   user: z.object({ displayName: z.string(), tenantId: z.string(), userId: z.string() }),
   connection: z.object({
     connected: z.boolean(),

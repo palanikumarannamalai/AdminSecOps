@@ -10,6 +10,7 @@ import { CONNECTOR_IDS, connectorFailureCode, createAuth, decryptTokens, encrypt
 import { ONLINE_REQUIRED_GRAPH_PERMISSIONS, type ExchangeRunner } from './collector/index.js';
 import { connectorLabel, describeConnectors, prepareJobConnectors } from './connectors.js';
 import type { Store, StoredSession, Remediation } from './store.js';
+import { UsageCounters, usageSecretMatches } from './usage.js';
 
 const sessionName = '__Host-adminsecops';
 const transactionName = '__Host-adminsecops-login';
@@ -38,7 +39,7 @@ function connectorSignInError(error: unknown, description: unknown): string {
 
 const isConnectorId = (value: unknown): value is ConnectorId => typeof value === 'string' && (CONNECTOR_IDS as readonly string[]).includes(value);
 
-export async function buildServer({ config, store, exchangeRunner, onPremStore }: { config: Config; store: Store; exchangeRunner?: ExchangeRunner; onPremStore?: OnPremStore }) {
+export async function buildServer({ config, store, exchangeRunner, onPremStore, usage = new UsageCounters(store, config.usage) }: { config: Config; store: Store; exchangeRunner?: ExchangeRunner; onPremStore?: OnPremStore; usage?: UsageCounters }) {
   const app = Fastify({ logger: false, bodyLimit: 16_384, trustProxy: false });
   const auth = createAuth(config);
   const sessions = new WeakMap<FastifyRequest, StoredSession>();
@@ -63,7 +64,7 @@ export async function buildServer({ config, store, exchangeRunner, onPremStore }
     reply.header('Cache-Control', 'no-store').header('X-Content-Type-Options', 'nosniff').header('Referrer-Policy', 'no-referrer').header('X-Frame-Options', 'DENY').header('Strict-Transport-Security', 'max-age=31536000');
     const route = request.url.split('?')[0] ?? '';
     if (onPremStore && route === '/api/onprem/ingest' && request.method === 'POST') return;
-    if (route === '/api/health' || !route.startsWith('/api/') && route !== '/auth/logout' && !route.startsWith('/auth/connect/')) return;
+    if (route === '/api/health' || route === '/api/usage' || !route.startsWith('/api/') && route !== '/auth/logout' && !route.startsWith('/auth/connect/')) return;
     const token = readCookie(request, sessionName);
     if (!token || !/^[\w-]{43}$/.test(token)) throw failure(401, 'Sign in required');
     const current = await store.getSession(hashToken(token));
@@ -77,6 +78,15 @@ export async function buildServer({ config, store, exchangeRunner, onPremStore }
   });
   if (onPremStore) registerOnPrem(app, onPremStore, session);
   app.get('/api/health', () => ({ status: 'ok' }));
+  app.get<{ Querystring: { days?: string } }>('/api/usage', async (request, reply) => {
+    const secret=config.usage.apiSecret;
+    if(!config.usage.counting||!secret) throw failure(404,'Not found');
+    if(!usageSecretMatches(request.headers.authorization,secret)) return reply.code(401).header('WWW-Authenticate','Bearer').send({error:{code:'UNAUTHENTICATED',message:'A valid usage API secret is required'}});
+    const raw:unknown=request.query.days;
+    if(raw!==undefined&&(typeof raw!=='string'||!/^(0|[1-9][0-9]{0,2})$/.test(raw)||Number(raw)>400)) throw failure(400,'days must be a whole number from 0 to 400');
+    const days=raw===undefined?30:Number(raw);
+    return {service:'configreview',...await store.usageSummary(days)};
+  });
   app.get<{ Querystring: { tenantId?: string; consent?: string } }>('/auth/login', async (request, reply) => {
     throttle(`login:${request.ip}`, 30);
     const requestedTenant = request.query.tenantId ?? (config.openTenantOnboarding ? 'organizations' : config.tenantId);
@@ -162,7 +172,15 @@ export async function buildServer({ config, store, exchangeRunner, onPremStore }
     // Scopes the online collector uses that were not granted (when Microsoft reported grants) or not requested by this deployment.
     const missingScopes = ONLINE_REQUIRED_GRAPH_PERMISSIONS.filter(scope => granted !== null ? !granted.includes(scope) : !requested.has(scope));
     const connectors = await describeConnectors(config, current, exchangeRunner);
-    return { authenticated: true, onPremEnabled: onPremStore !== undefined, user: { displayName: current.displayName, tenantId: current.tenantId, userId: current.userId }, connection: { connected: true, requiredScopes: ONLINE_REQUIRED_GRAPH_PERMISSIONS, grantedScopes: granted, missingScopes }, connectors };
+    return { authenticated: true, onPremEnabled: onPremStore !== undefined, usageAnalytics: { available: config.usage.counting, consented: config.usage.counting && await store.hasUsageConsent(current.tenantId) }, user: { displayName: current.displayName, tenantId: current.tenantId, userId: current.userId }, connection: { connected: true, requiredScopes: ONLINE_REQUIRED_GRAPH_PERMISSIONS, grantedScopes: granted, missingScopes }, connectors };
+  });
+  app.post('/api/usage-consent',async(request,reply)=>{
+    const current=session(request);
+    const body=request.body as {consented?:unknown}|undefined;
+    if(!config.usage.counting) throw failure(404,'Usage analytics are not enabled');
+    if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).length!==1||typeof body.consented!=='boolean') throw failure(400,'consented must be true or false');
+    await store.setUsageConsent(current.tenantId,current.userId,body.consented);
+    return reply.code(204).send();
   });
   app.get('/api/jobs', async request => ({ jobs: await store.listJobs(session(request).tenantId) }));
   app.post('/api/jobs', async (request, reply) => {
@@ -179,7 +197,11 @@ export async function buildServer({ config, store, exchangeRunner, onPremStore }
     // Each connector is refreshed separately; an unusable one is recorded for the job instead of failing it.
     const connectors = await prepareJobConnectors(auth, config, current);
     await store.putSession({ ...current, encryptedTokens, encryptedConnectors: connectors.session });
-    try { return reply.code(202).send(await store.createJob(current.tenantId, current.userId, encryptedTokens, connectors.job, ...(modules === undefined ? [] : [modules as string[]]))); }
+    try {
+      const job=await store.createJob(current.tenantId,current.userId,encryptedTokens,connectors.job,...(modules===undefined?[]:[modules as string[]]));
+      if(config.usage.counting&&await store.hasUsageConsent(current.tenantId)) void usage.started(current.tenantId);
+      return reply.code(202).send(job);
+    }
     catch (error) {
       if ((error as { code?: string }).code === '23505') throw failure(409, 'An assessment is already queued or running for this tenant.');
       throw error;
@@ -193,8 +215,16 @@ export async function buildServer({ config, store, exchangeRunner, onPremStore }
     return result;
   }
   app.get<{ Params: { id: string } }>('/api/assessments/:id', request => assessment(request, request.params.id));
-  app.get<{ Params: { id: string } }>('/api/assessments/:id/report.json', async (request, reply) => reply.header('Content-Disposition', 'attachment; filename="assessment.json"').type('application/json').send(serializeJsonReport(buildJsonReport(await assessment(request, request.params.id)))));
-  app.get<{ Params: { id: string } }>('/api/assessments/:id/report.html', async (request, reply) => reply.header('Content-Disposition', 'attachment; filename="assessment.html"').header('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox").type('text/html').send(renderHtmlReport(await assessment(request, request.params.id))));
+  app.get<{ Params: { id: string } }>('/api/assessments/:id/report.json', async (request, reply) => {
+    const current=session(request);const report=serializeJsonReport(buildJsonReport(await assessment(request,request.params.id)));
+    if(config.usage.counting&&await store.hasUsageConsent(current.tenantId)) void usage.exported('json',current.tenantId);
+    return reply.header('Content-Disposition','attachment; filename="assessment.json"').type('application/json').send(report);
+  });
+  app.get<{ Params: { id: string } }>('/api/assessments/:id/report.html', async (request, reply) => {
+    const current=session(request);const report=renderHtmlReport(await assessment(request,request.params.id));
+    if(config.usage.counting&&await store.hasUsageConsent(current.tenantId)) void usage.exported('html',current.tenantId);
+    return reply.header('Content-Disposition','attachment; filename="assessment.html"').header('Content-Security-Policy',"default-src 'none'; style-src 'unsafe-inline'; sandbox").type('text/html').send(report);
+  });
   app.get<{ Querystring: { baseline?: string; current?: string } }>('/api/compare', async request => {
     if (!request.query.baseline || !request.query.current) throw failure(400, 'Provide baseline and current assessment IDs');
     return compareAssessments(await assessment(request, request.query.baseline), await assessment(request, request.query.current));

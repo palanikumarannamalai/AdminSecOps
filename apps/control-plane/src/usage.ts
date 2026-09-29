@@ -87,13 +87,13 @@ export class UsageCounters {
     } catch { console.error('Usage counter update failed.'); }
   }
   started(tenantId: string): Promise<void> { return this.record(() => ({ assessments_started: 1 }), tenantId); }
-  completed(result: AssessmentResult): Promise<void> {
+  completed(result: AssessmentResult, tenantId: string): Promise<void> {
     return this.record(() => {
       const increments: UsageIncrements = { assessments_completed: 1, controls_evaluated: result.summary.controlsEvaluated };
       for (const name of collectorsRan(result)) increments[`collector_${name}`] = 1;
       return increments;
-    });
+    }, tenantId);
   }
-  failed(code: FailureCode, count = 1): Promise<void> { return this.record(() => ({ assessments_failed: count, [`failed_${code}`]: count })); }
-  exported(format: ExportFormat): Promise<void> { return this.record(() => ({ [`exports_${format}`]: 1 })); }
+  failed(code: FailureCode, count = 1, tenantId?: string): Promise<void> { return this.record(() => ({ assessments_failed: count, [`failed_${code}`]: count }), tenantId); }
+  exported(format: ExportFormat, tenantId?: string): Promise<void> { return this.record(() => ({ [`exports_${format}`]: 1 }), tenantId); }
 }

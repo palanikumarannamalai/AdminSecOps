@@ -41,6 +41,25 @@ describe('Postgres tenant boundary', () => {
     const sql = String(query.mock.calls[0]?.[0]).replace(/\s+/g, ' ');
     expect(sql).toContain('CREATE TABLE IF NOT EXISTS aso_usage_daily ( day date NOT NULL, counter text NOT NULL, value bigint NOT NULL DEFAULT 0, PRIMARY KEY(day,counter))');
     expect(sql).toContain('CREATE TABLE IF NOT EXISTS aso_usage_orgs ( day date NOT NULL, org_hash text NOT NULL, PRIMARY KEY(day,org_hash))');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS aso_usage_consent');
+  });
+
+  it('stores the tenant analytics choice and writes a matching audit event transactionally', async () => {
+    const client = { query: vi.fn().mockResolvedValue({ rows: [] }), release: vi.fn() };
+    const pool = { query: vi.fn().mockResolvedValue({ rows: [{ consented: true }] }), connect: vi.fn().mockResolvedValue(client) };
+    const store = new PostgresStore(pool as unknown as Pool);
+    expect(await store.hasUsageConsent('tenant-a')).toBe(true);
+    expect(pool.query).toHaveBeenCalledWith('SELECT consented FROM aso_usage_consent WHERE tenant_id=$1', ['tenant-a']);
+    await store.setUsageConsent('tenant-a', 'user-a', false);
+    expect(client.query.mock.calls.map(([sql]) => String(sql))).toEqual([
+      'BEGIN',
+      expect.stringContaining('INSERT INTO aso_usage_consent'),
+      expect.stringContaining('INSERT INTO aso_audit'),
+      'COMMIT',
+    ]);
+    expect(client.query).toHaveBeenCalledWith(expect.stringContaining('INSERT INTO aso_usage_consent'), ['tenant-a', false, 'user-a']);
+    expect(client.query).toHaveBeenCalledWith(expect.stringContaining('INSERT INTO aso_audit'), ['tenant-a', 'user-a', 'usage.consent.withdrawn']);
+    expect(client.release).toHaveBeenCalled();
   });
 
   it('upserts allowlisted daily counters and the organisation hash only', async () => {

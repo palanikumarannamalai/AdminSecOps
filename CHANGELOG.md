@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added privacy-preserving, opt-in usage statistics for the hosted service. An authenticated
+  administrator can enable or withdraw consent for their tenant. ConfigReview records only
+  aggregate counters and a keyed tenant hash for distinct-organisation totals; it does not
+  collect tenant names, domains, users, findings or evidence. Analytics remain disabled by
+  default, use configurable retention, and the aggregate API requires a separate bearer secret.
+
 - The product UI is now ConfigReview at https://configreview.apps.palanikumar.net.
   Page titles, no-JavaScript fallback, navigation, report headings and current public guides use the new name.
   Existing evidence product markers, reportType keys, collector identifiers, npm workspace names,

@@ -70,8 +70,10 @@ Basic FTP/SCM publishing authentication is disabled; deployment uses Entra beare
 Raw collected package data is processed in memory. Derived results are stored for 30 days;
 audit events for 90 days; expired sessions and completed-job encrypted tokens are removed.
 Backups can retain deleted data until their retention expires. No billing/remediation/AI features exist.
-Anonymous aggregate usage counts (tables `aso_usage_daily` and `aso_usage_orgs`) are deleted after
-`USAGE_RETENTION_DAYS` (default 400). The same `cleanup()` pass applies all of these deletions.
+Tenant-opted-in aggregate usage counts (tables `aso_usage_daily` and `aso_usage_orgs`) are deleted
+after `USAGE_RETENTION_DAYS` (default 400). Consent is stored separately in
+`aso_usage_consent`; withdrawing it stops future counting. The same `cleanup()` pass applies all
+usage-row deletions.
 A failed or interrupted worker job is marked failed after 15 minutes; queued jobs expire after one hour.
 There is no full scheduler or cross-instance distributed API rate limiter yet.
 
@@ -97,13 +99,13 @@ The Node runtime supplies PORT. DATABASE_URL must not disable TLS certificate ve
 
 Optional usage settings (see docs/PRIVACY.md, "Usage counts in the online service"):
 
-- `USAGE_COUNTING` - `true` (default) or `false`. When on, the server keeps anonymous daily counts
+- `USAGE_COUNTING` - `true` or `false` (default). When on, the workspace offers a tenant-level
+  opt-in control and the server keeps anonymous daily counts only for tenants that opt in:
   of assessments started, completed and failed (by fixed reason code), collectors that returned data,
   controls evaluated, report downloads by format and distinct organisations. No tenant ID, domain,
   user ID, error text or finding is stored.
-- `USAGE_HASH_SALT` - at least 32 random characters. Keys the one-way hash used to count distinct
-  organisations per day. Set it whenever counting is on; without it, every other counter still runs
-  and only the distinct-organisation counter is skipped. Changing it restarts distinct counting.
+- `USAGE_HASH_SALT` - at least 32 random characters. Required when counting is on. It keys the
+  one-way hash used to count distinct organisations. Changing it restarts distinct counting.
 - `USAGE_API_SECRET` - at least 32 random characters. Enables `GET /api/usage?days=N` for the
   author's insights page. `N` is a whole number of UTC days from 0 to 400 including today (default
   30; 0 = all retained days; for example 7, 30, 90, or the day of the month for month-to-date);

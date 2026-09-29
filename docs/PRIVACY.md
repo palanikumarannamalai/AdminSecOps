@@ -32,13 +32,27 @@ and [connector permissions](ONLINE-CONNECTORS.md) before connecting a tenant, an
 app name and publisher on Microsoft's consent screen before granting (see
 [Customer activation](ONLINE-CONNECTORS.md#customer-activation)).
 
+### Optional usage statistics
+
+An authorised administrator can opt the current tenant in from the online workspace. Until
+that option is selected, ConfigReview does not add that tenant's activity to usage statistics.
+Consent can be withdrawn from the same control at any time; withdrawal stops future counting.
+
+When enabled, the service stores daily totals for assessments started, completed and failed,
+controls evaluated, collectors that returned data and report downloads by format. It also stores
+a keyed one-way hash of the tenant ID so one organisation can be counted once without retaining
+the tenant ID in analytics. The analytics records do not contain tenant names or domains, user
+identifiers, evidence, findings, report contents or error text. They stay in ConfigReview's own
+database, are available only through a separate bearer-protected aggregate endpoint and expire
+after the configured retention period (400 days by default).
+
 ## Where data goes in the local application
 
 Nowhere, by default. The collector writes an evidence package to a folder you choose.
 The local application processes it in memory on your machine and stores only the
 processed result under `%LOCALAPPDATA%\AdminSecOps\data` (or `ADMINSECOPS_DATA_DIR`).
-The raw evidence package is not copied by the application. There is no telemetry and the
-application makes no outbound network calls.
+The raw evidence package is not copied by the application. The local application has no telemetry
+and makes no outbound network calls.
 
 ## Your control
 

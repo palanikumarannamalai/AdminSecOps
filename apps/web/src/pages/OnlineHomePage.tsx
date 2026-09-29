@@ -54,6 +54,9 @@ export function OnlineHomePage() {
   const [modules,setModules]=useState(['Entra','M365','Intune','Exchange','Azure']);
   const [step,setStep]=useState(1);
   const [starting, setStarting] = useState(false);
+  const [analyticsConsent,setAnalyticsConsent]=useState(session.usageAnalytics?.consented??false);
+  const [analyticsSaving,setAnalyticsSaving]=useState(false);
+  const [analyticsMessage,setAnalyticsMessage]=useState('');
   const [revision, setRevision] = useState(0);
   const completed = useRef('');
   useEffect(() => {
@@ -86,6 +89,12 @@ export function OnlineHomePage() {
   const logout = async () => {
     try { await onlineRequest('/auth/logout', undefined, 'POST'); window.location.assign('/'); }
     catch (cause) { setError(errorMessage(cause)); }
+  };
+  const updateAnalyticsConsent=async(consented:boolean)=>{
+    setAnalyticsSaving(true);setAnalyticsMessage('');
+    try{await onlineRequest('/api/usage-consent',undefined,'POST',{consented});setAnalyticsConsent(consented);setAnalyticsMessage(consented?'Anonymous usage statistics enabled. Thank you for helping improve ConfigReview.':'Anonymous usage statistics disabled.');}
+    catch(cause){setAnalyticsMessage(errorMessage(cause));}
+    finally{setAnalyticsSaving(false);}
   };
   const missingScopes = session.connection.missingScopes ?? [];
   const connectors = session.connectors ?? [];
@@ -125,6 +134,12 @@ export function OnlineHomePage() {
       </div> : null}
       <details className="readiness-details"><summary>Switch tenant and data retention</summary><p className="muted">To switch organizations, sign out first, then sign in with the other organization's account or enter its directory ID. Each assessment uses the current signed-in tenant.</p>
       <p className="muted">Raw evidence is processed in memory. Assessment results are retained in the live database for 30 days and audit events for 90 days. Remediation tracking is retained for 90 days after its last update. Database backups may retain deleted records for up to seven additional days. Downloaded reports remain under your control. Missing permissions or unavailable datasets remain unknown; they are never treated as passing.</p></details>
+      {session.usageAnalytics?.available?<div className="notice" role="note" aria-labelledby="usage-analytics-title">
+        <p id="usage-analytics-title"><strong>Help improve ConfigReview</strong></p>
+        <label><input type="checkbox" checked={analyticsConsent} disabled={analyticsSaving} onChange={event=>void updateAnalyticsConsent(event.target.checked)}/> Share anonymous usage statistics.</label>
+        <p className="muted small">When enabled, ConfigReview counts assessments, report formats, workload coverage and one pseudonymous organisation reference. It does not add tenant names, domains, users, evidence or findings to analytics. You can withdraw consent here at any time.</p>
+        {analyticsMessage?<p role="status" className="small">{analyticsMessage}</p>:null}
+      </div>:null}
     </Panel>
     {connectors.length > 0 ? <Panel title="Additional data sources" id="connectors">
       <p>Each source needs its own Microsoft sign-in and consent, uses your signed-in permissions, and only reads configuration. Sources that are not connected are reported as not assessed; they never count as passing.</p>
@@ -160,6 +175,7 @@ export function OnlineAboutPage() {
     <p>ConfigReview collects supported Microsoft Graph evidence (Microsoft Entra ID, SharePoint and OneDrive tenant settings, Teams app and per-team settings, and Intune compliance configuration) from your signed-in Microsoft organization, and public SPF and DMARC DNS records of its mail domains. Azure subscriptions and Exchange Online are read only after you connect them separately. Sign-in requires a supported administrator or reader role, and a tenant administrator must consent on Microsoft's screen to the permissions. The hosted backend evaluates the existing control library and stores assessment results in PostgreSQL.</p>
     <p>Evidence can contain user names, object identifiers and security configuration. Access requires Microsoft sign-in. Downloaded reports also contain this information; share them only with authorized recipients.</p>
     <p>Assessment results are retained in the live database for 30 days and audit events for 90 days. Remediation tracking is retained for 90 days after its last update. Database backups may retain deleted records for up to seven additional days. Downloaded reports remain under your control.</p>
+    <p>Anonymous usage statistics are optional. An authorised administrator can enable or disable them in the workspace. When enabled, ConfigReview counts assessments, workload coverage, controls evaluated and report formats, plus one keyed tenant hash used only to count organisations. Analytics never include tenant names, domains, users, evidence or findings, and expire after the configured retention period.</p>
     <p>This release does not modify tenant settings. It does not assess every Microsoft workload, provide a security certification, or treat uncollected evidence as a passing check.</p>
   </Panel></div>;
 }

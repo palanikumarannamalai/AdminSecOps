@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { Pool } from 'pg';
 import type { AssessmentResult } from '@adminsecops/schemas';
+import { USAGE_COUNTERS, isUsageCounter, type UsageIncrements, type UsageStore, type UsageSummary } from './usage.js';
 
 export interface StoredSession {
   idHash: string; tenantId: string; userId: string; displayName: string;
@@ -15,7 +16,7 @@ export interface Job {
   createdAt: string; completedAt: string|null; assessmentId: string|null; error: string|null;
 }
 export interface Remediation { owner:string; dueDate:string; notes:string; exceptionExpiry:string; status:'open'|'in-progress'|'exception'|'resolved'; verificationAssessmentId:string; updatedAt?:string }
-export interface Store {
+export interface Store extends UsageStore {
   getRemediation?(tenantId:string,controlId:string):Promise<Remediation|null>;
   saveRemediation?(tenantId:string,userId:string,controlId:string,value:Remediation):Promise<void>;
   putSession(session: StoredSession): Promise<void>;
@@ -25,7 +26,11 @@ export interface Store {
   listJobs(tenantId:string): Promise<Job[]>;
   listAssessments(tenantId:string): Promise<AssessmentResult[]>;
   getAssessment(tenantId:string,id:string): Promise<AssessmentResult|null>;
+  hasUsageConsent(tenantId:string):Promise<boolean>;
+  setUsageConsent(tenantId:string,userId:string,consented:boolean):Promise<void>;
+  usageSummary(days:number):Promise<UsageSummary>;
 }
+export function utcDay(offsetDays=0,now=Date.now()):string {return new Date(now+offsetDays*86_400_000).toISOString().slice(0,10);}
 export interface ClaimedJob { id:string; tenantId:string; userId:string; encryptedTokens:string; encryptedConnectors?:string|null; modules?:string[] }
 export class PostgresStore implements Store {
   constructor(readonly pool:Pool) {}
@@ -48,6 +53,13 @@ export class PostgresStore implements Store {
       CREATE TABLE IF NOT EXISTS aso_audit (
         id bigserial PRIMARY KEY, tenant_id uuid NOT NULL, user_id uuid,
         action text NOT NULL, target_id text, created_at timestamptz NOT NULL DEFAULT now());
+      CREATE TABLE IF NOT EXISTS aso_usage_consent (
+        tenant_id uuid PRIMARY KEY, consented boolean NOT NULL DEFAULT false,
+        user_id uuid NOT NULL, updated_at timestamptz NOT NULL DEFAULT now());
+      CREATE TABLE IF NOT EXISTS aso_usage_daily (
+        day date NOT NULL, counter text NOT NULL, value bigint NOT NULL DEFAULT 0, PRIMARY KEY(day,counter));
+      CREATE TABLE IF NOT EXISTS aso_usage_orgs (
+        day date NOT NULL, org_hash text NOT NULL, PRIMARY KEY(day,org_hash));
     `);
     const columns=await this.pool.query<{column_name:string}>("SELECT column_name FROM information_schema.columns WHERE table_schema=current_schema() AND table_name='aso_jobs' AND column_name IN ('modules','progress')");
     const names=new Set(columns.rows.map(r=>r.column_name));
@@ -100,6 +112,19 @@ export class PostgresStore implements Store {
     const r=await this.pool.query<{result:AssessmentResult}>('SELECT result FROM aso_assessments WHERE tenant_id=$1 AND id=$2',[tenantId,id]);
     return (r.rows[0]?.result)??null;
   }
+  async hasUsageConsent(tenantId:string):Promise<boolean> {
+    const r=await this.pool.query<{consented:boolean}>('SELECT consented FROM aso_usage_consent WHERE tenant_id=$1',[tenantId]);
+    return r.rows[0]?.consented===true;
+  }
+  async setUsageConsent(tenantId:string,userId:string,consented:boolean):Promise<void> {
+    const c=await this.pool.connect();
+    try {
+      await c.query('BEGIN');
+      await c.query('INSERT INTO aso_usage_consent(tenant_id,consented,user_id) VALUES($1,$2,$3) ON CONFLICT(tenant_id) DO UPDATE SET consented=$2,user_id=$3,updated_at=now()',[tenantId,consented,userId]);
+      await c.query("INSERT INTO aso_audit(tenant_id,user_id,action) VALUES($1,$2,$3)",[tenantId,userId,consented?'usage.consent.granted':'usage.consent.withdrawn']);
+      await c.query('COMMIT');
+    } catch(error) {await c.query('ROLLBACK');throw error;} finally {c.release();}
+  }
   async claim():Promise<ClaimedJob|null> {
     // One atomic statement claims a durable job. Multiple processes cannot claim the same row.
     const r=await this.pool.query(`UPDATE aso_jobs SET status='running',started_at=now()
@@ -123,16 +148,36 @@ export class PostgresStore implements Store {
       await c.query('COMMIT');
     } catch(e){await c.query('ROLLBACK');throw e;} finally {c.release();}
   }
-  async fail(job:ClaimedJob,message:string):Promise<void> {
-    await this.pool.query("UPDATE aso_jobs SET status='failed',completed_at=now(),error=$3,encrypted_tokens=NULL,encrypted_connectors=NULL WHERE id=$1 AND tenant_id=$2 AND status='running'",[job.id,job.tenantId,message]);
+  async fail(job:ClaimedJob,message:string):Promise<boolean> {
+    const r=await this.pool.query("UPDATE aso_jobs SET status='failed',completed_at=now(),error=$3,encrypted_tokens=NULL,encrypted_connectors=NULL WHERE id=$1 AND tenant_id=$2 AND status='running'",[job.id,job.tenantId,message]);
+    return r.rowCount===1;
   }
-  async cleanup():Promise<void> {
+  async recordUsage(increments:UsageIncrements,orgHash:string|null=null):Promise<void> {
+    const counters=Object.keys(increments);
+    if(!counters.every(isUsageCounter)) throw new Error('Unknown usage counter');
+    const day=utcDay();
+    if(counters.length) await this.pool.query('INSERT INTO aso_usage_daily(day,counter,value) SELECT $1::date,c,v FROM unnest($2::text[],$3::bigint[]) AS t(c,v) ON CONFLICT(day,counter) DO UPDATE SET value=aso_usage_daily.value+EXCLUDED.value',[day,counters,counters.map(counter=>increments[counter])]);
+    if(orgHash) await this.pool.query('INSERT INTO aso_usage_orgs(day,org_hash) VALUES($1::date,$2) ON CONFLICT DO NOTHING',[day,orgHash]);
+  }
+  async usageSummary(days:number):Promise<UsageSummary> {
+    const from=days>0?utcDay(1-days):null;
+    const rows=await this.pool.query<{day:string;counter:string;value:string}>("SELECT to_char(day,'YYYY-MM-DD') AS day,counter,value::text AS value FROM aso_usage_daily WHERE $1::date IS NULL OR day>=$1::date ORDER BY day,counter",[from]);
+    const orgs=await this.pool.query<{n:string}>('SELECT count(DISTINCT org_hash)::text AS n FROM aso_usage_orgs WHERE $1::date IS NULL OR day>=$1::date',[from]);
+    const totals:Record<string,number>=Object.fromEntries(USAGE_COUNTERS.map(counter=>[counter,0]));
+    const byDay=new Map<string,Record<string,number>>();
+    for(const row of rows.rows){if(!isUsageCounter(row.counter))continue;const value=Number(row.value);totals[row.counter]=(totals[row.counter]??0)+value;const counters=byDay.get(row.day)??{};counters[row.counter]=value;byDay.set(row.day,counters);}
+    return {from,to:utcDay(),totals,distinctOrganisations:Number(orgs.rows[0]?.n??0),days:[...byDay].map(([day,counters])=>({day,counters}))};
+  }
+  async cleanup(usageRetentionDays=400):Promise<{timedOut:number;queueExpired:number}> {
     await this.pool.query("DELETE FROM aso_remediations WHERE updated_at<now()-interval '90 days'");
     await this.pool.query('DELETE FROM aso_sessions WHERE expires_at<now()');
-    await this.pool.query("UPDATE aso_jobs SET status='failed',error='The worker stopped or exceeded the time limit. Please start another assessment.',completed_at=now(),encrypted_tokens=NULL,encrypted_connectors=NULL WHERE status='running' AND started_at<now()-interval '15 minutes'");
-    await this.pool.query("UPDATE aso_jobs SET status='failed',error='The queued job expired. Sign in and start another assessment.',completed_at=now(),encrypted_tokens=NULL,encrypted_connectors=NULL WHERE status='queued' AND created_at<now()-interval '1 hour'");
+    const timedOut=await this.pool.query("UPDATE aso_jobs SET status='failed',error='The worker stopped or exceeded the time limit. Please start another assessment.',completed_at=now(),encrypted_tokens=NULL,encrypted_connectors=NULL WHERE status='running' AND started_at<now()-interval '15 minutes'");
+    const queueExpired=await this.pool.query("UPDATE aso_jobs SET status='failed',error='The queued job expired. Sign in and start another assessment.',completed_at=now(),encrypted_tokens=NULL,encrypted_connectors=NULL WHERE status='queued' AND created_at<now()-interval '1 hour'");
     await this.pool.query("DELETE FROM aso_assessments WHERE created_at<now()-interval '30 days'");
     await this.pool.query("DELETE FROM aso_jobs WHERE completed_at<now()-interval '30 days'");
     await this.pool.query("DELETE FROM aso_audit WHERE created_at<now()-interval '90 days'");
+    await this.pool.query('DELETE FROM aso_usage_daily WHERE day<$1::date',[utcDay(-usageRetentionDays)]);
+    await this.pool.query('DELETE FROM aso_usage_orgs WHERE day<$1::date',[utcDay(-usageRetentionDays)]);
+    return {timedOut:timedOut.rowCount??0,queueExpired:queueExpired.rowCount??0};
   }
 }

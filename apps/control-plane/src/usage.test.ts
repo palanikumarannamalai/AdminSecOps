@@ -74,8 +74,8 @@ describe('usage counters', () => {
     } as unknown as AssessmentResult;
     expect(collectorsRan(result)).toEqual(['entra', 'intune', 'dns']);
     const recordUsage = vi.fn(() => Promise.resolve());
-    await new UsageCounters({ recordUsage }, { counting: true, hashSalt: salt }).completed(result);
-    expect(recordUsage).toHaveBeenCalledWith({ assessments_completed: 1, controls_evaluated: 42, collector_entra: 1, collector_intune: 1, collector_dns: 1 }, null);
+    await new UsageCounters({ recordUsage }, { counting: true, hashSalt: salt }).completed(result, tenant);
+    expect(recordUsage).toHaveBeenCalledWith({ assessments_completed: 1, controls_evaluated: 42, collector_entra: 1, collector_intune: 1, collector_dns: 1 }, hashOrganisation(tenant, salt));
   });
 
   it('classifies failures by stage, and cancelled or timed-out collection as TIMEOUT', () => {
@@ -100,19 +100,19 @@ describe('usage counters', () => {
 
   it('counts report exports by format only after the assessment is found', async () => {
     const user = 'aaaaaaaa-0000-4000-8000-000000000002';
-    const config = loadConfig({ PUBLIC_URL: 'https://admin.example.com', AZURE_TENANT_ID: tenant, AZURE_CLIENT_ID: 'aaaaaaaa-0000-4000-8000-000000000003', AZURE_CLIENT_SECRET: 'test-only', ALLOWED_USER_IDS: user, TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 1).toString('base64'), DATABASE_URL: 'postgresql://localhost/test', GRAPH_SCOPES: 'User.Read' });
+    const config = loadConfig({ PUBLIC_URL: 'https://admin.example.com', AZURE_TENANT_ID: tenant, AZURE_CLIENT_ID: 'aaaaaaaa-0000-4000-8000-000000000003', AZURE_CLIENT_SECRET: 'test-only', ALLOWED_USER_IDS: user, TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 1).toString('base64'), DATABASE_URL: 'postgresql://localhost/test', GRAPH_SCOPES: 'User.Read', USAGE_COUNTING: 'true', USAGE_HASH_SALT: salt });
     const token = 'a'.repeat(43);
     const session = { idHash: hashToken(token), tenantId: tenant, userId: user, displayName: 'Test Admin', expiresAt: new Date(Date.now() + 60_000), encryptedTokens: encryptTokens({ accessToken: 't', expiresAt: Date.now() + 600_000 }, config.tokenEncryptionKey) };
     const recordUsage = vi.fn(() => Promise.resolve());
     const id = 'aaaaaaaa-0000-4000-8000-000000000004';
     const getAssessment = vi.fn((_tenant: string, requested: string) => Promise.resolve(requested === id ? { assessmentId: id } : null));
-    const store = { getSession: () => Promise.resolve(session), getAssessment, recordUsage } as unknown as Store;
+    const store = { getSession: () => Promise.resolve(session), getAssessment, hasUsageConsent: () => Promise.resolve(true), recordUsage } as unknown as Store;
     const app = await buildServer({ config, store });
     const headers = { cookie: `__Host-adminsecops=${token}` };
     expect((await app.inject({ url: `/api/assessments/${id}/report.json`, headers })).statusCode).toBe(200);
-    expect(recordUsage).toHaveBeenLastCalledWith({ exports_json: 1 }, null);
+    expect(recordUsage).toHaveBeenLastCalledWith({ exports_json: 1 }, hashOrganisation(tenant, salt));
     expect((await app.inject({ url: `/api/assessments/${id}/report.html`, headers })).statusCode).toBe(200);
-    expect(recordUsage).toHaveBeenLastCalledWith({ exports_html: 1 }, null);
+    expect(recordUsage).toHaveBeenLastCalledWith({ exports_html: 1 }, hashOrganisation(tenant, salt));
     expect((await app.inject({ url: '/api/assessments/aaaaaaaa-0000-4000-8000-000000000005/report.html', headers })).statusCode).toBe(404);
     expect(recordUsage).toHaveBeenCalledTimes(2);
     await app.close();
